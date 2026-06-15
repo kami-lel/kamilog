@@ -253,7 +253,16 @@ After parsing, apply the verbosity to a logger:
 
 ```python
 args = parser.parse_args()
+
+# target the root logger
 kamilog.set_logging_level_by_verbosity(args)
+
+# target a named logger by name
+kamilog.set_logging_level_by_verbosity(args, logger_name="myapp")
+
+# pass a logger instance directly (takes priority over logger_name)
+log = kamilog.getLogger("myapp")
+kamilog.set_logging_level_by_verbosity(args, logger=log)
 ```
 
 Verbosity-to-logging-level mapping:
