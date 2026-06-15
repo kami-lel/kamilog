@@ -12,7 +12,6 @@ todo add file handler option for getLogger
 Todo unit test to make sure no TODOs in package
 Todo install as submodule
 Todo install as python package
-TODO create AGENTS
 TODO create docs / update README
 TODO changelog update structure
 -->
