@@ -21,7 +21,8 @@ __author__ = kamilog_author
 __doc__ = kamilog_doc
 
 
-
-# Fixme prepare for ai
+# Todo create AGENTS
+# Todo create docs / update README
+# Todo changelog update structure
 # Todo coloring
 # Todo skip/pass
