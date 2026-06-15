@@ -1,108 +1,7 @@
 """kamilog: Customized Logging Output Module
 
-This script provides a simple interface to obtain Python loggers with a
-customized logging output format. The format includes timestamps and padded
-log level names for cleaner, more uniform log display.
-
-
-
-
-
-Installation as Script:
-Copy the single script `./kamilog/kamilog.py` into your project folder.
-
-Example directory structure::
-
-    your_project/
-    ├── kamilog.py
-    └── main.py
-
-In `main.py`, import the module as follows::
-
-    import kamilog
-
-
-
-
-
-Installation as Module:
-Copy the entire `kamilog` folder into your project's source folder.
-
-Example directory structure::
-
-    your_project/
-    ├── project_abc/
-    │   ├── kamilog/
-    │   │   ├── __init__.py
-    │   │   └── kamilog.py
-    │   ├── module_a/
-    │   │   └── some_code.py
-    │   └── module_b/
-    │       └── other_code.py
-    └── setup.py
-
-Then you can import `kamilog` anywhere within the project like this::
-
-    from project_abc import kamilog
-
-
-
-
-
-Usage:
-Use ``kamilog.getLogger()` (in places of `logging.getLogger()`)
-to get a configured logger instance::
-
-    import logging
-    import kamilog
-
-    my_logger = kamilog.getLogger("myLogger")
-    my_logger.setLevel(logging.DEBUG)
-
-    my_logger.debug("Debugging details here")
-    my_logger.info("Informational message")
-    my_logger.warning("Warning message")
-    my_logger.error("Error occurred!")
-    my_logger.critical("Critical issue!")
-
-    try:
-        1 / 0
-    except ZeroDivisionError as err:
-        my_logger.exception(err)
-
-Output::
-
-    [2024-06-15 14:30:00,000] DEBUG: Debugging details here
-    [2024-06-15 14:30:00,000] INFO : Informational message
-    [2024-06-15 14:30:00,000] WARN : Warning message
-    [2024-06-15 14:30:00,001] ERROR: Error occurred!
-    [2024-06-15 14:30:00,001] CRIT : Critical issue!
-    [2024-06-15 14:30:00,001] ERROR: division by zero
-    Traceback (most recent call last):
-      File "/home/kami/repos/kami-log-py/example.py", line 18, in <module>
-        1 / 0
-        ~~^~~
-    ZeroDivisionError: division by zero
-
-
-
-verbosity and logging level:
-
-Set up parser with options of `-v/--verbose` and `-q/--quiet`::
-
-    from argparse import ArgumentParser
-
-    parser = ArgumentParser()
-    add_verbose_arguments(parser)
-
-After parsing, set logging level of logger by verbosity of this parser::
-
-    args = parser.parse_args()
-    set_logging_level_by_verbosity(args)
-
-Alternatively, calc the verbosity as a number::
-
-    print(calc_verbosity(args))  # 1
+Provides Python loggers with structured output, custom log levels,
+ANSI 16-color support, and flexible timestamp options.
 """
 
 import logging
@@ -122,9 +21,6 @@ __all__ = (
 )
 
 
-# Todo move docstring into docs
-# Fixme organize structure, hide some constant
-
 # customized logger  ###########################################################
 
 DATEFMT_TIME = "%H:%M:%S"
@@ -132,6 +28,17 @@ DATEFMT_FULL = "%Y-%m-%d %H:%M:%S"
 
 
 class KamiLogger(logging.Logger):
+    """Logger subclass extending :class:`logging.Logger` with four additional levels.
+
+    Custom levels (in numeric order between standard ones):
+
+    - ``ENTER`` (11): entering a hook or test case
+    - ``SKIP``  (12): skipping a hook or test case
+    - ``PASS``  (25): hook or test case passed
+    - ``FAIL``  (45): hook or test case failed
+
+    Use :func:`getLogger` to obtain a configured instance.
+    """
 
     ENTER = 11
     SKIP = 12
@@ -139,18 +46,42 @@ class KamiLogger(logging.Logger):
     FAIL = 45
 
     def enter(self, message, *args, **kwargs):
+        """
+        Log at ``ENTER`` level (11): entering a hook or test case.
+
+        :param message: log message
+        :type message: str
+        """
         if self.isEnabledFor(self.ENTER):
             self._log(self.ENTER, message, args, stacklevel=2, **kwargs)
 
     def skip(self, message, *args, **kwargs):
+        """
+        Log at ``SKIP`` level (12): skipping a hook or test case.
+
+        :param message: log message
+        :type message: str
+        """
         if self.isEnabledFor(self.SKIP):
             self._log(self.SKIP, message, args, stacklevel=2, **kwargs)
 
     def pass_(self, message, *args, **kwargs):
+        """
+        Log at ``PASS`` level (25): hook or test case passed.
+
+        :param message: log message
+        :type message: str
+        """
         if self.isEnabledFor(self.PASS):
             self._log(self.PASS, message, args, stacklevel=2, **kwargs)
 
     def fail(self, message, *args, **kwargs):
+        """
+        Log at ``FAIL`` level (45): hook or test case failed.
+
+        :param message: log message
+        :type message: str
+        """
         if self.isEnabledFor(self.FAIL):
             self._log(self.FAIL, message, args, stacklevel=2, **kwargs)
 
@@ -180,9 +111,9 @@ logging.root.__class__ = KamiLogger
 
 def _levelno2padded_levelname(levelno):
     """
-    :param levelno:
+    :param levelno: numeric logging level
     :type levelno: int
-    :return: padded level name, always 5 letter width
+    :return: 5-character padded level name; falls back to the numeric value for unknown levels
     :rtype: str
     """
     return _PADDED_LEVELNAME_MAP.get(levelno, str(levelno).ljust(5)[:5])
@@ -205,8 +136,32 @@ _ANSI_LEVEL_COLORS = {
 
 
 class _LogFormatter(Formatter):
+    """Internal log formatter producing structured, optionally colored output.
 
-    def __init__(self, *, use_color=False, datefmt=DATEFMT_TIME, relative_to=None):
+    Output format::
+
+        HH:MM:SS [LEVEL] logger_name:\\tmessage
+
+    - Datetime and source name are rendered in dim black.
+    - Level name is colored per severity when ``use_color`` is enabled.
+    - Color is suppressed automatically when the output stream is not a TTY.
+    - When ``relative_to`` is set, timestamps show elapsed time
+      (``+HH:MM:SS.mmm``) instead of wall-clock time; ``datefmt`` is ignored.
+    """
+
+    def __init__(
+        self, *, use_color=False, datefmt=DATEFMT_TIME, relative_to=None
+    ):
+        """
+        :param use_color: enable ANSI color output
+        :type use_color: bool
+        :param datefmt: strftime format for wall-clock timestamps;
+                ignored when ``relative_to`` is set; defaults to ``DATEFMT_TIME``
+        :type datefmt: str
+        :param relative_to: Unix timestamp used as epoch for relative time display;
+                mutually exclusive with ``datefmt``
+        :type relative_to: float, optional
+        """
         super().__init__(datefmt=datefmt)
         self.use_color = use_color
         self._datefmt = datefmt
@@ -263,6 +218,14 @@ class _LogFormatter(Formatter):
         return "+{:02d}:{:02d}:{:02d}.{:03d}".format(h, m, s, ms)
 
     def formatTime(self, record, datefmt=None):
+        """
+        :param record: log record
+        :type record: logging.LogRecord
+        :param datefmt: strftime format override; falls back to ``_datefmt`` if omitted
+        :type datefmt: str, optional
+        :return: formatted and optionally colored timestamp string
+        :rtype: str
+        """
         if self._relative_to is not None:
             asctime = self._fmt_relative(record.created)
         else:
@@ -270,6 +233,12 @@ class _LogFormatter(Formatter):
         return self._fmt_asctime(asctime)
 
     def format(self, record):
+        """
+        :param record: log record
+        :type record: logging.LogRecord
+        :return: fully formatted log line: timestamp, level, optional source, message
+        :rtype: str
+        """
         record = logging.makeLogRecord(record.__dict__)
 
         result = "{} {}{}\t{}".format(
@@ -284,12 +253,16 @@ class _LogFormatter(Formatter):
         if record.exc_text:
             result = "{}\n{}".format(result, record.exc_text)
         if record.stack_info:
-            result = "{}\n{}".format(result, self.formatStack(record.stack_info))
+            result = "{}\n{}".format(
+                result, self.formatStack(record.stack_info)
+            )
 
         return result
 
 
-def getLogger(name=None, *, datefmt=DATEFMT_TIME, relative_to=None) -> KamiLogger:
+def getLogger(
+    name=None, *, datefmt=DATEFMT_TIME, relative_to=None
+) -> KamiLogger:
     """
     :param name: logger name
     :type name: str
@@ -310,19 +283,23 @@ def getLogger(name=None, *, datefmt=DATEFMT_TIME, relative_to=None) -> KamiLogge
 
     if not logger.handlers:
         stdout_handler = StreamHandler(sys.stdout)
-        stdout_handler.setFormatter(_LogFormatter(
-            use_color=sys.stdout.isatty(),
-            datefmt=datefmt,
-            relative_to=relative_to,
-        ))
+        stdout_handler.setFormatter(
+            _LogFormatter(
+                use_color=sys.stdout.isatty(),
+                datefmt=datefmt,
+                relative_to=relative_to,
+            )
+        )
         stdout_handler.addFilter(lambda r: r.levelno < logging.WARNING)
 
         stderr_handler = StreamHandler(sys.stderr)
-        stderr_handler.setFormatter(_LogFormatter(
-            use_color=sys.stderr.isatty(),
-            datefmt=datefmt,
-            relative_to=relative_to,
-        ))
+        stderr_handler.setFormatter(
+            _LogFormatter(
+                use_color=sys.stderr.isatty(),
+                datefmt=datefmt,
+                relative_to=relative_to,
+            )
+        )
         stderr_handler.addFilter(lambda r: r.levelno >= logging.WARNING)
 
         logger.addHandler(stdout_handler)
@@ -336,10 +313,11 @@ def getLogger(name=None, *, datefmt=DATEFMT_TIME, relative_to=None) -> KamiLogge
 
 def add_verbose_arguments(parser):
     """
-    add -v/--verbose and -q/--quiet options to ``parser``
+    Add ``-v``/``--verbose`` and ``-q``/``--quiet`` options to ``parser``.
 
+    Each ``-v`` increases verbosity by 1; each ``-q`` decreases by 1.
 
-    :param parser:
+    :param parser: argument parser to extend
     :type parser: argparse.ArgumentParser
     """
     parser.add_argument(
@@ -360,18 +338,14 @@ def add_verbose_arguments(parser):
 
 def calc_verbosity(namespace):
     """
-    calculate a **verbosity** value from --verbose &/ --quiet options
-    contained in ``namespace``
+    Calculate a verbosity integer from ``--verbose`` and ``--quiet`` counts.
 
-    verbosity default to 0,
-    each -v/--verbose flag will +1 to verbosity,
-    each -q/--quiet flag will -1 to verbosity,
-    no upper/lower bounds
+    Verbosity defaults to 0; each ``-v`` adds 1, each ``-q`` subtracts 1.
+    There are no upper or lower bounds.
 
-
-    :param namespace: parsed from parser with --verbose & --quiet options
+    :param namespace: parsed namespace containing ``verbose`` and/or ``quiet`` counts
     :type namespace: argparse.Namespace
-    :return: verbosity number
+    :return: net verbosity level
     :rtype: int
     """
     verbosity = 0
@@ -386,19 +360,18 @@ def calc_verbosity(namespace):
 
 def set_logging_level_by_verbosity(namespace, logger_name=None):
     """
-    set **logging level** of a logger based on *verbosity* calculated
-    from --verbose &/ --quiet options contained in ``namespace``
+    Set the logging level of a logger based on verbosity flags.
 
-    - ``-vv`` (or more): DEBUG
-    - ``-v``: INFO
-    - no option: WARNING
-    - ``-q`` (or more): all message suppressed, even CRITICAL
+    Verbosity-to-level mapping:
 
+    - ``-vv`` or more: ``DEBUG``
+    - ``-v``: ``INFO``
+    - no flags: ``WARNING``
+    - ``-q`` or more: all output suppressed (level above ``CRITICAL``)
 
-    :param namespace: parsed from parser with --verbose &/ --quiet
+    :param namespace: parsed namespace containing ``--verbose`` and/or ``--quiet`` counts
     :type namespace: argparse.Namespace
-    :param logger_name: set specific logger with this name
-            defaults to None, set root logger
+    :param logger_name: name of logger to configure; ``None`` targets the root logger
     :type logger_name: str, optional
     """
     verbosity = calc_verbosity(namespace)

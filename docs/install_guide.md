@@ -1,6 +1,6 @@
 # kamilog Installation Guide
 
-## 📜 Installation as Script
+## Installation as Script
 
 Copy the single script `./kamilog/kamilog.py` into your project folder.
 
@@ -18,7 +18,7 @@ In `main.py`, import the module as follows:
 import kamilog
 ```
 
-## 📦 Installation as Module
+## Installation as Module
 
 Copy the entire `kamilog` folder into your project's source folder.
 
@@ -37,7 +37,7 @@ your_project/
 └── setup.py
 ```
 
-Then you can import `kamilog` anywhere within the project like this:
+Then import `kamilog` anywhere within the project:
 
 ```python
 from project_abc import kamilog
