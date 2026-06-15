@@ -1,4 +1,5 @@
-"""kamilog: Customized Logging Output Module
+"""
+kamilog: Customized Logging Output Module
 
 Provides Python loggers with structured output, custom log levels,
 ANSI 16-color support, and flexible timestamp options.
@@ -8,8 +9,6 @@ import logging
 import sys
 from logging import Formatter, StreamHandler
 
-__version__ = "1.2.1-alpha"
-__author__ = "kamiLeL"
 __all__ = (
     "getLogger",
     "KamiLogger",

@@ -1,5 +1,25 @@
 # kamilog Installation Guide
 
+## Installation as Python Package
+
+Install the package into the current environment with pip:
+
+```bash
+pip install .
+```
+
+For development (editable install — changes to source are reflected immediately):
+
+```bash
+pip install -e .
+```
+
+Then import anywhere:
+
+```python
+import kamilog
+```
+
 ## Installation as Script
 
 Copy the single script `./kamilog/kamilog.py` into your project folder.
