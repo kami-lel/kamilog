@@ -28,8 +28,7 @@
 ### Removed
 ### Fixed
 
-
-
+[unreleased]: https://github.com/kami-lel/kami-log-py/compare/v1.2.0...dev
 
 
 
@@ -51,6 +50,8 @@
 
   - related tests
 
+[1.2.0]: https://github.com/kami-lel/kami-log-py/compare/v1.1.0...v1.2.0
+
 
 
 
@@ -68,6 +69,8 @@
 ### Added
 
 - Installation as Module feature
+
+[1.1.0]: https://github.com/kami-lel/kami-log-py/compare/v1.0.0...v1.1.0
 
 
 
@@ -91,21 +94,6 @@
 
 - basic function implemented in `kamilog.py`
 
-
-
-
-
-
-
-
-
-
-
-
-
-[unreleased]: https://github.com/kami-lel/kami-log-py/compare/v1.2.0...dev
-[1.2.0]: https://github.com/kami-lel/kami-log-py/compare/v1.1.0...v1.2.0
-[1.1.0]: https://github.com/kami-lel/kami-log-py/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/kami-lel/kami-log-py/releases/tag/v1.0.0
 
 
