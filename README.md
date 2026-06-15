@@ -3,9 +3,9 @@
 <!-- 
 todo use emoji if console supported
 todo add file handler option for getLogger
-Todo unit test to make sure no TODOs in package
 Todo install as submodule
 Todo install as python package
+TODO write unit tests
 -->
 
 ## 🚀 Features
