@@ -3,8 +3,8 @@
 <!-- 
 todo use emoji if console supported
 todo add file handler option for getLogger
-Todo install as submodule
-Todo install as python package
+todo install as submodule
+todo install as python package
 TODO write example
 -->
 
