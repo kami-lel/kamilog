@@ -3,14 +3,18 @@
 <!-- 
 todo option to use relative time
 todo option to omit date in time
-todo include logger name in the message
-todo use emoji if console supported
-todo use ascii coloring if console supported
-todo send to stdout & stderr separately
+Todo include logger name in the message
+Todo use emoji if console supported
+Todo use ascii coloring if console supported
+Todo add skip/pass
+Todo send to stdout & stderr separately
 todo add file handler option for getLogger
-Todo use HU to check to AMs are included in files under kamilog
-todo install as submodule
-todo install as python package
+Todo unit test to make sure no TODOs in package
+Todo install as submodule
+Todo install as python package
+Todo create AGENTS
+Todo create docs / update README
+Todo changelog update structure
 -->
 
 ## 🚀 Features

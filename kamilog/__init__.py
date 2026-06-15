@@ -19,10 +19,3 @@ __all__ = (
 __version__ = kamilog_version
 __author__ = kamilog_author
 __doc__ = kamilog_doc
-
-
-# Todo create AGENTS
-# Todo create docs / update README
-# Todo changelog update structure
-# Todo coloring
-# Todo skip/pass
