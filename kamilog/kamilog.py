@@ -465,10 +465,12 @@ def set_logging_level_by_verbosity(namespace, *, logger=None, logger_name=None):
 
     Verbosity-to-level mapping:
 
-    - ``-vv`` or more: ``DEBUG``
-    - ``-v``: ``INFO``
-    - no flags: ``WARNING``
-    - ``-q`` or more: all output suppressed (level above ``CRITICAL``)
+    - ``-vv`` or more: ``DEBUG`` (10)
+    - ``-v``: ``INFO`` (20)
+    - no flags: ``DONE`` (25)
+    - ``-q``: ``WARNING`` (30)
+    - ``-qq``: ``ERROR`` (40)
+    - ``-qqq`` or more: ``CRITICAL`` (50)
 
 
     :param namespace: parsed namespace containing ``--verbose`` and/or ``--quiet`` counts
@@ -486,9 +488,13 @@ def set_logging_level_by_verbosity(namespace, *, logger=None, logger_name=None):
     elif verbosity == 1:
         level = logging.INFO
     elif verbosity == 0:
+        level = DONE
+    elif verbosity == -1:
         level = logging.WARNING
-    else:
-        level = logging.CRITICAL + 1
+    elif verbosity == -2:
+        level = logging.ERROR
+    else:  # verbosity <= -3
+        level = logging.CRITICAL
 
     if logger is None:
         logger = logging.getLogger(logger_name)

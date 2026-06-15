@@ -50,10 +50,18 @@
   - `DONE` (25): bright yellow (`\033[93m`)
   - `WARN` (30): yellow (`\033[33m`)
   - `CRIT` (50): bold bright yellow (`\033[1;93m`)
+- **Verbosity-to-level mapping**: restructured CLI flag associations
+  - `-vv` or more: `DEBUG` (10)
+  - `-v`: `INFO` (20)
+  - no flags: `DONE` (25) — was `WARNING` (30)
+  - `-q`: `WARNING` (30) — was suppressed
+  - `-qq`: `ERROR` (40) — new level
+  - `-qqq` or more: `CRITICAL` (50) — new level
 - Example scripts updated: cleaner output with styled print headers, root logger
   (no source names), section demonstrations
+- `examples/verbosity.py`: updated with comprehensive usage examples for all flag combinations
 - Documentation (README, AGENTS, docs/) updated to reflect new log levels, format,
-  timestamp behavior, and color scheme
+  timestamp behavior, color scheme, and verbosity mapping
 
 ### Deprecated
 

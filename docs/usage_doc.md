@@ -264,8 +264,10 @@ Verbosity-to-logging-level mapping:
 |---|---|---|---|
 | `-vv` or more | ≥ 2 | `DEBUG` | 10 |
 | `-v` | 1 | `INFO` | 20 |
-| _(none)_ | 0 | `WARNING` | 30 |
-| `-q` or more | ≤ -1 | all suppressed | 51 |
+| _(none)_ | 0 | `DONE` | 25 |
+| `-q` | -1 | `WARNING` | 30 |
+| `-qq` | -2 | `ERROR` | 40 |
+| `-qqq` or more | ≤ -3 | `CRITICAL` | 50 |
 
 Alternatively, read the verbosity value as an integer:
 
