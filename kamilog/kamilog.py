@@ -123,7 +123,29 @@ __all__ = (
 # customized logger  ###########################################################
 
 MESSAGE_FORMAT = "[%(asctime)s] %(levelname)s: %(message)s"
-_PADDED_LEVELNAMES = ("DEBUG", "INFO ", "WARN ", "ERROR", "CRIT ")
+
+# custom levels
+ENTER = 11
+SKIP = 12
+PASS = 25
+FAIL = 45
+
+logging.addLevelName(ENTER, "ENTER")
+logging.addLevelName(SKIP, "SKIP")
+logging.addLevelName(PASS, "PASS")
+logging.addLevelName(FAIL, "FAIL")
+
+_PADDED_LEVELNAME_MAP = {
+    logging.DEBUG: "DEBUG",
+    ENTER: "ENTER",
+    SKIP: "SKIP ",
+    logging.INFO: "INFO ",
+    PASS: "PASS ",
+    logging.WARNING: "WARN ",
+    logging.ERROR: "ERROR",
+    FAIL: "FAIL ",
+    logging.CRITICAL: "CRIT ",
+}
 
 
 def _levelno2padded_levelname(levelno):
@@ -133,7 +155,35 @@ def _levelno2padded_levelname(levelno):
     :return: padded level name, always 5 letter width
     :rtype: str
     """
-    return _PADDED_LEVELNAMES[levelno // 10 - 1]
+    return _PADDED_LEVELNAME_MAP.get(
+        levelno, logging.getLevelName(levelno)[:5].ljust(5)
+    )
+
+
+def _logger_enter(self, message, *args, **kwargs):
+    if self.isEnabledFor(ENTER):
+        self._log(ENTER, message, args, **kwargs)
+
+
+def _logger_skip(self, message, *args, **kwargs):
+    if self.isEnabledFor(SKIP):
+        self._log(SKIP, message, args, **kwargs)
+
+
+def _logger_pass_case(self, message, *args, **kwargs):
+    if self.isEnabledFor(PASS):
+        self._log(PASS, message, args, **kwargs)
+
+
+def _logger_fail(self, message, *args, **kwargs):
+    if self.isEnabledFor(FAIL):
+        self._log(FAIL, message, args, **kwargs)
+
+
+logging.Logger.enter = _logger_enter
+logging.Logger.skip = _logger_skip
+logging.Logger.pass_case = _logger_pass_case
+logging.Logger.fail = _logger_fail
 
 
 class _LogFormatter(Formatter):
