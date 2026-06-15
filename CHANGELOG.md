@@ -21,13 +21,34 @@
 
 ### Added
 
+- New example script `logger_names_and_timestamps.py` demonstrating logger names,
+  timestamps, and multiple messages in one session
+
 ### Changed
+
+- **Log output format**: removed brackets around level names
+  - was: `[DEBUG] source: message`
+  - now: `DEBUG source: message`
+- **Timestamp defaults to opt-in**: timestamps now default to `None` (no timestamp shown);
+  previously defaulted to time-only format. Pass `datefmt=` or `relative_to=` to enable.
+- **Message separator**: changed from tab to single space after source/colon
+  - was: `DEBUG source:\tmessage`
+  - now: `DEBUG source: message`
+- **Source-less logging**: no space before colon when logger has no name
+  - was: `DEBUG :`
+  - now: `DEBUG:`
+- Example scripts updated: cleaner output, section headers, reduced message volume,
+  varied source name lengths for readability demonstration
+- Documentation (README, AGENTS, docs/) updated to reflect new log format and
+  timestamp behavior
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
+
+- Fixed spacing between timestamp and level when timestamp is present
 
 ### Security
 
