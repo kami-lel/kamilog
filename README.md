@@ -9,7 +9,6 @@ todo install as submodule
 todo comprehensive unit tests
 Todo add DONE & SUCC
 Fixme change verbose  level
-Todo change print format
 -->
 
 ## Features
