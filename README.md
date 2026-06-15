@@ -1,4 +1,4 @@
-
+# kamilog README
 
 A lightweight Python logging wrapper with structured output, custom log levels, ANSI 16-color support, and flexible timestamp options.
 
@@ -7,6 +7,7 @@ todo use emoji if console supported
 todo add file handler option for getLogger
 todo install as submodule
 todo comprehensive unit tests
+todo better color scheme, dont relies on bold
 -->
 
 ## Features
