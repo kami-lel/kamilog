@@ -72,7 +72,8 @@ log.pass_("assertion passed")
 log.fail("assertion failed")
 ```
 
-Note: `pass_` uses a trailing underscore because `pass` is a Python keyword.
+> [!NOTE]
+> `pass_` uses a trailing underscore because `pass` is a Python keyword.
 
 
 
@@ -147,36 +148,26 @@ rendered in dim black; the message is uncolored.
 By default, only the time is shown (`HH:MM:SS`). Pass `datefmt` to change
 the format:
 
-```python
-# time only (default)
-log = kamilog.getLogger("myapp")
-# 14:30:00 [INFO ] myapp:    message
-
-# time with milliseconds
-log = kamilog.getLogger("myapp", datefmt=kamilog.DATEFMT_TIME_MS)
-# 14:30:00.123 [INFO ] myapp:    message
-
-# date and time
-log = kamilog.getLogger("myapp", datefmt=kamilog.DATEFMT_DATETIME)
-# 2026-06-15 14:30:00 [INFO ] myapp:    message
-
-# date and time with milliseconds
-log = kamilog.getLogger("myapp", datefmt=kamilog.DATEFMT_DATETIME_MS)
-# 2026-06-15 14:30:00.123 [INFO ] myapp:    message
-
-# custom strftime format
-log = kamilog.getLogger("myapp", datefmt="%d/%m %H:%M")
-# 15/06 14:30 [INFO ] myapp:    message
-```
-
-Available constants:
-
-| Constant | Value | Example |
+| Constant | Value | Output |
 |---|---|---|
 | `DATEFMT_TIME` | `"%H:%M:%S"` | `14:30:00` |
 | `DATEFMT_TIME_MS` | `"%H:%M:%S.{ms}"` | `14:30:00.123` |
 | `DATEFMT_DATETIME` | `"%Y-%m-%d %H:%M:%S"` | `2026-06-15 14:30:00` |
 | `DATEFMT_DATETIME_MS` | `"%Y-%m-%d %H:%M:%S.{ms}"` | `2026-06-15 14:30:00.123` |
+
+```python
+log = kamilog.getLogger("myapp")
+log = kamilog.getLogger("myapp", datefmt=kamilog.DATEFMT_TIME_MS)
+log = kamilog.getLogger("myapp", datefmt=kamilog.DATEFMT_DATETIME)
+log = kamilog.getLogger("myapp", datefmt=kamilog.DATEFMT_DATETIME_MS)
+```
+
+```
+14:30:00 [INFO ] myapp:     message
+14:30:00.123 [INFO ] myapp: message
+2026-06-15 14:30:00 [INFO ] myapp:     message
+2026-06-15 14:30:00.123 [INFO ] myapp: message
+```
 
 
 
@@ -249,14 +240,14 @@ args = parser.parse_args()
 kamilog.set_logging_level_by_verbosity(args)
 ```
 
-Verbosity-to-level mapping:
+Verbosity-to-logging-level mapping:
 
-| Flags | Level |
-|---|---|
-| `-vv` or more | `DEBUG` |
-| `-v` | `INFO` |
-| _(none)_ | `WARNING` |
-| `-q` or more | all suppressed |
+| Flags | Verbosity | Level | Number |
+|---|---|---|---|
+| `-vv` or more | ≥ 2 | `DEBUG` | 10 |
+| `-v` | 1 | `INFO` | 20 |
+| _(none)_ | 0 | `WARNING` | 30 |
+| `-q` or more | ≤ -1 | all suppressed | 51 |
 
 Alternatively, read the verbosity value as an integer:
 
