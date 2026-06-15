@@ -405,6 +405,7 @@ def calc_verbosity(namespace):
     return verbosity
 
 
+# TODO allow give logger
 def set_logging_level_by_verbosity(namespace, logger_name=None):
     """
     Set the logging level of a logger based on verbosity flags.
