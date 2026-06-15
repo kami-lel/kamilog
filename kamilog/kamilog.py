@@ -106,11 +106,13 @@ Alternatively, calc the verbosity as a number::
 """
 
 import logging
+import sys
 from logging import Formatter, StreamHandler
 
 __version__ = "1.2.1-alpha"
 __author__ = "kamiLeL"
 __all__ = (
+    "KamiLogger",
     "getLogger",
     "add_verbose_arguments",
     "calc_verbosity",
@@ -118,12 +120,59 @@ __all__ = (
 )
 
 
-# TODO move docstring into docs
+# Todo move docstring into docs
+# Fixme organize structure, hide some constant
 
 # customized logger  ###########################################################
 
-MESSAGE_FORMAT = "[%(asctime)s] %(levelname)s: %(message)s"
-_PADDED_LEVELNAMES = ("DEBUG", "INFO ", "WARN ", "ERROR", "CRIT ")
+_MESSAGE_FORMAT = "[%(asctime)s] %(levelname)s: %(message)s"
+
+
+class KamiLogger(logging.Logger):
+
+    ENTER = 11
+    SKIP = 12
+    PASS = 25
+    FAIL = 45
+
+    def enter(self, message, *args, **kwargs):
+        if self.isEnabledFor(self.ENTER):
+            self._log(self.ENTER, message, args, stacklevel=2, **kwargs)
+
+    def skip(self, message, *args, **kwargs):
+        if self.isEnabledFor(self.SKIP):
+            self._log(self.SKIP, message, args, stacklevel=2, **kwargs)
+
+    def pass_(self, message, *args, **kwargs):
+        if self.isEnabledFor(self.PASS):
+            self._log(self.PASS, message, args, stacklevel=2, **kwargs)
+
+    def fail(self, message, *args, **kwargs):
+        if self.isEnabledFor(self.FAIL):
+            self._log(self.FAIL, message, args, stacklevel=2, **kwargs)
+
+
+logging.addLevelName(KamiLogger.ENTER, "ENTER")
+logging.addLevelName(KamiLogger.SKIP, "SKIP")
+logging.addLevelName(KamiLogger.PASS, "PASS")
+logging.addLevelName(KamiLogger.FAIL, "FAIL")
+
+_PADDED_LEVELNAME_MAP = {
+    logging.DEBUG: "DEBUG",
+    KamiLogger.ENTER: "ENTER",
+    KamiLogger.SKIP: "SKIP ",
+    logging.INFO: "INFO ",
+    KamiLogger.PASS: "PASS ",
+    logging.WARNING: "WARN ",
+    logging.ERROR: "ERROR",
+    KamiLogger.FAIL: "FAIL ",
+    logging.CRITICAL: "CRIT ",
+}
+
+logging.setLoggerClass(KamiLogger)
+
+# root logger exists before setLoggerClass — patch its class directly
+logging.root.__class__ = KamiLogger
 
 
 def _levelno2padded_levelname(levelno):
@@ -133,54 +182,83 @@ def _levelno2padded_levelname(levelno):
     :return: padded level name, always 5 letter width
     :rtype: str
     """
-    return _PADDED_LEVELNAMES[levelno // 10 - 1]
+    return _PADDED_LEVELNAME_MAP.get(levelno, str(levelno).ljust(5)[:5])
+
+
+_ANSI_RESET = "\033[0m"
+_ANSI_DATETIME = "\033[30m"
+
+_ANSI_LEVEL_COLORS = {
+    logging.DEBUG: "\033[36m",  # cyan
+    KamiLogger.ENTER: "\033[92m",  # bright green
+    KamiLogger.SKIP: "\033[32m",  # green
+    logging.INFO: "\033[96m",  # bright cyan
+    KamiLogger.PASS: "\033[1;32m",  # bold green
+    logging.WARNING: "\033[33m",  # yellow
+    logging.ERROR: "\033[31m",  # red
+    KamiLogger.FAIL: "\033[1;31m",  # bold red
+    logging.CRITICAL: "\033[1;33m",  # bold yellow (orange)
+}
 
 
 class _LogFormatter(Formatter):
 
     def __init__(
         self,
-        fmt=MESSAGE_FORMAT,
+        fmt=_MESSAGE_FORMAT,
         datefmt=None,
         style="%",
         validate=True,
         *,
-        defaults=None
+        defaults=None,
+        use_color=False,
     ):
         super().__init__(fmt, datefmt, style, validate, defaults=defaults)
+        self.use_color = use_color
+
+    def formatTime(self, record, datefmt=None):
+        result = super().formatTime(record, datefmt)
+        if self.use_color:
+            return f"{_ANSI_DATETIME}{result}{_ANSI_RESET}"
+        return result
 
     def format(self, record):
+        record = logging.makeLogRecord(record.__dict__)
         record.levelname = _levelno2padded_levelname(record.levelno)
+        if self.use_color:
+            color = _ANSI_LEVEL_COLORS.get(record.levelno, "")
+            record.levelname = f"{color}{record.levelname}{_ANSI_RESET}"
         return super().format(record)
 
 
-_INITIALIZED_LOGGERS = []
-
-
-def getLogger(name=None):
+def getLogger(name=None) -> KamiLogger:
     """
     :param name: logger name
     :type name: str
     :return: a logger with the `name`, create if non-existence;
             root logger if `name` is `None`
-    :rtype: logging.Logger
+    :rtype: KamiLogger
     """
-    global _INITIALIZED_LOGGERS
-
     logger = logging.getLogger(name)
 
-    # no repeated configure/initialize for any loggers
-    if name in _INITIALIZED_LOGGERS:
-        return logger
+    if not isinstance(logger, KamiLogger):
+        logger.__class__ = KamiLogger
 
-    # init loggers  ============================================================
-    # console stream handler  --------------------------------------------------
-    console_handler = StreamHandler()
-    console_formatter = _LogFormatter()
-    console_handler.setFormatter(console_formatter)
-    logger.addHandler(console_handler)
+    if not logger.handlers:
+        stdout_handler = StreamHandler(sys.stdout)
+        stdout_handler.setFormatter(
+            _LogFormatter(use_color=sys.stdout.isatty())
+        )
+        stdout_handler.addFilter(lambda r: r.levelno < logging.WARNING)
 
-    _INITIALIZED_LOGGERS.append(name)
+        stderr_handler = StreamHandler(sys.stderr)
+        stderr_handler.setFormatter(
+            _LogFormatter(use_color=sys.stderr.isatty())
+        )
+        stderr_handler.addFilter(lambda r: r.levelno >= logging.WARNING)
+
+        logger.addHandler(stdout_handler)
+        logger.addHandler(stderr_handler)
 
     return logger
 

@@ -5,9 +5,6 @@ todo option to use relative time
 todo option to omit date in time
 Todo include logger name in the message
 todo use emoji if console supported
-Todo use ascii coloring if console supported
-Todo add skip/pass
-Todo send to stdout & stderr separately
 todo add file handler option for getLogger
 Todo unit test to make sure no TODOs in package
 Todo install as submodule
