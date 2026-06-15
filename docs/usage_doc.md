@@ -134,11 +134,11 @@ Level-to-color mapping (16-color ANSI):
 | `INFO` | Bright Cyan |
 | `PASS` | Bold Bright Green |
 | `SUCC` | Bold Green |
-| `DONE` | Yellow |
+| `DONE` | Bright Yellow |
 | `WARN` | Yellow |
 | `ERROR` | Red |
 | `FAIL` | Bold Red |
-| `CRIT` | Bold Yellow (orange) |
+| `CRIT` | Bold Bright Yellow |
 
 Only the level name `[LEVEL]` is colored. The datetime and source name are
 rendered in dim black; the message is uncolored.

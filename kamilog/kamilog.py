@@ -196,11 +196,11 @@ _ANSI_LEVEL_COLORS = {
     logging.INFO: "\033[96m",  # bright cyan
     PASS: "\033[1;92m",  # bold bright green
     SUCC: "\033[1;32m",  # bold green
-    DONE: "\033[33m",  # yellow
+    DONE: "\033[93m",  # bright yellow
     logging.WARNING: "\033[33m",  # yellow
     logging.ERROR: "\033[31m",  # red
     FAIL: "\033[1;31m",  # bold red
-    logging.CRITICAL: "\033[1;33m",  # bold yellow (orange)
+    logging.CRITICAL: "\033[1;93m",  # bold bright yellow
 }
 
 
