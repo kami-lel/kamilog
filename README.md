@@ -6,7 +6,6 @@ A lightweight Python logging wrapper with structured output, custom log levels, 
 todo use emoji if console supported
 todo add file handler option for getLogger
 todo install as submodule
-Todo install as python package
 -->
 
 ## Features
