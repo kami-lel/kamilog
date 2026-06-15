@@ -19,3 +19,9 @@ __all__ = (
 __version__ = kamilog_version
 __author__ = kamilog_author
 __doc__ = kamilog_doc
+
+
+
+# Fixme prepare for ai
+# Todo coloring
+# Todo skip/pass
