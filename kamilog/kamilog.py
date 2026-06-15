@@ -295,6 +295,7 @@ class _LogFormatter(Formatter):
 # get logger  ##################################################################
 
 
+# pylint: disable-next=invalid-name
 def getLogger(name=None, *, datefmt=DATEFMT_TIME, relative_to=None):
     """
     :param name: logger name
