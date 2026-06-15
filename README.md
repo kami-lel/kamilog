@@ -4,7 +4,7 @@
 todo option to use relative time
 todo option to omit date in time
 Todo include logger name in the message
-Todo use emoji if console supported
+todo use emoji if console supported
 Todo use ascii coloring if console supported
 Todo add skip/pass
 Todo send to stdout & stderr separately

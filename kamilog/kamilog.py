@@ -117,6 +117,9 @@ __all__ = (
     "set_logging_level_by_verbosity",
 )
 
+
+# TODO move docstring into docs
+
 # customized logger  ###########################################################
 
 MESSAGE_FORMAT = "[%(asctime)s] %(levelname)s: %(message)s"
