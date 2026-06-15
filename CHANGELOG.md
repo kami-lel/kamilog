@@ -21,47 +21,7 @@
 
 ### Added
 
-- Two new custom log levels:
-  - `SUCC` (22) — task or operation succeeded; `.succ()` method
-  - `DONE` (25) — task or operation completed; `.done()` method
-- New example script `logger_names_and_timestamps.py` demonstrating logger names,
-  timestamps, and multiple messages in one session
-
 ### Changed
-
-- **Log output format**: removed brackets around level names
-  - was: `[DEBUG] source: message`
-  - now: `DEBUG source: message`
-- **Timestamp defaults to opt-in**: timestamps now default to `None` (no timestamp shown);
-  previously defaulted to time-only format. Pass `datefmt=` or `relative_to=` to enable.
-- **Message separator**: changed from tab to single space after source/colon
-  - was: `DEBUG source:\tmessage`
-  - now: `DEBUG source: message`
-- **Source-less logging**: no space before colon when logger has no name
-  - was: `DEBUG :`
-  - now: `DEBUG:`
-- **PASS level number**: reduced from 25 to 21 to accommodate new levels
-  - `PASS` (21) — hook or test case passed
-  - `SUCC` (22) — task or operation succeeded
-  - `DONE` (25) — task or operation completed
-- **ANSI color scheme**: refined level-to-color mapping
-  - `PASS` (21): bold bright green (`\033[1;92m`)
-  - `SUCC` (22): bold green (`\033[1;32m`)
-  - `DONE` (25): bright yellow (`\033[93m`)
-  - `WARN` (30): yellow (`\033[33m`)
-  - `CRIT` (50): bold bright yellow (`\033[1;93m`)
-- **Verbosity-to-level mapping**: restructured CLI flag associations
-  - `-vv` or more: `DEBUG` (10)
-  - `-v`: `INFO` (20)
-  - no flags: `DONE` (25) — was `WARNING` (30)
-  - `-q`: `WARNING` (30) — was suppressed
-  - `-qq`: `ERROR` (40) — new level
-  - `-qqq` or more: `CRITICAL` (50) — new level
-- Example scripts updated: cleaner output with styled print headers, root logger
-  (no source names), section demonstrations
-- `examples/verbosity.py`: updated with comprehensive usage examples for all flag combinations
-- Documentation (README, AGENTS, docs/) updated to reflect new log levels, format,
-  timestamp behavior, color scheme, and verbosity mapping
 
 ### Deprecated
 
@@ -69,11 +29,68 @@
 
 ### Fixed
 
-- Fixed spacing between timestamp and level when timestamp is present
-
 ### Security
 
-[unreleased]: https://github.com/kami-lel/kamilog/compare/v1.3.1...dev
+
+
+
+
+
+
+
+
+
+
+
+
+## [1.4.0] - 2026-06-16
+
+### Added
+
+Custom log levels:
+- `SUCC` (22) — task or operation succeeded; `.succ()` method
+- `DONE` (25) — task or operation completed; `.done()` method
+
+Examples:
+- `logger_names_and_timestamps.py` — demonstrates logger names, timestamps, and multiple messages
+
+### Changed
+
+Log output format:
+- Removed brackets around level names: `[DEBUG]` → `DEBUG`
+- Changed message separator from tab to single space: `source:\tmessage` → `source: message`
+- Removed space before colon when logger has no name: `DEBUG :` → `DEBUG:`
+- Timestamps default to opt-in (`None`) instead of time-only format
+
+Log levels:
+- `PASS` level reduced from 25 → 21 to accommodate new levels
+- Complete level progression: `PASS` (21), `SUCC` (22), `DONE` (25)
+
+ANSI color scheme (refined):
+- `PASS` (21): bold bright green
+- `SUCC` (22): bold green
+- `DONE` (25): bright yellow
+- `WARN` (30): yellow
+- `CRIT` (50): bold bright yellow
+
+CLI verbosity mapping (restructured):
+- `-vv` or more → `DEBUG` (10)
+- `-v` → `INFO` (20)
+- no flags → `DONE` (25) *(was `WARNING` 30)*
+- `-q` → `WARNING` (30) *(was suppressed)*
+- `-qq` → `ERROR` (40) *(new)*
+- `-qqq` or more → `CRITICAL` (50) *(new)*
+
+Examples & documentation:
+- Example scripts: cleaner output with styled print headers, root logger (no source names)
+- `examples/verbosity.py`: comprehensive usage examples for all flag combinations
+- Updated README, AGENTS, docs/ to reflect all changes
+
+### Fixed
+
+- Fixed spacing between timestamp and level when timestamp is present
+
+[1.4.0]: https://github.com/kami-lel/kamilog/compare/v1.3.1...v1.4.0
 
 
 
