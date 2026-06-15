@@ -1,3 +1,7 @@
+"""
+kamilog: Customized Logging Output Module
+"""
+
 from .kamilog import (
     KamiLogger,
     NOTSET,

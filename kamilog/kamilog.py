@@ -11,7 +11,7 @@ import logging
 import sys
 from logging import Formatter, StreamHandler
 
-__version__ = "1.2.1-alpha"
+__version__ = "1.3.0"
 __author__ = "kamiLeL"
 
 __all__ = (
