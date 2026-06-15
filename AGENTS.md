@@ -13,10 +13,12 @@ Key additions over stdlib `logging`:
 
 - Custom log levels: `ENTER` (11), `SKIP` (12), `PASS` (25), `FAIL` (45)
 - `KamiLogger` subclass with `.enter()`, `.skip()`, `.pass_()`, `.fail()` methods
-- `_LogFormatter` producing `HH:MM:SS [LEVEL] source:\tmessage` with per-level ANSI color
+- `_LogFormatter` producing `[LEVEL] source:\tmessage` (no timestamp by default) with per-level ANSI color
 - stdout/stderr split handlers (< WARNING → stdout, >= WARNING → stderr)
-- `relative_to` and `datefmt` options on `getLogger()`
-- Level constants (`kamilog.DEBUG`, `kamilog.ENTER`, etc.) and DATEFMT constants
+- Optional timestamps via `datefmt` parameter (constants: `DATEFMT_TIME`, `DATEFMT_FULL`)
+- Relative time display via `relative_to` parameter (elapsed time since a Unix timestamp)
+- TTY-aware color (auto-disabled when piped/redirected)
+- Level constants (`kamilog.DEBUG`, `kamilog.ENTER`, etc.) re-exported in `__all__`
 - Verbosity helpers: `add_verbose_arguments`, `calc_verbosity`, `set_logging_level_by_verbosity`
 
 Repository layout:
