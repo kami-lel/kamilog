@@ -1,23 +1,33 @@
-"""Demonstrates timestamp format options and per-logger datefmt via named loggers."""
+"""Demonstrates all timestamp format options."""
 
 import kamilog
 
-# default: time only
-log = kamilog.getLogger()
-log.setLevel(kamilog.INFO)
-log.info("DATEFMT_TIME (default)")
+print("# default: no timestamp  #" + "#" * 48)
+log = kamilog.getLogger("demo")
+log.setLevel(kamilog.DEBUG)
+log.debug("message 1")
+log.info("message 2")
 
-# time with milliseconds — requires a second named logger to get a fresh handler
-log_ms = kamilog.getLogger("ms", datefmt=kamilog.DATEFMT_TIME_MS)
-log_ms.setLevel(kamilog.INFO)
-log_ms.info("DATEFMT_TIME_MS")
+print("\n# datefmt_time  #" + "#" * 55)
+log = kamilog.getLogger("time", datefmt=kamilog.DATEFMT_TIME)
+log.setLevel(kamilog.DEBUG)
+log.debug("message 1")
+log.info("message 2")
 
-# date + time
-log_dt = kamilog.getLogger("dt", datefmt=kamilog.DATEFMT_DATETIME)
-log_dt.setLevel(kamilog.INFO)
-log_dt.info("DATEFMT_DATETIME")
+print("\n# datefmt_time_ms  #" + "#" * 52)
+log = kamilog.getLogger("time_ms", datefmt=kamilog.DATEFMT_TIME_MS)
+log.setLevel(kamilog.DEBUG)
+log.debug("message 1")
+log.info("message 2")
 
-# date + time + milliseconds
-log_dt_ms = kamilog.getLogger("dt_ms", datefmt=kamilog.DATEFMT_DATETIME_MS)
-log_dt_ms.setLevel(kamilog.INFO)
-log_dt_ms.info("DATEFMT_DATETIME_MS")
+print("\n# datefmt_datetime  #" + "#" * 51)
+log = kamilog.getLogger("datetime", datefmt=kamilog.DATEFMT_DATETIME)
+log.setLevel(kamilog.DEBUG)
+log.debug("message 1")
+log.info("message 2")
+
+print("\n# datefmt_datetime_ms  #" + "#" * 48)
+log = kamilog.getLogger("datetime_ms", datefmt=kamilog.DATEFMT_DATETIME_MS)
+log.setLevel(kamilog.DEBUG)
+log.debug("message 1")
+log.info("message 2")
