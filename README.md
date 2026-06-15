@@ -5,7 +5,7 @@ todo use emoji if console supported
 todo add file handler option for getLogger
 Todo install as submodule
 Todo install as python package
-TODO write unit tests
+TODO write example
 -->
 
 ## 🚀 Features
