@@ -124,7 +124,7 @@ __all__ = (
 
 # customized logger  ###########################################################
 
-MESSAGE_FORMAT = "[%(asctime)s] %(levelname)s: %(message)s"
+_MESSAGE_FORMAT = "[%(asctime)s] %(levelname)s: %(message)s"
 
 
 class KamiLogger(logging.Logger):
@@ -157,15 +157,15 @@ logging.addLevelName(KamiLogger.PASS, "PASS")
 logging.addLevelName(KamiLogger.FAIL, "FAIL")
 
 _PADDED_LEVELNAME_MAP = {
-    logging.DEBUG:       "DEBUG",
-    KamiLogger.ENTER:   "ENTER",
-    KamiLogger.SKIP:    "SKIP ",
-    logging.INFO:        "INFO ",
-    KamiLogger.PASS:    "PASS ",
-    logging.WARNING:     "WARN ",
-    logging.ERROR:       "ERROR",
-    KamiLogger.FAIL:    "FAIL ",
-    logging.CRITICAL:    "CRIT ",
+    logging.DEBUG: "DEBUG",
+    KamiLogger.ENTER: "ENTER",
+    KamiLogger.SKIP: "SKIP ",
+    logging.INFO: "INFO ",
+    KamiLogger.PASS: "PASS ",
+    logging.WARNING: "WARN ",
+    logging.ERROR: "ERROR",
+    KamiLogger.FAIL: "FAIL ",
+    logging.CRITICAL: "CRIT ",
 }
 
 logging.setLoggerClass(KamiLogger)
@@ -181,16 +181,14 @@ def _levelno2padded_levelname(levelno):
     :return: padded level name, always 5 letter width
     :rtype: str
     """
-    return _PADDED_LEVELNAME_MAP.get(
-        levelno, str(levelno).ljust(5)[:5]
-    )
+    return _PADDED_LEVELNAME_MAP.get(levelno, str(levelno).ljust(5)[:5])
 
 
 class _LogFormatter(Formatter):
 
     def __init__(
         self,
-        fmt=MESSAGE_FORMAT,
+        fmt=_MESSAGE_FORMAT,
         datefmt=None,
         style="%",
         validate=True,
