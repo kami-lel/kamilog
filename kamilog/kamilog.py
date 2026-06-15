@@ -13,7 +13,9 @@ __author__ = "kamiLeL"
 __all__ = (
     "KamiLogger",
     "DATEFMT_TIME",
-    "DATEFMT_FULL",
+    "DATEFMT_TIME_MS",
+    "DATEFMT_DATETIME",
+    "DATEFMT_DATETIME_MS",
     "getLogger",
     "add_verbose_arguments",
     "calc_verbosity",
@@ -23,8 +25,10 @@ __all__ = (
 
 # customized logger  ###########################################################
 
-DATEFMT_TIME = "%H:%M:%S"
-DATEFMT_FULL = "%Y-%m-%d %H:%M:%S"
+DATEFMT_TIME    = "%H:%M:%S"
+DATEFMT_TIME_MS = "%H:%M:%S.{ms}"
+DATEFMT_DATETIME    = "%Y-%m-%d %H:%M:%S"
+DATEFMT_DATETIME_MS = "%Y-%m-%d %H:%M:%S.{ms}"
 
 
 class KamiLogger(logging.Logger):
@@ -230,6 +234,7 @@ class _LogFormatter(Formatter):
             asctime = self._fmt_relative(record.created)
         else:
             asctime = super().formatTime(record, datefmt or self._datefmt)
+            asctime = asctime.replace("{ms}", "{:03d}".format(int(record.msecs)))
         return self._fmt_asctime(asctime)
 
     def format(self, record):

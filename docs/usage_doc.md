@@ -152,9 +152,17 @@ the format:
 log = kamilog.getLogger("myapp")
 # 14:30:00 [INFO ] myapp:    message
 
+# time with milliseconds
+log = kamilog.getLogger("myapp", datefmt=kamilog.DATEFMT_TIME_MS)
+# 14:30:00.123 [INFO ] myapp:    message
+
 # date and time
-log = kamilog.getLogger("myapp", datefmt=kamilog.DATEFMT_FULL)
+log = kamilog.getLogger("myapp", datefmt=kamilog.DATEFMT_DATETIME)
 # 2026-06-15 14:30:00 [INFO ] myapp:    message
+
+# date and time with milliseconds
+log = kamilog.getLogger("myapp", datefmt=kamilog.DATEFMT_DATETIME_MS)
+# 2026-06-15 14:30:00.123 [INFO ] myapp:    message
 
 # custom strftime format
 log = kamilog.getLogger("myapp", datefmt="%d/%m %H:%M")
@@ -166,7 +174,9 @@ Available constants:
 | Constant | Value | Example |
 |---|---|---|
 | `DATEFMT_TIME` | `"%H:%M:%S"` | `14:30:00` |
-| `DATEFMT_FULL` | `"%Y-%m-%d %H:%M:%S"` | `2026-06-15 14:30:00` |
+| `DATEFMT_TIME_MS` | `"%H:%M:%S.{ms}"` | `14:30:00.123` |
+| `DATEFMT_DATETIME` | `"%Y-%m-%d %H:%M:%S"` | `2026-06-15 14:30:00` |
+| `DATEFMT_DATETIME_MS` | `"%Y-%m-%d %H:%M:%S.{ms}"` | `2026-06-15 14:30:00.123` |
 
 
 
