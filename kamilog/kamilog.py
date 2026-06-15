@@ -215,29 +215,31 @@ class _LogFormatter(Formatter):
         """
         :param levelno: numeric logging level
         :type levelno: int
-        :return: level name in brackets, e.g. ``[DEBUG]``, colored if enabled
+        :return: level name without brackets, e.g. ``DEBUG``, colored if enabled
         :rtype: str
         """
         padded = self._levelno2padded_levelname(levelno)
         if self.use_color:
             color = _ANSI_LEVEL_COLORS.get(levelno, "")
-            return "{}[{}]{}".format(color, padded, _ANSI_RESET)
-        return "[{}]".format(padded)
+            return "{}{}{}".format(color, padded, _ANSI_RESET)
+        return padded
 
     def _fmt_source(self, name):
         """
         :param name: logger name
         :type name: str
-        :return: ``" name:"`` with the name in bold black, or empty string if name is root or absent
+        :return: ``"name:"`` with the name in bold black, or ``":"`` in black if name is root or absent
         :rtype: str
         """
         if not name or name == "root":
-            return ""
+            if self.use_color:
+                return "{}:{}".format(_ANSI_DATETIME, _ANSI_RESET)
+            return ":"
         if self.use_color:
-            return " {}{}{}{}:{}".format(
+            return "{}{}{}{}:{}".format(
                 _ANSI_SOURCE, name, _ANSI_RESET, _ANSI_DATETIME, _ANSI_RESET
             )
-        return " {}:".format(name)
+        return "{}:".format(name)
 
     def _fmt_relative(self, created):
         """
@@ -281,28 +283,28 @@ class _LogFormatter(Formatter):
         """
         :param record: log record
         :type record: logging.LogRecord
-        :return: fully formatted log line: optional timestamp, level, optional source, message
+        :return: fully formatted log line: optional timestamp, level, source (or colon), message
         :rtype: str
         """
         record = logging.makeLogRecord(record.__dict__)
 
         asctime = self.formatTime(record)
         source = self._fmt_source(record.name)
-        sep = "\t" if source else " "
+        space = " " if record.name and record.name != "root" else ""
 
         if asctime:
-            result = "{} {}{}{}{}".format(
+            result = "{}{}{}{} {}".format(
                 asctime,
                 self._fmt_level(record.levelno),
+                space,
                 source,
-                sep,
                 record.getMessage(),
             )
         else:
-            result = "{}{}{}{}".format(
+            result = "{}{}{} {}".format(
                 self._fmt_level(record.levelno),
+                space,
                 source,
-                sep,
                 record.getMessage(),
             )
 
