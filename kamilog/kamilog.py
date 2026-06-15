@@ -106,6 +106,7 @@ Alternatively, calc the verbosity as a number::
 """
 
 import logging
+import sys
 from logging import Formatter, StreamHandler
 
 __version__ = "1.2.1-alpha"
