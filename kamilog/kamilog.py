@@ -125,7 +125,7 @@ __all__ = (
 
 # customized logger  ###########################################################
 
-_MESSAGE_FORMAT = "[%(asctime)s] %(levelname)s: %(message)s"
+_DATEFMT = "%Y-%m-%d %H:%M:%S"
 
 
 class KamiLogger(logging.Logger):
@@ -203,32 +203,51 @@ _ANSI_LEVEL_COLORS = {
 
 class _LogFormatter(Formatter):
 
-    def __init__(
-        self,
-        fmt=_MESSAGE_FORMAT,
-        datefmt=None,
-        style="%",
-        validate=True,
-        *,
-        defaults=None,
-        use_color=False,
-    ):
-        super().__init__(fmt, datefmt, style, validate, defaults=defaults)
+    def __init__(self, *, use_color=False):
+        super().__init__(datefmt=_DATEFMT)
         self.use_color = use_color
 
-    def formatTime(self, record, datefmt=None):
-        result = super().formatTime(record, datefmt)
+    def _fmt_asctime(self, asctime):
         if self.use_color:
-            return f"{_ANSI_DATETIME}{result}{_ANSI_RESET}"
-        return result
+            return "{}{}{}" .format(_ANSI_DATETIME, asctime, _ANSI_RESET)
+        return asctime
+
+    def _fmt_level(self, levelno):
+        padded = _levelno2padded_levelname(levelno)
+        if self.use_color:
+            color = _ANSI_LEVEL_COLORS.get(levelno, "")
+            return "{}[{}]{}".format(color, padded, _ANSI_RESET)
+        return "[{}]".format(padded)
+
+    def _fmt_source(self, name):
+        if not name or name == "root":
+            return ""
+        if self.use_color:
+            return " {}{}:{}".format(_ANSI_DATETIME, name, _ANSI_RESET)
+        return " {}:".format(name)
+
+    def formatTime(self, record, datefmt=None):
+        asctime = super().formatTime(record, datefmt or _DATEFMT)
+        return self._fmt_asctime(asctime)
 
     def format(self, record):
         record = logging.makeLogRecord(record.__dict__)
-        record.levelname = _levelno2padded_levelname(record.levelno)
-        if self.use_color:
-            color = _ANSI_LEVEL_COLORS.get(record.levelno, "")
-            record.levelname = f"{color}{record.levelname}{_ANSI_RESET}"
-        return super().format(record)
+
+        result = "{} {}{}\t{}".format(
+            self.formatTime(record),
+            self._fmt_level(record.levelno),
+            self._fmt_source(record.name),
+            record.getMessage(),
+        )
+
+        if record.exc_info and not record.exc_text:
+            record.exc_text = self.formatException(record.exc_info)
+        if record.exc_text:
+            result = "{}\n{}".format(result, record.exc_text)
+        if record.stack_info:
+            result = "{}\n{}".format(result, self.formatStack(record.stack_info))
+
+        return result
 
 
 def getLogger(name=None) -> KamiLogger:
