@@ -1,4 +1,4 @@
-# kami-log-py CHANGELOG
+# kamilog CHANGELOG
 
 [^format]
 
@@ -20,6 +20,12 @@
 ## [Unreleased]
 
 ### Added
+
+- `AGENTS.md` with contributor and agent guidelines
+- `docs/install_guide.md` — installation guide (extracted from README)
+- `docs/usage_doc.md` — usage documentation (extracted from README)
+- export `add_verbose_arguments`, `calc_verbosity`, `set_logging_level_by_verbosity` via `__all__`
+
 ### Changed
 
 - improve help message for verbosity arguments
@@ -28,8 +34,7 @@
 ### Removed
 ### Fixed
 
-
-
+[unreleased]: https://github.com/kami-lel/kami-log-py/compare/v1.2.0...dev
 
 
 
@@ -51,6 +56,8 @@
 
   - related tests
 
+[1.2.0]: https://github.com/kami-lel/kami-log-py/compare/v1.1.0...v1.2.0
+
 
 
 
@@ -68,6 +75,8 @@
 ### Added
 
 - Installation as Module feature
+
+[1.1.0]: https://github.com/kami-lel/kami-log-py/compare/v1.0.0...v1.1.0
 
 
 
@@ -91,21 +100,6 @@
 
 - basic function implemented in `kamilog.py`
 
-
-
-
-
-
-
-
-
-
-
-
-
-[unreleased]: https://github.com/kami-lel/kami-log-py/compare/v1.2.0...dev
-[1.2.0]: https://github.com/kami-lel/kami-log-py/compare/v1.1.0...v1.2.0
-[1.1.0]: https://github.com/kami-lel/kami-log-py/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/kami-lel/kami-log-py/releases/tag/v1.0.0
 
 
