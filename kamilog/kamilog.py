@@ -111,6 +111,7 @@ from logging import Formatter, StreamHandler
 __version__ = "1.2.1-alpha"
 __author__ = "kamiLeL"
 __all__ = (
+    "KamiLogger",
     "getLogger",
     "add_verbose_arguments",
     "calc_verbosity",
@@ -125,7 +126,7 @@ __all__ = (
 MESSAGE_FORMAT = "[%(asctime)s] %(levelname)s: %(message)s"
 
 
-class _KamiLogger(logging.Logger):
+class KamiLogger(logging.Logger):
 
     ENTER = 11
     SKIP = 12
@@ -161,15 +162,15 @@ class _KamiLogger(logging.Logger):
             self._log(self.FAIL, message, args, stacklevel=2, **kwargs)
 
 
-logging.addLevelName(_KamiLogger.ENTER, "ENTER")
-logging.addLevelName(_KamiLogger.SKIP, "SKIP")
-logging.addLevelName(_KamiLogger.PASS, "PASS")
-logging.addLevelName(_KamiLogger.FAIL, "FAIL")
+logging.addLevelName(KamiLogger.ENTER, "ENTER")
+logging.addLevelName(KamiLogger.SKIP, "SKIP")
+logging.addLevelName(KamiLogger.PASS, "PASS")
+logging.addLevelName(KamiLogger.FAIL, "FAIL")
 
-logging.setLoggerClass(_KamiLogger)
+logging.setLoggerClass(KamiLogger)
 
 # root logger exists before setLoggerClass — patch its class directly
-logging.root.__class__ = _KamiLogger
+logging.root.__class__ = KamiLogger
 
 
 def _levelno2padded_levelname(levelno):
@@ -179,7 +180,7 @@ def _levelno2padded_levelname(levelno):
     :return: padded level name, always 5 letter width
     :rtype: str
     """
-    return _KamiLogger._PADDED_LEVELNAME_MAP.get(
+    return KamiLogger._PADDED_LEVELNAME_MAP.get(
         levelno, str(levelno).ljust(5)[:5]
     )
 
@@ -202,33 +203,23 @@ class _LogFormatter(Formatter):
         return super().format(record)
 
 
-_INITIALIZED_LOGGERS = []
-
-
-def getLogger(name=None):
+def getLogger(name=None) -> KamiLogger:
     """
     :param name: logger name
     :type name: str
     :return: a logger with the `name`, create if non-existence;
             root logger if `name` is `None`
-    :rtype: logging.Logger
+    :rtype: KamiLogger
     """
-    global _INITIALIZED_LOGGERS
-
     logger = logging.getLogger(name)
 
-    # no repeated configure/initialize for any loggers
-    if name in _INITIALIZED_LOGGERS:
-        return logger
+    if not isinstance(logger, KamiLogger):
+        logger.__class__ = KamiLogger
 
-    # init loggers  ============================================================
-    # console stream handler  --------------------------------------------------
-    console_handler = StreamHandler()
-    console_formatter = _LogFormatter()
-    console_handler.setFormatter(console_formatter)
-    logger.addHandler(console_handler)
-
-    _INITIALIZED_LOGGERS.append(name)
+    if not logger.handlers:
+        handler = StreamHandler()
+        handler.setFormatter(_LogFormatter())
+        logger.addHandler(handler)
 
     return logger
 
