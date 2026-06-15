@@ -21,6 +21,9 @@
 
 ### Added
 
+- Two new custom log levels:
+  - `SUCC` (22) — task or operation succeeded; `.succ()` method
+  - `DONE` (25) — task or operation completed; `.done()` method
 - New example script `logger_names_and_timestamps.py` demonstrating logger names,
   timestamps, and multiple messages in one session
 
@@ -37,10 +40,14 @@
 - **Source-less logging**: no space before colon when logger has no name
   - was: `DEBUG :`
   - now: `DEBUG:`
+- **PASS level number**: reduced from 25 to 21 to accommodate new levels
+  - `PASS` (21) — hook or test case passed
+  - `SUCC` (22) — task or operation succeeded
+  - `DONE` (25) — task or operation completed
 - Example scripts updated: cleaner output, section headers, reduced message volume,
   varied source name lengths for readability demonstration
-- Documentation (README, AGENTS, docs/) updated to reflect new log format and
-  timestamp behavior
+- Documentation (README, AGENTS, docs/) updated to reflect new log levels, format,
+  and timestamp behavior
 
 ### Deprecated
 

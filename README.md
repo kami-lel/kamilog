@@ -7,13 +7,13 @@ todo use emoji if console supported
 todo add file handler option for getLogger
 todo install as submodule
 todo comprehensive unit tests
-TODO add DONE & SUCC
+FIXME color for DONE & SUCC
 FIXME change verbose  level
 -->
 
 ## Features
 
-- **Custom log levels** — `ENTER` (11), `SKIP` (12), `PASS` (25), `FAIL` (45) for hook and test-case workflows
+- **Custom log levels** — `ENTER` (11), `SKIP` (12), `PASS` (21), `SUCC` (22), `DONE` (25), `FAIL` (45) for hook and test-case workflows
 - **Structured output** — `LEVEL source: message` with padded 5-char level names
 - **ANSI 16-color output** — per-level colors, auto-disabled when output is piped
 - **stdout/stderr split** — `< WARNING` goes to stdout, `>= WARNING` goes to stderr

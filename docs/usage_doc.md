@@ -71,19 +71,23 @@ so `import logging` is not needed just for level constants:
 
 ### Custom Log Levels
 
-`KamiLogger` adds four levels for hook and test-case workflows:
+`KamiLogger` adds six levels for hook and test-case workflows:
 
 | Method | Constant | Number | Meaning |
 |---|---|---|---|
 | `log.enter(msg)` | `kamilog.ENTER` | 11 | entering a hook or test case |
 | `log.skip(msg)` | `kamilog.SKIP` | 12 | skipping a hook or test case |
-| `log.pass_(msg)` | `kamilog.PASS` | 25 | hook or test case passed |
+| `log.pass_(msg)` | `kamilog.PASS` | 21 | hook or test case passed |
+| `log.succ(msg)` | `kamilog.SUCC` | 22 | task or operation succeeded |
+| `log.done(msg)` | `kamilog.DONE` | 25 | task or operation completed |
 | `log.fail(msg)` | `kamilog.FAIL` | 45 | hook or test case failed |
 
 ```python
 log.enter("starting setup hook")
 log.skip("skipping slow test")
 log.pass_("assertion passed")
+log.succ("operation succeeded")
+log.done("task completed")
 log.fail("assertion failed")
 ```
 
