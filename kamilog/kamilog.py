@@ -293,7 +293,7 @@ class _LogFormatter(Formatter):
         space = " " if record.name and record.name != "root" else ""
 
         if asctime:
-            result = "{}{}{}{} {}".format(
+            result = "{} {}{}{} {}".format(
                 asctime,
                 self._fmt_level(record.levelno),
                 space,
