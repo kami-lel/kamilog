@@ -19,7 +19,6 @@ from .kamilog import (
     calc_verbosity,
     set_logging_level_by_verbosity,
 )
-from .kamilog import __doc__ as kamilog_doc
 
 __all__ = (
     "KamiLogger",
@@ -42,13 +41,3 @@ __all__ = (
     "calc_verbosity",
     "set_logging_level_by_verbosity",
 )
-
-try:
-    from importlib.metadata import version as _pkg_version, metadata as _pkg_meta, PackageNotFoundError
-    __version__ = _pkg_version("kamilog")
-    __author__ = _pkg_meta("kamilog")["Author"]
-except PackageNotFoundError:
-    __version__ = "unknown"
-    __author__ = "unknown"
-
-__doc__ = kamilog_doc

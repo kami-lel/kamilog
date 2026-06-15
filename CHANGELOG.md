@@ -38,8 +38,7 @@
 - Sphinx/reStructuredText docstrings on all public classes, functions, and `_LogFormatter` methods
 - `tests/source_quality_test.py` — scans source files for banned markers (`todo`, `bug`, `fixme`, `hack`, case-insensitive)
 - `examples/` directory with four runnable scripts: `basic_logging.py`, `timestamp_formats.py`, `relative_time.py`, `verbosity.py`
-- `setup.cfg` and `setup.py` — package is now pip-installable (`pip install .` / `pip install -e .`)
-- `setup.cfg` is the single source of truth for `name`, `version`, `author`, and `url`; `__version__` and `__author__` are read at runtime via `importlib.metadata`
+- `setup.cfg` and `setup.py` — package is now pip-installable (`pip install .` / `pip install -e .`); `setup.cfg` reads `version` and `author` from `kamilog/kamilog.py` via `attr:` directive
 
 ### Changed
 
@@ -48,8 +47,6 @@
 - `_PADDED_LEVELNAME_MAP` moved to module level
 - log record is copied before formatting to prevent mutation of the shared record across handlers
 - log output format changed to `HH:MM:SS [LEVEL] source:\tmessage`
-- `__version__` and `__author__` removed from `kamilog/kamilog.py`; now sourced from `setup.cfg` via `importlib.metadata`
-- version string normalized to PEP 440: `1.2.1-alpha` → `1.2.1a0`
 
 [unreleased]: https://github.com/kami-lel/kamilog/compare/v1.2.0...dev
 
