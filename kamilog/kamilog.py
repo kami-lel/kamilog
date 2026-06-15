@@ -277,10 +277,13 @@ class _LogFormatter(Formatter):
         """
         record = logging.makeLogRecord(record.__dict__)
 
-        result = "{} {}{}\t{}".format(
+        source = self._fmt_source(record.name)
+        sep = "\t" if source else " "
+        result = "{} {}{}{}{}".format(
             self.formatTime(record),
             self._fmt_level(record.levelno),
-            self._fmt_source(record.name),
+            source,
+            sep,
             record.getMessage(),
         )
 

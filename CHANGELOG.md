@@ -21,6 +21,8 @@
 
 ### Added
 
+<!-- FIXME need to more organized -->
+
 - `AGENTS.md` with contributor and agent guidelines
 - `docs/install_guide.md` — installation guide (extracted from README)
 - `docs/usage_doc.md` — usage documentation (extracted from README)
