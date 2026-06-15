@@ -208,11 +208,23 @@ class _LogFormatter(Formatter):
         self.use_color = use_color
 
     def _fmt_asctime(self, asctime):
+        """
+        :param asctime: pre-formatted datetime string
+        :type asctime: str
+        :return: asctime wrapped in black ANSI codes, or plain if color disabled
+        :rtype: str
+        """
         if self.use_color:
-            return "{}{}{}" .format(_ANSI_DATETIME, asctime, _ANSI_RESET)
+            return "{}{}{}".format(_ANSI_DATETIME, asctime, _ANSI_RESET)
         return asctime
 
     def _fmt_level(self, levelno):
+        """
+        :param levelno: numeric logging level
+        :type levelno: int
+        :return: level name in brackets, e.g. ``[DEBUG]``, colored if enabled
+        :rtype: str
+        """
         padded = _levelno2padded_levelname(levelno)
         if self.use_color:
             color = _ANSI_LEVEL_COLORS.get(levelno, "")
@@ -220,6 +232,12 @@ class _LogFormatter(Formatter):
         return "[{}]".format(padded)
 
     def _fmt_source(self, name):
+        """
+        :param name: logger name
+        :type name: str
+        :return: ``" name:"`` in black, or empty string if name is root or absent
+        :rtype: str
+        """
         if not name or name == "root":
             return ""
         if self.use_color:
@@ -245,12 +263,14 @@ class _LogFormatter(Formatter):
         if record.exc_text:
             result = "{}\n{}".format(result, record.exc_text)
         if record.stack_info:
-            result = "{}\n{}".format(result, self.formatStack(record.stack_info))
+            result = "{}\n{}".format(
+                result, self.formatStack(record.stack_info)
+            )
 
         return result
 
 
-def getLogger(name=None) -> KamiLogger:
+def getLogger(name=None):
     """
     :param name: logger name
     :type name: str
