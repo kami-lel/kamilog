@@ -124,28 +124,52 @@ __all__ = (
 
 MESSAGE_FORMAT = "[%(asctime)s] %(levelname)s: %(message)s"
 
-# custom levels
-ENTER = 11
-SKIP = 12
-PASS = 25
-FAIL = 45
 
-logging.addLevelName(ENTER, "ENTER")
-logging.addLevelName(SKIP, "SKIP")
-logging.addLevelName(PASS, "PASS")
-logging.addLevelName(FAIL, "FAIL")
+class _KamiLogger(logging.Logger):
 
-_PADDED_LEVELNAME_MAP = {
-    logging.DEBUG: "DEBUG",
-    ENTER: "ENTER",
-    SKIP: "SKIP ",
-    logging.INFO: "INFO ",
-    PASS: "PASS ",
-    logging.WARNING: "WARN ",
-    logging.ERROR: "ERROR",
-    FAIL: "FAIL ",
-    logging.CRITICAL: "CRIT ",
-}
+    ENTER = 11
+    SKIP = 12
+    PASS = 25
+    FAIL = 45
+
+    _PADDED_LEVELNAME_MAP = {
+        logging.DEBUG:    "DEBUG",
+        logging.INFO:     "INFO ",
+        logging.WARNING:  "WARN ",
+        logging.ERROR:    "ERROR",
+        logging.CRITICAL: "CRIT ",
+        ENTER:            "ENTER",
+        SKIP:             "SKIP ",
+        PASS:             "PASS ",
+        FAIL:             "FAIL ",
+    }
+
+    def enter(self, message, *args, **kwargs):
+        if self.isEnabledFor(self.ENTER):
+            self._log(self.ENTER, message, args, stacklevel=2, **kwargs)
+
+    def skip(self, message, *args, **kwargs):
+        if self.isEnabledFor(self.SKIP):
+            self._log(self.SKIP, message, args, stacklevel=2, **kwargs)
+
+    def pass_(self, message, *args, **kwargs):
+        if self.isEnabledFor(self.PASS):
+            self._log(self.PASS, message, args, stacklevel=2, **kwargs)
+
+    def fail(self, message, *args, **kwargs):
+        if self.isEnabledFor(self.FAIL):
+            self._log(self.FAIL, message, args, stacklevel=2, **kwargs)
+
+
+logging.addLevelName(_KamiLogger.ENTER, "ENTER")
+logging.addLevelName(_KamiLogger.SKIP, "SKIP")
+logging.addLevelName(_KamiLogger.PASS, "PASS")
+logging.addLevelName(_KamiLogger.FAIL, "FAIL")
+
+logging.setLoggerClass(_KamiLogger)
+
+# root logger exists before setLoggerClass — patch its class directly
+logging.root.__class__ = _KamiLogger
 
 
 def _levelno2padded_levelname(levelno):
@@ -155,35 +179,9 @@ def _levelno2padded_levelname(levelno):
     :return: padded level name, always 5 letter width
     :rtype: str
     """
-    return _PADDED_LEVELNAME_MAP.get(
-        levelno, logging.getLevelName(levelno)[:5].ljust(5)
+    return _KamiLogger._PADDED_LEVELNAME_MAP.get(
+        levelno, str(levelno).ljust(5)[:5]
     )
-
-
-def _logger_enter(self, message, *args, **kwargs):
-    if self.isEnabledFor(ENTER):
-        self._log(ENTER, message, args, **kwargs)
-
-
-def _logger_skip(self, message, *args, **kwargs):
-    if self.isEnabledFor(SKIP):
-        self._log(SKIP, message, args, **kwargs)
-
-
-def _logger_pass_case(self, message, *args, **kwargs):
-    if self.isEnabledFor(PASS):
-        self._log(PASS, message, args, **kwargs)
-
-
-def _logger_fail(self, message, *args, **kwargs):
-    if self.isEnabledFor(FAIL):
-        self._log(FAIL, message, args, **kwargs)
-
-
-logging.Logger.enter = _logger_enter
-logging.Logger.skip = _logger_skip
-logging.Logger.pass_case = _logger_pass_case
-logging.Logger.fail = _logger_fail
 
 
 class _LogFormatter(Formatter):
