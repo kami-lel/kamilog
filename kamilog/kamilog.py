@@ -151,6 +151,7 @@ _PADDED_LEVELNAME_MAP = {
 
 _ANSI_RESET = "\033[0m"
 _ANSI_DATETIME = "\033[30m"
+_ANSI_SOURCE = "\033[1;30m"  # bold black
 _ANSI_LEVEL_COLORS = {
     logging.DEBUG: "\033[36m",  # cyan
     ENTER: "\033[92m",  # bright green
@@ -227,13 +228,15 @@ class _LogFormatter(Formatter):
         """
         :param name: logger name
         :type name: str
-        :return: ``" name:"`` in black, or empty string if name is root or absent
+        :return: ``" name:"`` with the name in bold black, or empty string if name is root or absent
         :rtype: str
         """
         if not name or name == "root":
             return ""
         if self.use_color:
-            return " {}{}:{}".format(_ANSI_DATETIME, name, _ANSI_RESET)
+            return " {}{}{}{}:{}".format(
+                _ANSI_SOURCE, name, _ANSI_RESET, _ANSI_DATETIME, _ANSI_RESET
+            )
         return " {}:".format(name)
 
     def _fmt_relative(self, created):
