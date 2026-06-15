@@ -1,6 +1,6 @@
 # kamilog Usage Documentation
 
-## Basic Logging
+## Logging
 
 Use `kamilog.getLogger()` in place of `logging.getLogger()` to get a
 configured logger instance:
@@ -34,14 +34,27 @@ Output:
 14:30:01 [CRIT ] myapp:    Critical issue!
 14:30:01 [ERROR] myapp:    division by zero
 Traceback (most recent call last):
-  ...
+  File "main.py", line 12, in <module>
+    1 / 0
+    ~~^~~
 ZeroDivisionError: division by zero
 ```
 
 Logger name (`myapp:`) is omitted when `name` is `None` or `"root"`.
 
 
-## Custom Log Levels
+
+
+
+
+
+
+
+
+
+
+
+### Custom Log Levels
 
 `KamiLogger` adds four levels for hook and test-case workflows:
 
@@ -62,10 +75,43 @@ log.fail("assertion failed")
 Note: `pass_` uses a trailing underscore because `pass` is a Python keyword.
 
 
-## ANSI Color Output
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Logger Settings
+
+#### ANSI Color Output
 
 Color is enabled automatically when stdout/stderr is a TTY, and suppressed
-when output is piped or redirected.
+when output is piped or redirected to a file.
 
 Level-to-color mapping (16-color ANSI):
 
@@ -85,26 +131,51 @@ Only the level name `[LEVEL]` is colored. The datetime and source name are
 rendered in dim black; the message is uncolored.
 
 
-## Timestamp Format
 
-### Time only (default)
+
+
+
+
+
+
+
+
+
+
+### Timestamp Format
+
+By default, only the time is shown (`HH:MM:SS`). Pass `datefmt` to change
+the format:
 
 ```python
+# time only (default)
 log = kamilog.getLogger("myapp")
-# output: 14:30:00 [INFO ] myapp:    message
-```
+# 14:30:00 [INFO ] myapp:    message
 
-### Date and time
-
-```python
+# date and time
 log = kamilog.getLogger("myapp", datefmt=kamilog.DATEFMT_FULL)
-# output: 2026-06-15 14:30:00 [INFO ] myapp:    message
+# 2026-06-15 14:30:00 [INFO ] myapp:    message
+
+# custom strftime format
+log = kamilog.getLogger("myapp", datefmt="%d/%m %H:%M")
+# 15/06 14:30 [INFO ] myapp:    message
 ```
 
-### Relative time
+Available constants:
+
+| Constant | Value | Example |
+|---|---|---|
+| `DATEFMT_TIME` | `"%H:%M:%S"` | `14:30:00` |
+| `DATEFMT_FULL` | `"%Y-%m-%d %H:%M:%S"` | `2026-06-15 14:30:00` |
+
+
+
+
+
+#### Relative Time
 
 Pass a Unix timestamp as `relative_to` to display elapsed time since that
-point. `datefmt` is ignored in this mode.
+point instead of wall-clock time. `datefmt` is ignored in this mode.
 
 ```python
 import time
@@ -113,8 +184,40 @@ import kamilog
 start = time.time()
 log = kamilog.getLogger("myapp", relative_to=start)
 
-# output: +00:00:01.234 [INFO ] myapp:    message
+log.info("first message")   # +00:00:00.001 [INFO ] myapp:    first message
+log.info("later message")   # +00:00:01.234 [INFO ] myapp:    later message
 ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ## Verbosity and Logging Level
@@ -129,7 +232,7 @@ parser = ArgumentParser()
 kamilog.add_verbose_arguments(parser)
 ```
 
-After parsing, set the logging level from verbosity:
+After parsing, apply the verbosity to a logger:
 
 ```python
 args = parser.parse_args()
