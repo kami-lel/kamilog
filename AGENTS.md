@@ -13,7 +13,7 @@ Key additions over stdlib `logging`:
 
 - Custom log levels: `ENTER` (11), `SKIP` (12), `PASS` (25), `FAIL` (45)
 - `KamiLogger` subclass with `.enter()`, `.skip()`, `.pass_()`, `.fail()` methods
-- `_LogFormatter` producing `[LEVEL] source:\tmessage` (no timestamp by default) with per-level ANSI color
+- `_LogFormatter` producing `LEVEL source: message` (no timestamp by default) with per-level ANSI color
 - stdout/stderr split handlers (< WARNING → stdout, >= WARNING → stderr)
 - Optional timestamps via `datefmt` parameter (constants: `DATEFMT_TIME`, `DATEFMT_FULL`)
 - Relative time display via `relative_to` parameter (elapsed time since a Unix timestamp)

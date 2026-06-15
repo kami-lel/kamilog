@@ -26,12 +26,12 @@ except ZeroDivisionError as err:
 Default output (no timestamp):
 
 ```
-[DEBUG] myapp:    Debugging details here
-[INFO ] myapp:    Informational message
-[WARN ] myapp:    Warning message
-[ERROR] myapp:    Error occurred!
-[CRIT ] myapp:    Critical issue!
-[ERROR] myapp:    division by zero
+DEBUG myapp: Debugging details here
+INFO  myapp: Informational message
+WARN  myapp: Warning message
+ERROR myapp: Error occurred!
+CRIT  myapp: Critical issue!
+ERROR myapp: division by zero
 Traceback (most recent call last):
   File "main.py", line 12, in <module>
     1 / 0
@@ -162,10 +162,13 @@ rendered in dim black; the message is uncolored.
 
 By default, no timestamp is shown. Pass `datefmt` to enable it:
 
-| Constant | Value | Output |
+| Constant | Value | Example |
 |---|---|---|
-| `DATEFMT_TIME` | `"%H:%M:%S"` | `14:30:00 [INFO ] myapp:     message` |
-| `DATEFMT_FULL` | `"%Y-%m-%d %H:%M:%S"` | `2026-06-15 14:30:00 [INFO ] myapp:     message` |
+| (default) | `None` | `INFO  myapp: message` |
+| `DATEFMT_TIME` | `"%H:%M:%S"` | `14:30:00 INFO  myapp: message` |
+| `DATEFMT_TIME_MS` | `"%H:%M:%S.{ms}"` | `14:30:00.123 INFO  myapp: message` |
+| `DATEFMT_DATETIME` | `"%Y-%m-%d %H:%M:%S"` | `2026-06-15 14:30:00 INFO  myapp: message` |
+| `DATEFMT_DATETIME_MS` | `"%Y-%m-%d %H:%M:%S.{ms}"` | `2026-06-15 14:30:00.123 INFO  myapp: message` |
 
 ```python
 # No timestamp (default)
@@ -175,15 +178,7 @@ log = kamilog.getLogger("myapp")
 log = kamilog.getLogger("myapp", datefmt=kamilog.DATEFMT_TIME)
 
 # Date and time
-log = kamilog.getLogger("myapp", datefmt=kamilog.DATEFMT_FULL)
-```
-
-Outputs:
-
-```
-[INFO ] myapp:     message
-14:30:00 [INFO ] myapp:     message
-2026-06-15 14:30:00 [INFO ] myapp:     message
+log = kamilog.getLogger("myapp", datefmt=kamilog.DATEFMT_DATETIME)
 ```
 
 
