@@ -1,156 +1,28 @@
-# kami-log-py README 📝
+# kamilog README
+
+A lightweight Python logging wrapper with structured output, custom log levels, ANSI 16-color support, and flexible timestamp options.
 
 <!-- 
-todo option to use relative time
-todo option to omit date in time
-todo include logger name in the message
+todo use emoji if console supported
 todo add file handler option for getLogger
+todo install as submodule
 -->
 
-## 🚀 Features
+## Features
 
-- Custom log message formatting with timestamp and padded log level names
-- Padded log levels for consistent and neat alignment ("INFO ", "WARN ", etc.)
-- Fully compatible with Python’s native `logging` module for seamless integration
-- Ensures that each logger is configured only once to avoid duplicate handlers
-- Lightweight, simple to integrate, and easily extensible
+- **Custom log levels** — `ENTER` (11), `SKIP` (12), `PASS` (25), `FAIL` (45) for hook and test-case workflows
+- **Structured output** — `HH:MM:SS [LEVEL] source:\tmessage` with padded 5-char level names
+- **ANSI 16-color output** — per-level colors, auto-disabled when output is piped
+- **stdout/stderr split** — `< WARNING` goes to stdout, `>= WARNING` goes to stderr
+- **Flexible timestamps** — wall-clock time, datetime, millisecond variants, or elapsed relative time
+- **Level constants** — `kamilog.DEBUG`, `kamilog.WARNING`, etc. — no `import logging` needed
+- **Verbosity helpers** — `-v`/`-q` CLI flags mapped to logging levels
+- **Drop-in compatible** — `kamilog.getLogger()` in place of `logging.getLogger()`
 
+---
 
+See [docs/install_guide.md](docs/install_guide.md) for installation instructions.
 
+See [docs/usage_doc.md](docs/usage_doc.md) for full usage documentation.
 
-
-
-
-
-
-
-
-
-
-## Installation
-
-### 📜 Installation as Script
-
-Copy the single script `./kamilog/kamilog.py` into your project folder.
-
-Example directory structure:
-
-```
-your_project/
-├── kamilog.py
-└── main.py
-```
-
-In `main.py`, import the module as follows:
-
-```python
-import kamilog
-```
-
-
-
-
-
-### 📦 Installation as Module
-
-Copy the entire `kamilog` folder into your project's source folder.
-
-Example directory structure:
-
-```
-your_project/
-├── project_abc/
-│   ├── kamilog/
-│   │   ├── __init__.py
-│   │   └── kamilog.py
-│   ├── module_a/
-│   │   └── some_code.py
-│   └── module_b/
-│       └── other_code.py
-└── setup.py
-```
-
-Then you can import `kamilog` anywhere within the project like this:
-
-```python
-from project_abc import kamilog
-```
-
-
-
-
-
-
-
-
-
-
-
-
-
-## Usage
-
-Use ``kamilog.getLogger()` (in places of `logging.getLogger()`)
-to get a configured logger instance
-
-```python
-import logging
-import kamilog
-
-my_logger = kamilog.getLogger("myLogger")
-my_logger.setLevel(logging.DEBUG)
-
-my_logger.debug("Debugging details here")
-my_logger.info("Informational message")
-my_logger.warning("Warning message")
-my_logger.error("Error occurred!")
-my_logger.critical("Critical issue!")
-
-try:
-    1 / 0
-except ZeroDivisionError as err:
-    my_logger.exception(err)
-```
-
-Output:
-
-```
-[2024-06-15 14:30:00,000] DEBUG: Debugging details here
-[2024-06-15 14:30:00,000] INFO : Informational message
-[2024-06-15 14:30:00,000] WARN : Warning message
-[2024-06-15 14:30:00,001] ERROR: Error occurred!
-[2024-06-15 14:30:00,001] CRIT : Critical issue!
-[2024-06-15 14:30:00,001] ERROR: division by zero
-Traceback (most recent call last):
-  File "/home/kami/repos/kami-log-py/example.py", line 18, in <module>
-    1 / 0
-    ~~^~~
-ZeroDivisionError: division by zero
-```
-
-
-
-
-### verbosity and logging level
-
-Set up parser with options of `-v/--verbose` and `-q/--quiet`:
-
-```python
-from argparse import ArgumentParser
-
-parser = ArgumentParser()
-add_verbose_arguments(parser)
-```
-
-After parsing, set logging level of logger by verbosity of this parser:
-
-```python
-args = parser.parse_args()
-set_logging_level_by_verbosity(args)
-```
-
-Alternatively, calculate and get the verbosity value as a `int`:
-
-```python
-print(calc_verbosity(args))  # 1
-```
+See [examples/](examples/) for runnable scripts demonstrating each feature.
