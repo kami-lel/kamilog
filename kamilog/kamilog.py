@@ -11,7 +11,7 @@ import logging
 import sys
 from logging import Formatter, StreamHandler
 
-__version__ = "1.3.0"
+__version__ = "1.3.1"
 __author__ = "kamiLeL"
 
 __all__ = (
@@ -405,7 +405,7 @@ def calc_verbosity(namespace):
     return verbosity
 
 
-def set_logging_level_by_verbosity(namespace, logger_name=None):
+def set_logging_level_by_verbosity(namespace, *, logger=None, logger_name=None):
     """
     Set the logging level of a logger based on verbosity flags.
 
@@ -416,9 +416,13 @@ def set_logging_level_by_verbosity(namespace, logger_name=None):
     - no flags: ``WARNING``
     - ``-q`` or more: all output suppressed (level above ``CRITICAL``)
 
+
     :param namespace: parsed namespace containing ``--verbose`` and/or ``--quiet`` counts
     :type namespace: argparse.Namespace
-    :param logger_name: name of logger to configure; ``None`` targets the root logger
+    :param logger: logger instance to configure; takes priority over ``logger_name``
+    :type logger: logging.Logger, optional
+    :param logger_name: name of logger to configure; ``None`` targets the root logger;
+            ignored when ``logger`` is provided
     :type logger_name: str, optional
     """
     verbosity = calc_verbosity(namespace)
@@ -432,5 +436,6 @@ def set_logging_level_by_verbosity(namespace, logger_name=None):
     else:
         level = logging.CRITICAL + 1
 
-    logger = logging.getLogger(logger_name)
+    if logger is None:
+        logger = logging.getLogger(logger_name)
     logger.setLevel(level)
