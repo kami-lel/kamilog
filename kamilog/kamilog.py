@@ -121,6 +121,7 @@ __all__ = (
 
 
 # Todo move docstring into docs
+# Fixme organize structure, hide some constant
 
 # customized logger  ###########################################################
 
@@ -184,19 +185,19 @@ def _levelno2padded_levelname(levelno):
     return _PADDED_LEVELNAME_MAP.get(levelno, str(levelno).ljust(5)[:5])
 
 
-_ANSI_RESET    = "\033[0m"
+_ANSI_RESET = "\033[0m"
 _ANSI_DATETIME = "\033[30m"
 
 _ANSI_LEVEL_COLORS = {
-    logging.DEBUG:    "\033[36m",    # cyan
-    KamiLogger.ENTER: "\033[92m",   # bright green
-    KamiLogger.SKIP:  "\033[32m",   # green
-    logging.INFO:     "\033[96m",   # bright cyan
-    KamiLogger.PASS:  "\033[1;32m", # bold green
-    logging.WARNING:  "\033[33m",   # yellow
-    logging.ERROR:    "\033[31m",   # red
-    KamiLogger.FAIL:  "\033[1;31m", # bold red
-    logging.CRITICAL: "\033[1;33m", # bold yellow (orange)
+    logging.DEBUG: "\033[36m",  # cyan
+    KamiLogger.ENTER: "\033[92m",  # bright green
+    KamiLogger.SKIP: "\033[32m",  # green
+    logging.INFO: "\033[96m",  # bright cyan
+    KamiLogger.PASS: "\033[1;32m",  # bold green
+    logging.WARNING: "\033[33m",  # yellow
+    logging.ERROR: "\033[31m",  # red
+    KamiLogger.FAIL: "\033[1;31m",  # bold red
+    logging.CRITICAL: "\033[1;33m",  # bold yellow (orange)
 }
 
 
@@ -245,11 +246,15 @@ def getLogger(name=None) -> KamiLogger:
 
     if not logger.handlers:
         stdout_handler = StreamHandler(sys.stdout)
-        stdout_handler.setFormatter(_LogFormatter(use_color=sys.stdout.isatty()))
+        stdout_handler.setFormatter(
+            _LogFormatter(use_color=sys.stdout.isatty())
+        )
         stdout_handler.addFilter(lambda r: r.levelno < logging.WARNING)
 
         stderr_handler = StreamHandler(sys.stderr)
-        stderr_handler.setFormatter(_LogFormatter(use_color=sys.stderr.isatty()))
+        stderr_handler.setFormatter(
+            _LogFormatter(use_color=sys.stderr.isatty())
+        )
         stderr_handler.addFilter(lambda r: r.levelno >= logging.WARNING)
 
         logger.addHandler(stdout_handler)
