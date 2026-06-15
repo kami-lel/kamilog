@@ -74,7 +74,8 @@ logging.addLevelName(FAIL, "FAIL")
 
 # Customized Logging  ##########################################################
 class KamiLogger(logging.Logger):  # ===========================================
-    """Logger subclass extending :class:`logging.Logger` with four additional levels.
+    """
+    Logger subclass extending :class:`logging.Logger` with four additional levels.
 
     Custom levels (in numeric order between standard ones):
 
@@ -239,14 +240,16 @@ class _LogFormatter(Formatter):
         """
         :param created: Unix timestamp of the log record
         :type created: float
-        :return: elapsed time since ``_relative_to`` as ``+HH:MM:SS.mmm``
+        :return: elapsed time since ``_relative_to`` as ``+HH:MM:SS.mmm`` or ``-HH:MM:SS.mmm``
         :rtype: str
         """
         delta = created - self._relative_to
+        sign = "-" if delta < 0 else "+"
+        delta = abs(delta)
         h, rem = divmod(int(delta), 3600)
         m, s = divmod(rem, 60)
         ms = int((delta % 1) * 1000)
-        return "+{:02d}:{:02d}:{:02d}.{:03d}".format(h, m, s, ms)
+        return "{}{:02d}:{:02d}:{:02d}.{:03d}".format(sign, h, m, s, ms)
 
     # extend Formatter  ========================================================
 
