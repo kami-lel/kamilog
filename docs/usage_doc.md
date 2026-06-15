@@ -41,22 +41,6 @@ ZeroDivisionError: division by zero
 
 Logger name (`myapp:`) is omitted when `name` is `None` or `"root"`.
 
-All standard and custom log levels are available directly on `kamilog`,
-so `import logging` is not needed just for level constants:
-
-| Constant | Number |
-|---|---|
-| `kamilog.NOTSET` | 0 |
-| `kamilog.DEBUG` | 10 |
-| `kamilog.ENTER` | 11 |
-| `kamilog.SKIP` | 12 |
-| `kamilog.INFO` | 20 |
-| `kamilog.PASS` | 25 |
-| `kamilog.WARNING` | 30 |
-| `kamilog.ERROR` | 40 |
-| `kamilog.FAIL` | 45 |
-| `kamilog.CRITICAL` | 50 |
-
 
 
 
@@ -73,26 +57,33 @@ so `import logging` is not needed just for level constants:
 
 `KamiLogger` adds six levels for hook and test-case workflows:
 
-| Method | Constant | Number | Meaning |
-|---|---|---|---|
-| `log.enter(msg)` | `kamilog.ENTER` | 11 | entering a hook or test case |
-| `log.skip(msg)` | `kamilog.SKIP` | 12 | skipping a hook or test case |
-| `log.pass_(msg)` | `kamilog.PASS` | 21 | hook or test case passed |
-| `log.succ(msg)` | `kamilog.SUCC` | 22 | task or operation succeeded |
-| `log.done(msg)` | `kamilog.DONE` | 25 | task or operation completed |
-| `log.fail(msg)` | `kamilog.FAIL` | 45 | hook or test case failed |
-
-```python
-log.enter("starting setup hook")
-log.skip("skipping slow test")
-log.pass_("assertion passed")
-log.succ("operation succeeded")
-log.done("task completed")
-log.fail("assertion failed")
-```
+| Method | Constant | Number |
+|---|---|---|
+| `log.enter(msg)` | `kamilog.ENTER` | 11 |
+| `log.skip(msg)` | `kamilog.SKIP` | 12 |
+| `log.pass_(msg)` | `kamilog.PASS` | 21 |
+| `log.succ(msg)` | `kamilog.SUCC` | 22 |
+| `log.done(msg)` | `kamilog.DONE` | 25 |
+| `log.fail(msg)` | `kamilog.FAIL` | 45 |
 
 > [!NOTE]
 > `pass_` uses a trailing underscore because `pass` is a Python keyword.
+
+### All Log Levels
+
+| Function | Meaning |
+|---|---|
+| `.debug()` | debugging information shown only during development |
+| `.enter()` | marks start of a routine; useful for tracking program logic during development |
+| `.skip()` | marks skipped portion of routine; useful for tracking program logic during development |
+| `.info()` | general informational message related to program function |
+| `.pass_()` | test case passed |
+| `.succ()` | subroutine or execution succeeded |
+| `.done()` | entire program or major component completed successfully |
+| `.warning()` | warning condition that should be investigated |
+| `.error()` | error condition that prevented operation completion |
+| `.fail()` | test case or subroutine/execution failed |
+| `.critical()` | program stopping or crashing immediately |
 
 
 
