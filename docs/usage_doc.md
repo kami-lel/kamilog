@@ -132,7 +132,9 @@ Level-to-color mapping (16-color ANSI):
 | `ENTER` | Bright Green |
 | `SKIP` | Green |
 | `INFO` | Bright Cyan |
-| `PASS` | Bold Green |
+| `PASS` | Bold Bright Green |
+| `SUCC` | Bold Green |
+| `DONE` | Yellow |
 | `WARN` | Yellow |
 | `ERROR` | Red |
 | `FAIL` | Bold Red |

@@ -194,9 +194,9 @@ _ANSI_LEVEL_COLORS = {
     ENTER: "\033[92m",  # bright green
     SKIP: "\033[32m",  # green
     logging.INFO: "\033[96m",  # bright cyan
-    PASS: "\033[1;32m",  # bold green
-    SUCC: "\033[93m",  # bright yellow
-    DONE: "\033[97m",  # bright white
+    PASS: "\033[1;92m",  # bold bright green
+    SUCC: "\033[1;32m",  # bold green
+    DONE: "\033[33m",  # yellow
     logging.WARNING: "\033[33m",  # yellow
     logging.ERROR: "\033[31m",  # red
     FAIL: "\033[1;31m",  # bold red
