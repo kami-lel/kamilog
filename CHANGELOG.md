@@ -19,19 +19,22 @@
 
 ## [Unreleased]
 
-### Added
+
+
+
+## [1.4.1] - 2026-06-16
 
 ### Changed
 
-### Deprecated
-
-### Removed
+Log level formatting:
+- Level names now include periods: `SUCC.`, `WARN.`, `CRIT.`
 
 ### Fixed
 
-### Security
-
-
+Documentation:
+- Restored missing README title
+- Updated usage examples to match level name formatting
+- Added custom log level output examples in usage documentation
 
 
 
@@ -90,6 +93,7 @@ Examples & documentation:
 
 - Fixed spacing between timestamp and level when timestamp is present
 
+[1.4.1]: https://github.com/kami-lel/kamilog/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/kami-lel/kamilog/compare/v1.3.1...v1.4.0
 
 

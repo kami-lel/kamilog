@@ -28,9 +28,9 @@ Default output (no timestamp):
 ```
 DEBUG myapp: Debugging details here
 INFO  myapp: Informational message
-WARN  myapp: Warning message
+WARN. myapp: Warning message
 ERROR myapp: Error occurred!
-CRIT  myapp: Critical issue!
+CRIT. myapp: Critical issue!
 ERROR myapp: division by zero
 Traceback (most recent call last):
   File "main.py", line 12, in <module>
@@ -65,6 +65,20 @@ Logger name (`myapp:`) is omitted when `name` is `None` or `"root"`.
 | `log.succ(msg)` | `kamilog.SUCC` | 22 |
 | `log.done(msg)` | `kamilog.DONE` | 25 |
 | `log.fail(msg)` | `kamilog.FAIL` | 45 |
+
+Example output with custom levels:
+
+```python
+log = kamilog.getLogger("myapp")
+log.setLevel(kamilog.DEBUG)
+
+log.enter("entering setup")      # ENTER myapp: entering setup
+log.info("processing data")       # INFO  myapp: processing data
+log.pass_("validation passed")   # PASS  myapp: validation passed
+log.succ("operation succeeded")  # SUCC. myapp: operation succeeded
+log.done("task completed")       # DONE  myapp: task completed
+log.fail("task failed")          # FAIL  myapp: task failed
+```
 
 > [!NOTE]
 > `pass_` uses a trailing underscore because `pass` is a Python keyword.

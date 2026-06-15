@@ -11,7 +11,7 @@ import logging
 import sys
 from logging import Formatter, StreamHandler
 
-__version__ = "1.4.0"
+__version__ = "1.4.1"
 __author__ = "kamiLeL"
 
 __all__ = (
@@ -177,12 +177,12 @@ _PADDED_LEVELNAME_MAP = {
     SKIP: "SKIP ",
     logging.INFO: "INFO ",
     PASS: "PASS ",
-    SUCC: "SUCC ",
+    SUCC: "SUCC.",
     DONE: "DONE ",
-    logging.WARNING: "WARN ",
+    logging.WARNING: "WARN.",
     logging.ERROR: "ERROR",
     FAIL: "FAIL ",
-    logging.CRITICAL: "CRIT ",
+    logging.CRITICAL: "CRIT.",
 }
 
 
@@ -229,16 +229,6 @@ class _LogFormatter(Formatter):
 
     # helpers  =================================================================
 
-    @staticmethod
-    def _levelno2padded_levelname(levelno):
-        """
-        :param levelno: numeric logging level
-        :type levelno: int
-        :return: 5-character padded level name; falls back to the numeric value for unknown levels
-        :rtype: str
-        """
-        return _PADDED_LEVELNAME_MAP.get(levelno, str(levelno).ljust(5)[:5])
-
     def _fmt_asctime(self, asctime):
         """
         :param asctime: pre-formatted datetime string
@@ -257,7 +247,7 @@ class _LogFormatter(Formatter):
         :return: level name without brackets, e.g. ``DEBUG``, colored if enabled
         :rtype: str
         """
-        padded = self._levelno2padded_levelname(levelno)
+        padded = _PADDED_LEVELNAME_MAP.get(levelno, str(levelno).ljust(5)[:5])
         if self.use_color:
             color = _ANSI_LEVEL_COLORS.get(levelno, "")
             return "{}{}{}".format(color, padded, _ANSI_RESET)
