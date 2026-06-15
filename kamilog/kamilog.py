@@ -134,18 +134,6 @@ class KamiLogger(logging.Logger):
     PASS = 25
     FAIL = 45
 
-    _PADDED_LEVELNAME_MAP = {
-        logging.DEBUG:    "DEBUG",
-        logging.INFO:     "INFO ",
-        logging.WARNING:  "WARN ",
-        logging.ERROR:    "ERROR",
-        logging.CRITICAL: "CRIT ",
-        ENTER:            "ENTER",
-        SKIP:             "SKIP ",
-        PASS:             "PASS ",
-        FAIL:             "FAIL ",
-    }
-
     def enter(self, message, *args, **kwargs):
         if self.isEnabledFor(self.ENTER):
             self._log(self.ENTER, message, args, stacklevel=2, **kwargs)
@@ -168,6 +156,18 @@ logging.addLevelName(KamiLogger.SKIP, "SKIP")
 logging.addLevelName(KamiLogger.PASS, "PASS")
 logging.addLevelName(KamiLogger.FAIL, "FAIL")
 
+_PADDED_LEVELNAME_MAP = {
+    logging.DEBUG:       "DEBUG",
+    KamiLogger.ENTER:   "ENTER",
+    KamiLogger.SKIP:    "SKIP ",
+    logging.INFO:        "INFO ",
+    KamiLogger.PASS:    "PASS ",
+    logging.WARNING:     "WARN ",
+    logging.ERROR:       "ERROR",
+    KamiLogger.FAIL:    "FAIL ",
+    logging.CRITICAL:    "CRIT ",
+}
+
 logging.setLoggerClass(KamiLogger)
 
 # root logger exists before setLoggerClass — patch its class directly
@@ -181,7 +181,7 @@ def _levelno2padded_levelname(levelno):
     :return: padded level name, always 5 letter width
     :rtype: str
     """
-    return KamiLogger._PADDED_LEVELNAME_MAP.get(
+    return _PADDED_LEVELNAME_MAP.get(
         levelno, str(levelno).ljust(5)[:5]
     )
 
@@ -204,7 +204,7 @@ class _LogFormatter(Formatter):
         return super().format(record)
 
 
-def getLogger(name=None) -> KamiLogger:
+def getLogger(name=None):
     """
     :param name: logger name
     :type name: str
