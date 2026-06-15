@@ -19,6 +19,21 @@
 
 ## [Unreleased]
 
+### Added
+
+### Changed
+
+- `set_logging_level_by_verbosity()` now accepts a `logger` instance directly via
+  the `logger` parameter; when provided it takes priority over `logger_name`
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
 [unreleased]: https://github.com/kami-lel/kamilog/compare/v1.3.0...dev
 
 
