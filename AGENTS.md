@@ -11,7 +11,7 @@ kamilog is a lightweight Python logging utility that extends Python's built-in `
 
 Key additions over stdlib `logging`:
 
-- Custom log levels: `ENTER` (11), `SKIP` (12), `PASS` (25), `FAIL` (45)
+- Custom log levels: `ENTER` (11), `SKIP` (12), `PASS` (21), `SUCC` (22), `DONE` (25), `FAIL` (45)
 - `KamiLogger` subclass with `.enter()`, `.skip()`, `.pass_()`, `.fail()` methods
 - `_LogFormatter` producing `LEVEL source: message` (no timestamp by default) with per-level ANSI color
 - stdout/stderr split handlers (< WARNING → stdout, >= WARNING → stderr)

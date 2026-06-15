@@ -27,6 +27,8 @@ __all__ = (
     "SKIP",
     "INFO",
     "PASS",
+    "SUCC",
+    "DONE",
     "WARNING",
     "ERROR",
     "FAIL",
@@ -54,7 +56,9 @@ CRITICAL = logging.CRITICAL  # 50
 
 ENTER = 11
 SKIP = 12
-PASS = 25
+PASS = 21
+SUCC = 22
+DONE = 25
 FAIL = 45
 
 
@@ -69,23 +73,34 @@ DATEFMT_DATETIME_MS = "%Y-%m-%d %H:%M:%S.{ms}"
 logging.addLevelName(ENTER, "ENTER")
 logging.addLevelName(SKIP, "SKIP")
 logging.addLevelName(PASS, "PASS")
+logging.addLevelName(SUCC, "SUCC")
+logging.addLevelName(DONE, "DONE")
 logging.addLevelName(FAIL, "FAIL")
 
 
 # Customized Logging  ##########################################################
 class KamiLogger(logging.Logger):  # ===========================================
     """
-    Logger subclass extending :class:`logging.Logger` with four additional levels.
+    Logger subclass extending :class:`logging.Logger` with six additional levels.
 
     Custom levels (in numeric order between standard ones):
 
     - ``ENTER`` (11): entering a hook or test case
     - ``SKIP``  (12): skipping a hook or test case
-    - ``PASS``  (25): hook or test case passed
+    - ``PASS``  (21): hook or test case passed
+    - ``SUCC``  (22): task or operation succeeded
+    - ``DONE``  (25): task or operation completed
     - ``FAIL``  (45): hook or test case failed
 
     Use :func:`getLogger` to obtain a configured instance.
     """
+
+    ENTER = 11
+    SKIP = 12
+    PASS = 21
+    SUCC = 22
+    DONE = 25
+    FAIL = 45
 
     def enter(self, message, *args, **kwargs):
         """
@@ -109,13 +124,33 @@ class KamiLogger(logging.Logger):  # ===========================================
 
     def pass_(self, message, *args, **kwargs):
         """
-        Log at ``PASS`` level (25): hook or test case passed.
+        Log at ``PASS`` level (21): hook or test case passed.
 
         :param message: log message
         :type message: str
         """
-        if self.isEnabledFor(PASS):
-            self._log(PASS, message, args, stacklevel=2, **kwargs)
+        if self.isEnabledFor(self.PASS):
+            self._log(self.PASS, message, args, stacklevel=2, **kwargs)
+
+    def succ(self, message, *args, **kwargs):
+        """
+        Log at ``SUCC`` level (22): task or operation succeeded.
+
+        :param message: log message
+        :type message: str
+        """
+        if self.isEnabledFor(self.SUCC):
+            self._log(self.SUCC, message, args, stacklevel=2, **kwargs)
+
+    def done(self, message, *args, **kwargs):
+        """
+        Log at ``DONE`` level (25): task or operation completed.
+
+        :param message: log message
+        :type message: str
+        """
+        if self.isEnabledFor(self.DONE):
+            self._log(self.DONE, message, args, stacklevel=2, **kwargs)
 
     def fail(self, message, *args, **kwargs):
         """
@@ -142,6 +177,8 @@ _PADDED_LEVELNAME_MAP = {
     SKIP: "SKIP ",
     logging.INFO: "INFO ",
     PASS: "PASS ",
+    SUCC: "SUCC ",
+    DONE: "DONE ",
     logging.WARNING: "WARN ",
     logging.ERROR: "ERROR",
     FAIL: "FAIL ",
@@ -157,11 +194,13 @@ _ANSI_LEVEL_COLORS = {
     ENTER: "\033[92m",  # bright green
     SKIP: "\033[32m",  # green
     logging.INFO: "\033[96m",  # bright cyan
-    PASS: "\033[1;32m",  # bold green
+    PASS: "\033[1;92m",  # bold bright green
+    SUCC: "\033[1;32m",  # bold green
+    DONE: "\033[93m",  # bright yellow
     logging.WARNING: "\033[33m",  # yellow
     logging.ERROR: "\033[31m",  # red
     FAIL: "\033[1;31m",  # bold red
-    logging.CRITICAL: "\033[1;33m",  # bold yellow (orange)
+    logging.CRITICAL: "\033[1;93m",  # bold bright yellow
 }
 
 
