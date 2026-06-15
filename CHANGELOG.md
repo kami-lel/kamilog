@@ -1,4 +1,4 @@
-# kami-log-py CHANGELOG
+# kamilog CHANGELOG
 
 [^format]
 
