@@ -20,6 +20,12 @@
 ## [Unreleased]
 
 ### Added
+
+- `AGENTS.md` with contributor and agent guidelines
+- `docs/install_guide.md` — installation guide (extracted from README)
+- `docs/usage_doc.md` — usage documentation (extracted from README)
+- export `add_verbose_arguments`, `calc_verbosity`, `set_logging_level_by_verbosity` via `__all__`
+
 ### Changed
 
 - improve help message for verbosity arguments
