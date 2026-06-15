@@ -171,14 +171,14 @@ class _LogFormatter(Formatter):
     """
 
     def __init__(
-        self, *, use_color=False, datefmt=DATEFMT_TIME, relative_to=None
+        self, *, use_color=False, datefmt=None, relative_to=None
     ):
         """
         :param use_color: enable ANSI color output
         :type use_color: bool
         :param datefmt: strftime format for wall-clock timestamps;
-                ignored when ``relative_to`` is set; defaults to ``DATEFMT_TIME``
-        :type datefmt: str
+                ignored when ``relative_to`` is set; defaults to ``None`` (no timestamp)
+        :type datefmt: str, optional
         :param relative_to: Unix timestamp used as epoch for relative time display;
                 mutually exclusive with ``datefmt``
         :type relative_to: float, optional
@@ -262,36 +262,49 @@ class _LogFormatter(Formatter):
         :type record: logging.LogRecord
         :param datefmt: strftime format override; falls back to ``_datefmt`` if omitted
         :type datefmt: str, optional
-        :return: formatted and optionally colored timestamp string
+        :return: formatted and optionally colored timestamp string, or empty string if no timestamp
         :rtype: str
         """
         if self._relative_to is not None:
             asctime = self._fmt_relative(record.created)
-        else:
+            return self._fmt_asctime(asctime)
+        elif datefmt or self._datefmt:
             asctime = super().formatTime(record, datefmt or self._datefmt)
             asctime = asctime.replace(
                 "{ms}", "{:03d}".format(int(record.msecs))
             )
-        return self._fmt_asctime(asctime)
+            return self._fmt_asctime(asctime)
+        else:
+            return ""
 
     def format(self, record):
         """
         :param record: log record
         :type record: logging.LogRecord
-        :return: fully formatted log line: timestamp, level, optional source, message
+        :return: fully formatted log line: optional timestamp, level, optional source, message
         :rtype: str
         """
         record = logging.makeLogRecord(record.__dict__)
 
+        asctime = self.formatTime(record)
         source = self._fmt_source(record.name)
         sep = "\t" if source else " "
-        result = "{} {}{}{}{}".format(
-            self.formatTime(record),
-            self._fmt_level(record.levelno),
-            source,
-            sep,
-            record.getMessage(),
-        )
+
+        if asctime:
+            result = "{} {}{}{}{}".format(
+                asctime,
+                self._fmt_level(record.levelno),
+                source,
+                sep,
+                record.getMessage(),
+            )
+        else:
+            result = "{}{}{}{}".format(
+                self._fmt_level(record.levelno),
+                source,
+                sep,
+                record.getMessage(),
+            )
 
         if record.exc_info and not record.exc_text:
             record.exc_text = self.formatException(record.exc_info)
@@ -309,13 +322,13 @@ class _LogFormatter(Formatter):
 
 
 # pylint: disable-next=invalid-name
-def getLogger(name=None, *, datefmt=DATEFMT_TIME, relative_to=None):
+def getLogger(name=None, *, datefmt=None, relative_to=None):
     """
     :param name: logger name
     :type name: str
     :param datefmt: strftime format for timestamps; ignored when ``relative_to`` is set;
-            defaults to ``DATEFMT_TIME`` (time only)
-    :type datefmt: str
+            defaults to ``None`` (no timestamp)
+    :type datefmt: str, optional
     :param relative_to: Unix timestamp to use as epoch for relative time display;
             mutually exclusive with ``datefmt``
     :type relative_to: float, optional
