@@ -113,6 +113,8 @@ __version__ = "1.2.1-alpha"
 __author__ = "kamiLeL"
 __all__ = (
     "KamiLogger",
+    "DATEFMT_TIME",
+    "DATEFMT_FULL",
     "getLogger",
     "add_verbose_arguments",
     "calc_verbosity",
@@ -125,7 +127,8 @@ __all__ = (
 
 # customized logger  ###########################################################
 
-_DATEFMT = "%Y-%m-%d %H:%M:%S"
+DATEFMT_TIME = "%H:%M:%S"
+DATEFMT_FULL = "%Y-%m-%d %H:%M:%S"
 
 
 class KamiLogger(logging.Logger):
@@ -203,9 +206,11 @@ _ANSI_LEVEL_COLORS = {
 
 class _LogFormatter(Formatter):
 
-    def __init__(self, *, use_color=False):
-        super().__init__(datefmt=_DATEFMT)
+    def __init__(self, *, use_color=False, datefmt=DATEFMT_TIME, relative_to=None):
+        super().__init__(datefmt=datefmt)
         self.use_color = use_color
+        self._datefmt = datefmt
+        self._relative_to = relative_to
 
     def _fmt_asctime(self, asctime):
         """
@@ -244,8 +249,24 @@ class _LogFormatter(Formatter):
             return " {}{}:{}".format(_ANSI_DATETIME, name, _ANSI_RESET)
         return " {}:".format(name)
 
+    def _fmt_relative(self, created):
+        """
+        :param created: Unix timestamp of the log record
+        :type created: float
+        :return: elapsed time since ``_relative_to`` as ``+HH:MM:SS.mmm``
+        :rtype: str
+        """
+        delta = created - self._relative_to
+        h, rem = divmod(int(delta), 3600)
+        m, s = divmod(rem, 60)
+        ms = int((delta % 1) * 1000)
+        return "+{:02d}:{:02d}:{:02d}.{:03d}".format(h, m, s, ms)
+
     def formatTime(self, record, datefmt=None):
-        asctime = super().formatTime(record, datefmt or _DATEFMT)
+        if self._relative_to is not None:
+            asctime = self._fmt_relative(record.created)
+        else:
+            asctime = super().formatTime(record, datefmt or self._datefmt)
         return self._fmt_asctime(asctime)
 
     def format(self, record):
@@ -263,17 +284,21 @@ class _LogFormatter(Formatter):
         if record.exc_text:
             result = "{}\n{}".format(result, record.exc_text)
         if record.stack_info:
-            result = "{}\n{}".format(
-                result, self.formatStack(record.stack_info)
-            )
+            result = "{}\n{}".format(result, self.formatStack(record.stack_info))
 
         return result
 
 
-def getLogger(name=None):
+def getLogger(name=None, *, datefmt=DATEFMT_TIME, relative_to=None) -> KamiLogger:
     """
     :param name: logger name
     :type name: str
+    :param datefmt: strftime format for timestamps; ignored when ``relative_to`` is set;
+            defaults to ``DATEFMT_TIME`` (time only)
+    :type datefmt: str
+    :param relative_to: Unix timestamp to use as epoch for relative time display;
+            mutually exclusive with ``datefmt``
+    :type relative_to: float, optional
     :return: a logger with the `name`, create if non-existence;
             root logger if `name` is `None`
     :rtype: KamiLogger
@@ -285,15 +310,19 @@ def getLogger(name=None):
 
     if not logger.handlers:
         stdout_handler = StreamHandler(sys.stdout)
-        stdout_handler.setFormatter(
-            _LogFormatter(use_color=sys.stdout.isatty())
-        )
+        stdout_handler.setFormatter(_LogFormatter(
+            use_color=sys.stdout.isatty(),
+            datefmt=datefmt,
+            relative_to=relative_to,
+        ))
         stdout_handler.addFilter(lambda r: r.levelno < logging.WARNING)
 
         stderr_handler = StreamHandler(sys.stderr)
-        stderr_handler.setFormatter(
-            _LogFormatter(use_color=sys.stderr.isatty())
-        )
+        stderr_handler.setFormatter(_LogFormatter(
+            use_color=sys.stderr.isatty(),
+            datefmt=datefmt,
+            relative_to=relative_to,
+        ))
         stderr_handler.addFilter(lambda r: r.levelno >= logging.WARNING)
 
         logger.addHandler(stdout_handler)

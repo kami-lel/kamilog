@@ -1,9 +1,6 @@
 # kamilog README 📝
 
 <!-- 
-TODO option to use relative time
-TODO option to omit date in time
-TODO include logger name in the message
 todo use emoji if console supported
 todo add file handler option for getLogger
 Todo unit test to make sure no TODOs in package
