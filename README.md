@@ -7,6 +7,10 @@ todo use emoji if console supported
 todo add file handler option for getLogger
 todo install as submodule
 todo comprehensive unit tests
+Todo add DONE & SUCC
+Fixme change verbose  level
+Todo change print format
+Fixme make time optional, default to no time
 -->
 
 ## Features
