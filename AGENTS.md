@@ -37,22 +37,23 @@ kamilog/
 ├── docs/
 │   ├── usage_doc.md
 │   └── install_guide.md
+├── setup.cfg                # package metadata: name, version, author, dependencies
+├── setup.py                 # minimal setuptools stub
 ├── requirements.txt         # pytest (test-only)
 ├── CHANGELOG.md
 └── README.md
 ```
 
-Current version: `1.2.1-alpha` (defined in `kamilog/kamilog.py` as `__version__`).
+Current version: `1.2.1a0` (defined in `setup.cfg`; exposed at runtime via `importlib.metadata`).
 
 ## Dev Environment
 
 No virtual-environment tooling is pinned; use whichever you prefer (`venv`, `uv`, `pipenv`).
 
 ```bash
+pip install -e .                  # installs kamilog in editable mode
 pip install -r requirements.txt   # installs pytest
 ```
-
-The package is not installed via pip; tests import from the local source directly, so no `pip install -e .` is required.
 
 ## Build and Test Commands
 
@@ -108,7 +109,7 @@ When adding new public functions, add corresponding tests to `tests/verbosity_te
 - **Branch**: feature branches off `dev`; merge into `dev`. `main` tracks releases.
 - **Commit messages**: imperative mood, lowercase, no period — e.g. `add file handler option for getLogger`.
 - **CHANGELOG**: update `CHANGELOG.md` under `## [Unreleased]` for every user-visible change before merging.
-- **Version bump**: update `__version__` in `kamilog/kamilog.py` and move `[Unreleased]` to a dated version block in `CHANGELOG.md` when cutting a release.
+- **Version bump**: update `version` in `setup.cfg` and move `[Unreleased]` to a dated version block in `CHANGELOG.md` when cutting a release.
 - **Pre-merge checklist**:
   - [ ] `pytest tests/` passes
   - [ ] `__all__` in both `kamilog.py` and `__init__.py` is up to date

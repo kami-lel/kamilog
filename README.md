@@ -15,6 +15,7 @@ todo install as submodule
 - **ANSI 16-color output** — per-level colors, auto-disabled when output is piped
 - **stdout/stderr split** — `< WARNING` goes to stdout, `>= WARNING` goes to stderr
 - **Flexible timestamps** — wall-clock time, datetime, millisecond variants, or elapsed relative time
+- **Level constants** — `kamilog.DEBUG`, `kamilog.WARNING`, etc. — no `import logging` needed
 - **Verbosity helpers** — `-v`/`-q` CLI flags mapped to logging levels
 - **Drop-in compatible** — `kamilog.getLogger()` in place of `logging.getLogger()`
 
