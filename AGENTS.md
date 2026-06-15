@@ -7,29 +7,44 @@ description: Agent guidelines for the kamilog Python logging utility library
 
 ## Project Overview
 
-kamilog is a lightweight Python logging utility (`kamilog/kamilog.py`) that wraps Python's built-in `logging` module with a cleaner output format. It provides:
+kamilog is a lightweight Python logging utility that extends Python's built-in `logging` module with structured output, custom log levels, ANSI 16-color support, and flexible timestamp options.
 
-- Padded 5-character log level names (`INFO `, `WARN `, `CRIT `) for consistent alignment
-- A `getLogger()` drop-in that configures a console `StreamHandler` exactly once per logger name
-- Verbosity helpers (`add_verbose_arguments`, `calc_verbosity`, `set_logging_level_by_verbosity`) that wire `-v`/`-q` CLI flags to logging levels
+Key additions over stdlib `logging`:
+
+- Custom log levels: `ENTER` (11), `SKIP` (12), `PASS` (25), `FAIL` (45)
+- `KamiLogger` subclass with `.enter()`, `.skip()`, `.pass_()`, `.fail()` methods
+- `_LogFormatter` producing `HH:MM:SS [LEVEL] source:\tmessage` with per-level ANSI color
+- stdout/stderr split handlers (< WARNING → stdout, >= WARNING → stderr)
+- `relative_to` and `datefmt` options on `getLogger()`
+- Level constants (`kamilog.DEBUG`, `kamilog.ENTER`, etc.) and DATEFMT constants
+- Verbosity helpers: `add_verbose_arguments`, `calc_verbosity`, `set_logging_level_by_verbosity`
 
 Repository layout:
 
 ```
 kamilog/
 ├── kamilog/
-│   ├── __init__.py        # re-exports all public symbols
-│   └── kamilog.py         # entire implementation + module docstring
+│   ├── __init__.py          # re-exports all public symbols
+│   └── kamilog.py           # entire implementation
 ├── tests/
-│   └── verbosity_test.py  # pytest suite for verbosity helpers
-├── requirements.txt        # pytest (test-only dependency)
+│   ├── verbosity_test.py    # pytest suite for verbosity helpers
+│   └── source_quality_test.py  # banned-marker scan (no TODO/FIXME/HACK/BUG)
+├── examples/
+│   ├── basic_logging.py     # standard + custom levels, root logger
+│   ├── timestamp_formats.py # all four DATEFMT constants
+│   ├── relative_time.py     # elapsed time with relative_to
+│   └── verbosity.py         # CLI -v/-q flags demo
+├── docs/
+│   ├── usage_doc.md
+│   └── install_guide.md
+├── requirements.txt         # pytest (test-only)
 ├── CHANGELOG.md
 └── README.md
 ```
 
 Current version: `1.2.1-alpha` (defined in `kamilog/kamilog.py` as `__version__`).
 
-## Dev Environment Tips
+## Dev Environment
 
 No virtual-environment tooling is pinned; use whichever you prefer (`venv`, `uv`, `pipenv`).
 
@@ -37,7 +52,7 @@ No virtual-environment tooling is pinned; use whichever you prefer (`venv`, `uv`
 pip install -r requirements.txt   # installs pytest
 ```
 
-The package is not installed via pip; tests use a `sys.path.insert` to resolve the local source, so no `pip install -e .` is required.
+The package is not installed via pip; tests import from the local source directly, so no `pip install -e .` is required.
 
 ## Build and Test Commands
 
@@ -49,10 +64,11 @@ Run the full test suite:
 pytest tests/
 ```
 
-Run a single test class:
+Run a single test file:
 
 ```bash
-pytest tests/verbosity_test.py::TestCalcVerbosity
+pytest tests/verbosity_test.py
+pytest tests/source_quality_test.py
 ```
 
 Run a single test:
@@ -61,31 +77,31 @@ Run a single test:
 pytest tests/verbosity_test.py::TestCalcVerbosity::test2
 ```
 
-The verbosity test file also doubles as a manual CLI smoke-test:
+The verbosity test file doubles as a manual smoke-test:
 
 ```bash
 python tests/verbosity_test.py -vv    # verbosity 2, level DEBUG
-python tests/verbosity_test.py -q     # verbosity -1, level CRITICAL+1
+python tests/verbosity_test.py -q     # verbosity -1, all suppressed
 ```
 
 ## Code Style
 
-- **Language**: Python 3 — no type annotations are used; Sphinx/reStructuredText docstrings (`:param:`, `:type:`, `:return:`, `:rtype:`) on all public functions.
-- **Docstrings**: module-level docstring in `kamilog.py` is the canonical documentation source; keep it in sync with `README.md`.
-- **Formatting**: no formatter is enforced, but the existing code uses 4-space indentation and PEP 8 naming (`snake_case` functions, `_PrefixedPrivates`).
+- **Language**: Python 3 — no type annotations; Sphinx/reStructuredText docstrings (`:param:`, `:type:`, `:return:`, `:rtype:`) on all public functions and classes; single-line docstrings on private helpers.
+- **String formatting**: use `"".format()` style — not f-strings or `%` formatting.
+- **Formatting**: 4-space indentation, PEP 8 naming (`snake_case` functions, `_PrefixedPrivates`, `UPPER_CASE` constants).
 - **`__all__`**: both `kamilog.py` and `__init__.py` maintain explicit `__all__` tuples — update both when adding public symbols.
-- **No external runtime dependencies** — only the standard library (`logging`, `argparse`). Keep it that way.
+- **No external runtime dependencies** — only the standard library (`logging`, `sys`, `argparse`). Keep it that way.
 
 ## Testing Instructions
 
-All tests live in `tests/verbosity_test.py` and use `pytest` class-based style (`class TestFoo`).
+Tests live in `tests/` and use `pytest` class-based style (`class TestFoo`).
 
 Before committing:
 
 1. `pytest tests/` — all tests must pass with zero failures.
-2. Verify no `TODO` or `FIXME` comments were accidentally left in `kamilog/kamilog.py` or `kamilog/__init__.py` (the README has a tracked todo about adding a test for this).
+2. `source_quality_test.py` scans both source files for `todo`, `bug`, `fixme`, `hack` (case-insensitive) — do not leave any in `kamilog/kamilog.py` or `kamilog/__init__.py`.
 
-When adding new public functions, add corresponding test classes to `tests/verbosity_test.py` or a new `tests/<feature>_test.py` file.
+When adding new public functions, add corresponding tests to `tests/verbosity_test.py` or a new `tests/<feature>_test.py` file.
 
 ## PR Instructions
 
@@ -95,12 +111,12 @@ When adding new public functions, add corresponding test classes to `tests/verbo
 - **Version bump**: update `__version__` in `kamilog/kamilog.py` and move `[Unreleased]` to a dated version block in `CHANGELOG.md` when cutting a release.
 - **Pre-merge checklist**:
   - [ ] `pytest tests/` passes
-  - [ ] `__all__` in both files is up to date
+  - [ ] `__all__` in both `kamilog.py` and `__init__.py` is up to date
   - [ ] CHANGELOG updated
-  - [ ] Module docstring in `kamilog.py` reflects any API changes
+  - [ ] `docs/usage_doc.md` reflects any API changes
 
 ## Security Considerations
 
-- This is a pure logging utility with no network access, file I/O, authentication, or credentials. Security surface is minimal.
-- Do not introduce external runtime dependencies without explicit approval — the zero-dependency contract is intentional.
-- Do not commit `.env` files, credentials, or secrets; `.gitignore` already excludes `.env` and `.envrc`.
+- Pure logging utility — no network access, file I/O, authentication, or credentials.
+- Do not introduce external runtime dependencies without explicit approval.
+- Do not commit `.env` files, credentials, or secrets.

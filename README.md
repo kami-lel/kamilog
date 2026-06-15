@@ -1,23 +1,28 @@
-# kamilog README 📝
+# kamilog README
+
+A lightweight Python logging wrapper with structured output, custom log levels, ANSI 16-color support, and flexible timestamp options.
 
 <!-- 
 todo use emoji if console supported
 todo add file handler option for getLogger
 todo install as submodule
-todo install as python package
-TODO write example
+Todo install as python package
 -->
 
-## 🚀 Features
+## Features
 
-- Custom log message formatting with timestamp and padded log level names
-- Padded log levels for consistent and neat alignment ("INFO ", "WARN ", etc.)
-- Fully compatible with Python’s native `logging` module for seamless integration
-- Ensures that each logger is configured only once to avoid duplicate handlers
-- Lightweight, simple to integrate, and easily extensible
+- **Custom log levels** — `ENTER` (11), `SKIP` (12), `PASS` (25), `FAIL` (45) for hook and test-case workflows
+- **Structured output** — `HH:MM:SS [LEVEL] source:\tmessage` with padded 5-char level names
+- **ANSI 16-color output** — per-level colors, auto-disabled when output is piped
+- **stdout/stderr split** — `< WARNING` goes to stdout, `>= WARNING` goes to stderr
+- **Flexible timestamps** — wall-clock time, datetime, millisecond variants, or elapsed relative time
+- **Verbosity helpers** — `-v`/`-q` CLI flags mapped to logging levels
+- **Drop-in compatible** — `kamilog.getLogger()` in place of `logging.getLogger()`
 
-----
+---
 
-See [docs/install_guide.md](docs/install_guide.md) for full installation instructions.
+See [docs/install_guide.md](docs/install_guide.md) for installation instructions.
 
 See [docs/usage_doc.md](docs/usage_doc.md) for full usage documentation.
+
+See [examples/](examples/) for runnable scripts demonstrating each feature.

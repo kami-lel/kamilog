@@ -31,6 +31,13 @@
 - ANSI 16-color output: datetime in black, level name colored per severity, message uncolored
 - color is auto-disabled when stdout/stderr is not a TTY (piped or redirected)
 - separate stdout handler (below `WARNING`) and stderr handler (`WARNING` and above)
+- `datefmt` parameter on `getLogger()` to control timestamp format
+- `relative_to` parameter on `getLogger()` to display elapsed time instead of wall-clock time
+- four timestamp format constants: `DATEFMT_TIME`, `DATEFMT_TIME_MS`, `DATEFMT_DATETIME`, `DATEFMT_DATETIME_MS`
+- all log-level values exposed on the `kamilog` namespace (`kamilog.DEBUG`, `kamilog.ENTER`, etc.) — `import logging` not needed for level constants
+- Sphinx/reStructuredText docstrings on all public classes, functions, and `_LogFormatter` methods
+- `tests/source_quality_test.py` — scans source files for banned markers (`todo`, `bug`, `fixme`, `hack`, case-insensitive)
+- `examples/` directory with four runnable scripts: `basic_logging.py`, `timestamp_formats.py`, `relative_time.py`, `verbosity.py`
 
 ### Changed
 
@@ -38,10 +45,7 @@
 - `getLogger()` now always returns a `KamiLogger` instance; upgrades pre-existing loggers via `__class__` assignment
 - `_PADDED_LEVELNAME_MAP` moved to module level
 - log record is copied before formatting to prevent mutation of the shared record across handlers
-
-### Deprecated
-### Removed
-### Fixed
+- log output format changed to `HH:MM:SS [LEVEL] source:\tmessage`
 
 [unreleased]: https://github.com/kami-lel/kami-log-py/compare/v1.2.0...dev
 
