@@ -218,9 +218,18 @@ def getLogger(name=None) -> KamiLogger:
         logger.__class__ = KamiLogger
 
     if not logger.handlers:
-        handler = StreamHandler()
-        handler.setFormatter(_LogFormatter())
-        logger.addHandler(handler)
+        formatter = _LogFormatter()
+
+        stdout_handler = StreamHandler(sys.stdout)
+        stdout_handler.setFormatter(formatter)
+        stdout_handler.addFilter(lambda r: r.levelno < logging.WARNING)
+
+        stderr_handler = StreamHandler(sys.stderr)
+        stderr_handler.setFormatter(formatter)
+        stderr_handler.addFilter(lambda r: r.levelno >= logging.WARNING)
+
+        logger.addHandler(stdout_handler)
+        logger.addHandler(stderr_handler)
 
     return logger
 
