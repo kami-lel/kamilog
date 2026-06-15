@@ -11,27 +11,65 @@ from logging import Formatter, StreamHandler
 __version__ = "1.2.1-alpha"
 __author__ = "kamiLeL"
 __all__ = (
+    "getLogger",
     "KamiLogger",
+    "add_verbose_arguments",
+    "calc_verbosity",
+    "set_logging_level_by_verbosity",
+    # log levels
+    "NOTSET",
+    "DEBUG",
+    "ENTER",
+    "SKIP",
+    "INFO",
+    "PASS",
+    "WARNING",
+    "ERROR",
+    "FAIL",
+    "CRITICAL",
+    # datetime format constants
     "DATEFMT_TIME",
     "DATEFMT_TIME_MS",
     "DATEFMT_DATETIME",
     "DATEFMT_DATETIME_MS",
-    "getLogger",
-    "add_verbose_arguments",
-    "calc_verbosity",
-    "set_logging_level_by_verbosity",
 )
 
 
-# customized logger  ###########################################################
+# constants  ###################################################################
 
-DATEFMT_TIME    = "%H:%M:%S"
+# log level constants  =========================================================
+
+NOTSET = logging.NOTSET  # 0
+DEBUG = logging.DEBUG  # 10
+INFO = logging.INFO  # 20
+WARNING = logging.WARNING  # 30
+ERROR = logging.ERROR  # 40
+CRITICAL = logging.CRITICAL  # 50
+
+# customized logging level
+
+ENTER = 11
+SKIP = 12
+PASS = 25
+FAIL = 45
+
+
+# Date Time Format  ============================================================
+DATEFMT_TIME = "%H:%M:%S"
 DATEFMT_TIME_MS = "%H:%M:%S.{ms}"
-DATEFMT_DATETIME    = "%Y-%m-%d %H:%M:%S"
+DATEFMT_DATETIME = "%Y-%m-%d %H:%M:%S"
 DATEFMT_DATETIME_MS = "%Y-%m-%d %H:%M:%S.{ms}"
 
 
-class KamiLogger(logging.Logger):
+# set up logging  ##############################################################
+logging.addLevelName(ENTER, "ENTER")
+logging.addLevelName(SKIP, "SKIP")
+logging.addLevelName(PASS, "PASS")
+logging.addLevelName(FAIL, "FAIL")
+
+
+# Customized Logging  ##########################################################
+class KamiLogger(logging.Logger):  # ===========================================
     """Logger subclass extending :class:`logging.Logger` with four additional levels.
 
     Custom levels (in numeric order between standard ones):
@@ -44,11 +82,6 @@ class KamiLogger(logging.Logger):
     Use :func:`getLogger` to obtain a configured instance.
     """
 
-    ENTER = 11
-    SKIP = 12
-    PASS = 25
-    FAIL = 45
-
     def enter(self, message, *args, **kwargs):
         """
         Log at ``ENTER`` level (11): entering a hook or test case.
@@ -56,8 +89,8 @@ class KamiLogger(logging.Logger):
         :param message: log message
         :type message: str
         """
-        if self.isEnabledFor(self.ENTER):
-            self._log(self.ENTER, message, args, stacklevel=2, **kwargs)
+        if self.isEnabledFor(ENTER):
+            self._log(ENTER, message, args, stacklevel=2, **kwargs)
 
     def skip(self, message, *args, **kwargs):
         """
@@ -66,8 +99,8 @@ class KamiLogger(logging.Logger):
         :param message: log message
         :type message: str
         """
-        if self.isEnabledFor(self.SKIP):
-            self._log(self.SKIP, message, args, stacklevel=2, **kwargs)
+        if self.isEnabledFor(SKIP):
+            self._log(SKIP, message, args, stacklevel=2, **kwargs)
 
     def pass_(self, message, *args, **kwargs):
         """
@@ -76,8 +109,8 @@ class KamiLogger(logging.Logger):
         :param message: log message
         :type message: str
         """
-        if self.isEnabledFor(self.PASS):
-            self._log(self.PASS, message, args, stacklevel=2, **kwargs)
+        if self.isEnabledFor(PASS):
+            self._log(PASS, message, args, stacklevel=2, **kwargs)
 
     def fail(self, message, *args, **kwargs):
         """
@@ -86,71 +119,49 @@ class KamiLogger(logging.Logger):
         :param message: log message
         :type message: str
         """
-        if self.isEnabledFor(self.FAIL):
-            self._log(self.FAIL, message, args, stacklevel=2, **kwargs)
+        if self.isEnabledFor(FAIL):
+            self._log(FAIL, message, args, stacklevel=2, **kwargs)
 
-
-logging.addLevelName(KamiLogger.ENTER, "ENTER")
-logging.addLevelName(KamiLogger.SKIP, "SKIP")
-logging.addLevelName(KamiLogger.PASS, "PASS")
-logging.addLevelName(KamiLogger.FAIL, "FAIL")
-
-_PADDED_LEVELNAME_MAP = {
-    logging.DEBUG: "DEBUG",
-    KamiLogger.ENTER: "ENTER",
-    KamiLogger.SKIP: "SKIP ",
-    logging.INFO: "INFO ",
-    KamiLogger.PASS: "PASS ",
-    logging.WARNING: "WARN ",
-    logging.ERROR: "ERROR",
-    KamiLogger.FAIL: "FAIL ",
-    logging.CRITICAL: "CRIT ",
-}
 
 logging.setLoggerClass(KamiLogger)
-
 # root logger exists before setLoggerClass — patch its class directly
 logging.root.__class__ = KamiLogger
 
 
-def _levelno2padded_levelname(levelno):
-    """
-    :param levelno: numeric logging level
-    :type levelno: int
-    :return: 5-character padded level name; falls back to the numeric value for unknown levels
-    :rtype: str
-    """
-    return _PADDED_LEVELNAME_MAP.get(levelno, str(levelno).ljust(5)[:5])
+# log formatter   ==============================================================
+
+
+_PADDED_LEVELNAME_MAP = {
+    logging.DEBUG: "DEBUG",
+    ENTER: "ENTER",
+    SKIP: "SKIP ",
+    logging.INFO: "INFO ",
+    PASS: "PASS ",
+    logging.WARNING: "WARN ",
+    logging.ERROR: "ERROR",
+    FAIL: "FAIL ",
+    logging.CRITICAL: "CRIT ",
+}
 
 
 _ANSI_RESET = "\033[0m"
 _ANSI_DATETIME = "\033[30m"
-
 _ANSI_LEVEL_COLORS = {
     logging.DEBUG: "\033[36m",  # cyan
-    KamiLogger.ENTER: "\033[92m",  # bright green
-    KamiLogger.SKIP: "\033[32m",  # green
+    ENTER: "\033[92m",  # bright green
+    SKIP: "\033[32m",  # green
     logging.INFO: "\033[96m",  # bright cyan
-    KamiLogger.PASS: "\033[1;32m",  # bold green
+    PASS: "\033[1;32m",  # bold green
     logging.WARNING: "\033[33m",  # yellow
     logging.ERROR: "\033[31m",  # red
-    KamiLogger.FAIL: "\033[1;31m",  # bold red
+    FAIL: "\033[1;31m",  # bold red
     logging.CRITICAL: "\033[1;33m",  # bold yellow (orange)
 }
 
 
 class _LogFormatter(Formatter):
-    """Internal log formatter producing structured, optionally colored output.
-
-    Output format::
-
-        HH:MM:SS [LEVEL] logger_name:\\tmessage
-
-    - Datetime and source name are rendered in dim black.
-    - Level name is colored per severity when ``use_color`` is enabled.
-    - Color is suppressed automatically when the output stream is not a TTY.
-    - When ``relative_to`` is set, timestamps show elapsed time
-      (``+HH:MM:SS.mmm``) instead of wall-clock time; ``datefmt`` is ignored.
+    """
+    internal log formatter producing structured, optionally colored output
     """
 
     def __init__(
@@ -171,6 +182,18 @@ class _LogFormatter(Formatter):
         self._datefmt = datefmt
         self._relative_to = relative_to
 
+    # helpers  =================================================================
+
+    @staticmethod
+    def _levelno2padded_levelname(levelno):
+        """
+        :param levelno: numeric logging level
+        :type levelno: int
+        :return: 5-character padded level name; falls back to the numeric value for unknown levels
+        :rtype: str
+        """
+        return _PADDED_LEVELNAME_MAP.get(levelno, str(levelno).ljust(5)[:5])
+
     def _fmt_asctime(self, asctime):
         """
         :param asctime: pre-formatted datetime string
@@ -189,7 +212,7 @@ class _LogFormatter(Formatter):
         :return: level name in brackets, e.g. ``[DEBUG]``, colored if enabled
         :rtype: str
         """
-        padded = _levelno2padded_levelname(levelno)
+        padded = self._levelno2padded_levelname(levelno)
         if self.use_color:
             color = _ANSI_LEVEL_COLORS.get(levelno, "")
             return "{}[{}]{}".format(color, padded, _ANSI_RESET)
@@ -221,6 +244,8 @@ class _LogFormatter(Formatter):
         ms = int((delta % 1) * 1000)
         return "+{:02d}:{:02d}:{:02d}.{:03d}".format(h, m, s, ms)
 
+    # extend Formatter  ========================================================
+
     def formatTime(self, record, datefmt=None):
         """
         :param record: log record
@@ -234,7 +259,9 @@ class _LogFormatter(Formatter):
             asctime = self._fmt_relative(record.created)
         else:
             asctime = super().formatTime(record, datefmt or self._datefmt)
-            asctime = asctime.replace("{ms}", "{:03d}".format(int(record.msecs)))
+            asctime = asctime.replace(
+                "{ms}", "{:03d}".format(int(record.msecs))
+            )
         return self._fmt_asctime(asctime)
 
     def format(self, record):
@@ -265,9 +292,10 @@ class _LogFormatter(Formatter):
         return result
 
 
-def getLogger(
-    name=None, *, datefmt=DATEFMT_TIME, relative_to=None
-) -> KamiLogger:
+# get logger  ##################################################################
+
+
+def getLogger(name=None, *, datefmt=DATEFMT_TIME, relative_to=None):
     """
     :param name: logger name
     :type name: str

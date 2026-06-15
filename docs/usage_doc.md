@@ -10,7 +10,7 @@ import logging
 import kamilog
 
 log = kamilog.getLogger("myapp")
-log.setLevel(logging.DEBUG)
+log.setLevel(kamilog.DEBUG)
 
 log.debug("Debugging details here")
 log.info("Informational message")
@@ -42,6 +42,22 @@ ZeroDivisionError: division by zero
 
 Logger name (`myapp:`) is omitted when `name` is `None` or `"root"`.
 
+All standard and custom log levels are available directly on `kamilog`,
+so `import logging` is not needed just for level constants:
+
+| Constant | Number |
+|---|---|
+| `kamilog.NOTSET` | 0 |
+| `kamilog.DEBUG` | 10 |
+| `kamilog.ENTER` | 11 |
+| `kamilog.SKIP` | 12 |
+| `kamilog.INFO` | 20 |
+| `kamilog.PASS` | 25 |
+| `kamilog.WARNING` | 30 |
+| `kamilog.ERROR` | 40 |
+| `kamilog.FAIL` | 45 |
+| `kamilog.CRITICAL` | 50 |
+
 
 
 
@@ -58,12 +74,12 @@ Logger name (`myapp:`) is omitted when `name` is `None` or `"root"`.
 
 `KamiLogger` adds four levels for hook and test-case workflows:
 
-| Method | Level | Meaning |
-|---|---|---|
-| `log.enter(msg)` | 11 | entering a hook or test case |
-| `log.skip(msg)` | 12 | skipping a hook or test case |
-| `log.pass_(msg)` | 25 | hook or test case passed |
-| `log.fail(msg)` | 45 | hook or test case failed |
+| Method | Constant | Number | Meaning |
+|---|---|---|---|
+| `log.enter(msg)` | `kamilog.ENTER` | 11 | entering a hook or test case |
+| `log.skip(msg)` | `kamilog.SKIP` | 12 | skipping a hook or test case |
+| `log.pass_(msg)` | `kamilog.PASS` | 25 | hook or test case passed |
+| `log.fail(msg)` | `kamilog.FAIL` | 45 | hook or test case failed |
 
 ```python
 log.enter("starting setup hook")
