@@ -44,10 +44,16 @@
   - `PASS` (21) — hook or test case passed
   - `SUCC` (22) — task or operation succeeded
   - `DONE` (25) — task or operation completed
-- Example scripts updated: cleaner output, section headers, reduced message volume,
-  varied source name lengths for readability demonstration
+- **ANSI color scheme**: refined level-to-color mapping
+  - `PASS` (21): bold bright green (`\033[1;92m`)
+  - `SUCC` (22): bold green (`\033[1;32m`)
+  - `DONE` (25): bright yellow (`\033[93m`)
+  - `WARN` (30): yellow (`\033[33m`)
+  - `CRIT` (50): bold bright yellow (`\033[1;93m`)
+- Example scripts updated: cleaner output with styled print headers, root logger
+  (no source names), section demonstrations
 - Documentation (README, AGENTS, docs/) updated to reflect new log levels, format,
-  and timestamp behavior
+  timestamp behavior, and color scheme
 
 ### Deprecated
 
