@@ -31,7 +31,66 @@
 
 ### Security
 
-[unreleased]: https://github.com/kami-lel/kamilog/compare/v1.3.1...dev
+
+
+
+
+
+
+
+
+
+
+
+
+## [1.4.0] - 2026-06-16
+
+### Added
+
+Custom log levels:
+- `SUCC` (22) — task or operation succeeded; `.succ()` method
+- `DONE` (25) — task or operation completed; `.done()` method
+
+Examples:
+- `logger_names_and_timestamps.py` — demonstrates logger names, timestamps, and multiple messages
+
+### Changed
+
+Log output format:
+- Removed brackets around level names: `[DEBUG]` → `DEBUG`
+- Changed message separator from tab to single space: `source:\tmessage` → `source: message`
+- Removed space before colon when logger has no name: `DEBUG :` → `DEBUG:`
+- Timestamps default to opt-in (`None`) instead of time-only format
+
+Log levels:
+- `PASS` level reduced from 25 → 21 to accommodate new levels
+- Complete level progression: `PASS` (21), `SUCC` (22), `DONE` (25)
+
+ANSI color scheme (refined):
+- `PASS` (21): bold bright green
+- `SUCC` (22): bold green
+- `DONE` (25): bright yellow
+- `WARN` (30): yellow
+- `CRIT` (50): bold bright yellow
+
+CLI verbosity mapping (restructured):
+- `-vv` or more → `DEBUG` (10)
+- `-v` → `INFO` (20)
+- no flags → `DONE` (25) *(was `WARNING` 30)*
+- `-q` → `WARNING` (30) *(was suppressed)*
+- `-qq` → `ERROR` (40) *(new)*
+- `-qqq` or more → `CRITICAL` (50) *(new)*
+
+Examples & documentation:
+- Example scripts: cleaner output with styled print headers, root logger (no source names)
+- `examples/verbosity.py`: comprehensive usage examples for all flag combinations
+- Updated README, AGENTS, docs/ to reflect all changes
+
+### Fixed
+
+- Fixed spacing between timestamp and level when timestamp is present
+
+[1.4.0]: https://github.com/kami-lel/kamilog/compare/v1.3.1...v1.4.0
 
 
 

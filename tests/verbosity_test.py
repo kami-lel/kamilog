@@ -17,6 +17,7 @@ from kamilog.kamilog import (
     add_verbose_arguments,
     calc_verbosity,
     set_logging_level_by_verbosity,
+    DONE,
 )
 
 # pytest candidates  ###########################################################
@@ -155,12 +156,12 @@ class TestSLLBV:
         add_verbose_arguments(parser)
         args = parser.parse_args(ARGS)
 
-        set_logging_level_by_verbosity(args, LOGGER_NAME)
+        set_logging_level_by_verbosity(args, logger_name=LOGGER_NAME)
         logger = logging.getLogger(LOGGER_NAME)
         logging_level = logger.level
 
         print(logging_level)
-        assert logging_level == logging.WARNING
+        assert logging_level == DONE
 
     def test_v1(_):
         ARGS = ["-v"]
@@ -169,7 +170,7 @@ class TestSLLBV:
         add_verbose_arguments(parser)
         args = parser.parse_args(ARGS)
 
-        set_logging_level_by_verbosity(args, LOGGER_NAME)
+        set_logging_level_by_verbosity(args, logger_name=LOGGER_NAME)
         logger = logging.getLogger(LOGGER_NAME)
         logging_level = logger.level
 
@@ -183,7 +184,7 @@ class TestSLLBV:
         add_verbose_arguments(parser)
         args = parser.parse_args(ARGS)
 
-        set_logging_level_by_verbosity(args, LOGGER_NAME)
+        set_logging_level_by_verbosity(args, logger_name=LOGGER_NAME)
         logger = logging.getLogger(LOGGER_NAME)
         logging_level = logger.level
 
@@ -197,7 +198,7 @@ class TestSLLBV:
         add_verbose_arguments(parser)
         args = parser.parse_args(ARGS)
 
-        set_logging_level_by_verbosity(args, LOGGER_NAME)
+        set_logging_level_by_verbosity(args, logger_name=LOGGER_NAME)
         logger = logging.getLogger(LOGGER_NAME)
         logging_level = logger.level
 
@@ -211,12 +212,12 @@ class TestSLLBV:
         add_verbose_arguments(parser)
         args = parser.parse_args(ARGS)
 
-        set_logging_level_by_verbosity(args, LOGGER_NAME)
+        set_logging_level_by_verbosity(args, logger_name=LOGGER_NAME)
         logger = logging.getLogger(LOGGER_NAME)
         logging_level = logger.level
 
         print(logging_level)
-        assert logging_level == logging.CRITICAL + 1
+        assert logging_level == logging.WARNING
 
     def test_q2(_):
         ARGS = ["-qq"]
@@ -225,12 +226,12 @@ class TestSLLBV:
         add_verbose_arguments(parser)
         args = parser.parse_args(ARGS)
 
-        set_logging_level_by_verbosity(args, LOGGER_NAME)
+        set_logging_level_by_verbosity(args, logger_name=LOGGER_NAME)
         logger = logging.getLogger(LOGGER_NAME)
         logging_level = logger.level
 
         print(logging_level)
-        assert logging_level == logging.CRITICAL + 1
+        assert logging_level == logging.ERROR
 
 
 # sys.argv parser  #############################################################

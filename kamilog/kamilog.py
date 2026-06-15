@@ -11,7 +11,7 @@ import logging
 import sys
 from logging import Formatter, StreamHandler
 
-__version__ = "1.3.1"
+__version__ = "1.4.0"
 __author__ = "kamiLeL"
 
 __all__ = (
@@ -27,6 +27,8 @@ __all__ = (
     "SKIP",
     "INFO",
     "PASS",
+    "SUCC",
+    "DONE",
     "WARNING",
     "ERROR",
     "FAIL",
@@ -54,7 +56,9 @@ CRITICAL = logging.CRITICAL  # 50
 
 ENTER = 11
 SKIP = 12
-PASS = 25
+PASS = 21
+SUCC = 22
+DONE = 25
 FAIL = 45
 
 
@@ -69,23 +73,34 @@ DATEFMT_DATETIME_MS = "%Y-%m-%d %H:%M:%S.{ms}"
 logging.addLevelName(ENTER, "ENTER")
 logging.addLevelName(SKIP, "SKIP")
 logging.addLevelName(PASS, "PASS")
+logging.addLevelName(SUCC, "SUCC")
+logging.addLevelName(DONE, "DONE")
 logging.addLevelName(FAIL, "FAIL")
 
 
 # Customized Logging  ##########################################################
 class KamiLogger(logging.Logger):  # ===========================================
     """
-    Logger subclass extending :class:`logging.Logger` with four additional levels.
+    Logger subclass extending :class:`logging.Logger` with six additional levels.
 
     Custom levels (in numeric order between standard ones):
 
     - ``ENTER`` (11): entering a hook or test case
     - ``SKIP``  (12): skipping a hook or test case
-    - ``PASS``  (25): hook or test case passed
+    - ``PASS``  (21): hook or test case passed
+    - ``SUCC``  (22): task or operation succeeded
+    - ``DONE``  (25): task or operation completed
     - ``FAIL``  (45): hook or test case failed
 
     Use :func:`getLogger` to obtain a configured instance.
     """
+
+    ENTER = 11
+    SKIP = 12
+    PASS = 21
+    SUCC = 22
+    DONE = 25
+    FAIL = 45
 
     def enter(self, message, *args, **kwargs):
         """
@@ -109,13 +124,33 @@ class KamiLogger(logging.Logger):  # ===========================================
 
     def pass_(self, message, *args, **kwargs):
         """
-        Log at ``PASS`` level (25): hook or test case passed.
+        Log at ``PASS`` level (21): hook or test case passed.
 
         :param message: log message
         :type message: str
         """
-        if self.isEnabledFor(PASS):
-            self._log(PASS, message, args, stacklevel=2, **kwargs)
+        if self.isEnabledFor(self.PASS):
+            self._log(self.PASS, message, args, stacklevel=2, **kwargs)
+
+    def succ(self, message, *args, **kwargs):
+        """
+        Log at ``SUCC`` level (22): task or operation succeeded.
+
+        :param message: log message
+        :type message: str
+        """
+        if self.isEnabledFor(self.SUCC):
+            self._log(self.SUCC, message, args, stacklevel=2, **kwargs)
+
+    def done(self, message, *args, **kwargs):
+        """
+        Log at ``DONE`` level (25): task or operation completed.
+
+        :param message: log message
+        :type message: str
+        """
+        if self.isEnabledFor(self.DONE):
+            self._log(self.DONE, message, args, stacklevel=2, **kwargs)
 
     def fail(self, message, *args, **kwargs):
         """
@@ -142,6 +177,8 @@ _PADDED_LEVELNAME_MAP = {
     SKIP: "SKIP ",
     logging.INFO: "INFO ",
     PASS: "PASS ",
+    SUCC: "SUCC ",
+    DONE: "DONE ",
     logging.WARNING: "WARN ",
     logging.ERROR: "ERROR",
     FAIL: "FAIL ",
@@ -157,11 +194,13 @@ _ANSI_LEVEL_COLORS = {
     ENTER: "\033[92m",  # bright green
     SKIP: "\033[32m",  # green
     logging.INFO: "\033[96m",  # bright cyan
-    PASS: "\033[1;32m",  # bold green
+    PASS: "\033[1;92m",  # bold bright green
+    SUCC: "\033[1;32m",  # bold green
+    DONE: "\033[93m",  # bright yellow
     logging.WARNING: "\033[33m",  # yellow
     logging.ERROR: "\033[31m",  # red
     FAIL: "\033[1;31m",  # bold red
-    logging.CRITICAL: "\033[1;33m",  # bold yellow (orange)
+    logging.CRITICAL: "\033[1;93m",  # bold bright yellow
 }
 
 
@@ -171,14 +210,14 @@ class _LogFormatter(Formatter):
     """
 
     def __init__(
-        self, *, use_color=False, datefmt=DATEFMT_TIME, relative_to=None
+        self, *, use_color=False, datefmt=None, relative_to=None
     ):
         """
         :param use_color: enable ANSI color output
         :type use_color: bool
         :param datefmt: strftime format for wall-clock timestamps;
-                ignored when ``relative_to`` is set; defaults to ``DATEFMT_TIME``
-        :type datefmt: str
+                ignored when ``relative_to`` is set; defaults to ``None`` (no timestamp)
+        :type datefmt: str, optional
         :param relative_to: Unix timestamp used as epoch for relative time display;
                 mutually exclusive with ``datefmt``
         :type relative_to: float, optional
@@ -215,29 +254,31 @@ class _LogFormatter(Formatter):
         """
         :param levelno: numeric logging level
         :type levelno: int
-        :return: level name in brackets, e.g. ``[DEBUG]``, colored if enabled
+        :return: level name without brackets, e.g. ``DEBUG``, colored if enabled
         :rtype: str
         """
         padded = self._levelno2padded_levelname(levelno)
         if self.use_color:
             color = _ANSI_LEVEL_COLORS.get(levelno, "")
-            return "{}[{}]{}".format(color, padded, _ANSI_RESET)
-        return "[{}]".format(padded)
+            return "{}{}{}".format(color, padded, _ANSI_RESET)
+        return padded
 
     def _fmt_source(self, name):
         """
         :param name: logger name
         :type name: str
-        :return: ``" name:"`` with the name in bold black, or empty string if name is root or absent
+        :return: ``"name:"`` with the name in bold black, or ``":"`` in black if name is root or absent
         :rtype: str
         """
         if not name or name == "root":
-            return ""
+            if self.use_color:
+                return "{}:{}".format(_ANSI_DATETIME, _ANSI_RESET)
+            return ":"
         if self.use_color:
-            return " {}{}{}{}:{}".format(
+            return "{}{}{}{}:{}".format(
                 _ANSI_SOURCE, name, _ANSI_RESET, _ANSI_DATETIME, _ANSI_RESET
             )
-        return " {}:".format(name)
+        return "{}:".format(name)
 
     def _fmt_relative(self, created):
         """
@@ -262,36 +303,49 @@ class _LogFormatter(Formatter):
         :type record: logging.LogRecord
         :param datefmt: strftime format override; falls back to ``_datefmt`` if omitted
         :type datefmt: str, optional
-        :return: formatted and optionally colored timestamp string
+        :return: formatted and optionally colored timestamp string, or empty string if no timestamp
         :rtype: str
         """
         if self._relative_to is not None:
             asctime = self._fmt_relative(record.created)
-        else:
+            return self._fmt_asctime(asctime)
+        elif datefmt or self._datefmt:
             asctime = super().formatTime(record, datefmt or self._datefmt)
             asctime = asctime.replace(
                 "{ms}", "{:03d}".format(int(record.msecs))
             )
-        return self._fmt_asctime(asctime)
+            return self._fmt_asctime(asctime)
+        else:
+            return ""
 
     def format(self, record):
         """
         :param record: log record
         :type record: logging.LogRecord
-        :return: fully formatted log line: timestamp, level, optional source, message
+        :return: fully formatted log line: optional timestamp, level, source (or colon), message
         :rtype: str
         """
         record = logging.makeLogRecord(record.__dict__)
 
+        asctime = self.formatTime(record)
         source = self._fmt_source(record.name)
-        sep = "\t" if source else " "
-        result = "{} {}{}{}{}".format(
-            self.formatTime(record),
-            self._fmt_level(record.levelno),
-            source,
-            sep,
-            record.getMessage(),
-        )
+        space = " " if record.name and record.name != "root" else ""
+
+        if asctime:
+            result = "{} {}{}{} {}".format(
+                asctime,
+                self._fmt_level(record.levelno),
+                space,
+                source,
+                record.getMessage(),
+            )
+        else:
+            result = "{}{}{} {}".format(
+                self._fmt_level(record.levelno),
+                space,
+                source,
+                record.getMessage(),
+            )
 
         if record.exc_info and not record.exc_text:
             record.exc_text = self.formatException(record.exc_info)
@@ -309,13 +363,13 @@ class _LogFormatter(Formatter):
 
 
 # pylint: disable-next=invalid-name
-def getLogger(name=None, *, datefmt=DATEFMT_TIME, relative_to=None):
+def getLogger(name=None, *, datefmt=None, relative_to=None):
     """
     :param name: logger name
     :type name: str
     :param datefmt: strftime format for timestamps; ignored when ``relative_to`` is set;
-            defaults to ``DATEFMT_TIME`` (time only)
-    :type datefmt: str
+            defaults to ``None`` (no timestamp)
+    :type datefmt: str, optional
     :param relative_to: Unix timestamp to use as epoch for relative time display;
             mutually exclusive with ``datefmt``
     :type relative_to: float, optional
@@ -411,10 +465,12 @@ def set_logging_level_by_verbosity(namespace, *, logger=None, logger_name=None):
 
     Verbosity-to-level mapping:
 
-    - ``-vv`` or more: ``DEBUG``
-    - ``-v``: ``INFO``
-    - no flags: ``WARNING``
-    - ``-q`` or more: all output suppressed (level above ``CRITICAL``)
+    - ``-vv`` or more: ``DEBUG`` (10)
+    - ``-v``: ``INFO`` (20)
+    - no flags: ``DONE`` (25)
+    - ``-q``: ``WARNING`` (30)
+    - ``-qq``: ``ERROR`` (40)
+    - ``-qqq`` or more: ``CRITICAL`` (50)
 
 
     :param namespace: parsed namespace containing ``--verbose`` and/or ``--quiet`` counts
@@ -432,9 +488,13 @@ def set_logging_level_by_verbosity(namespace, *, logger=None, logger_name=None):
     elif verbosity == 1:
         level = logging.INFO
     elif verbosity == 0:
+        level = DONE
+    elif verbosity == -1:
         level = logging.WARNING
-    else:
-        level = logging.CRITICAL + 1
+    elif verbosity == -2:
+        level = logging.ERROR
+    else:  # verbosity <= -3
+        level = logging.CRITICAL
 
     if logger is None:
         logger = logging.getLogger(logger_name)

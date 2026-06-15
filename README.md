@@ -11,11 +11,11 @@ todo comprehensive unit tests
 
 ## Features
 
-- **Custom log levels** — `ENTER` (11), `SKIP` (12), `PASS` (25), `FAIL` (45) for hook and test-case workflows
-- **Structured output** — `HH:MM:SS [LEVEL] source:\tmessage` with padded 5-char level names
+- **Custom log levels** — `ENTER` (11), `SKIP` (12), `PASS` (21), `SUCC` (22), `DONE` (25), `FAIL` (45) for hook and test-case workflows
+- **Structured output** — `LEVEL source: message` with padded 5-char level names
 - **ANSI 16-color output** — per-level colors, auto-disabled when output is piped
 - **stdout/stderr split** — `< WARNING` goes to stdout, `>= WARNING` goes to stderr
-- **Flexible timestamps** — wall-clock time, datetime, millisecond variants, or elapsed relative time
+- **Optional timestamps** — disable by default; enable with `datefmt=kamilog.DATEFMT_TIME` or `relative_to=`
 - **Level constants** — `kamilog.DEBUG`, `kamilog.WARNING`, etc. — no `import logging` needed
 - **Verbosity helpers** — `-v`/`-q` CLI flags mapped to logging levels
 - **Drop-in compatible** — `kamilog.getLogger()` in place of `logging.getLogger()`
