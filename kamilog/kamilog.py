@@ -118,7 +118,7 @@ __all__ = (
 )
 
 
-# TODO move docstring into docs
+# Todo move docstring into docs
 
 # customized logger  ###########################################################
 
