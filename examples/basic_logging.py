@@ -1,4 +1,6 @@
-"""Demonstrates standard levels, custom levels, and all levels with descriptions."""
+"""
+Demonstrates standard levels, custom levels, and all levels with descriptions.
+"""
 
 import kamilog
 
