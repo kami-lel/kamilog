@@ -9,6 +9,7 @@ Q.v. https://github.com/kami-lel/kamilog
 
 import logging
 import sys
+from collections import deque
 from logging import Formatter, StreamHandler
 
 __version__ = "1.4.2"
@@ -40,8 +41,6 @@ __all__ = (
     "DATEFMT_DATETIME_MS",
 )
 
-
-# TODO smart logging
 
 # constants  ###################################################################
 
@@ -350,6 +349,55 @@ class _LogFormatter(Formatter):
         return result
 
 
+# diff only  ###################################################################
+
+
+class _DiffOnlyMsgFilter(logging.Filter):  # ===================================
+    """
+    Blanks out characters that are unchanged across the last ``history`` messages,
+    so repeated log lines visually collapse down to only what differs.
+    """
+
+    # TODO smart logging
+
+    def __init__(self, history=3):
+        """
+        :param history: number of prior messages to compare against
+        :type history: int
+        """
+        super().__init__()
+        self._history = deque(maxlen=history)
+
+    def filter(self, record):
+        """
+        :param record: log record to mask in place
+        :type record: logging.LogRecord
+        :return: always ``True``; this filter never drops records
+        :rtype: bool
+        """
+        message = record.getMessage()
+
+        if len(self._history) == self._history.maxlen:
+            masked = "".join(
+                (
+                    " "
+                    if ch != " "
+                    and all(
+                        ch == prev[i] for prev in self._history if i < len(prev)
+                    )
+                    else ch
+                )
+                for i, ch in enumerate(message)
+            )
+        else:
+            masked = message
+
+        self._history.append(message)
+        record.msg = masked
+        record.args = ()
+        return True
+
+
 # get logger  ##################################################################
 
 
@@ -372,6 +420,9 @@ def getLogger(name=None, *, datefmt=None, relative_to=None):
 
     if not isinstance(logger, KamiLogger):
         logger.__class__ = KamiLogger
+
+    if not any(isinstance(f, _DiffOnlyMsgFilter) for f in logger.filters):
+        logger.addFilter(_DiffOnlyMsgFilter())
 
     if not logger.handlers:
         stdout_handler = StreamHandler(sys.stdout)
