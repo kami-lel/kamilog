@@ -11,7 +11,7 @@ import logging
 import sys
 from logging import Formatter, StreamHandler
 
-__version__ = "1.4.3-alpha"
+__version__ = "1.4.2"
 __author__ = "kamiLeL"
 
 __all__ = (
@@ -40,6 +40,8 @@ __all__ = (
     "DATEFMT_DATETIME_MS",
 )
 
+
+# Todo smart logging
 
 # constants  ###################################################################
 
