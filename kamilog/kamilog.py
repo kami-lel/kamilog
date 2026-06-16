@@ -42,6 +42,7 @@ __all__ = (
 
 
 # Todo smart logging
+# Todo smart time print
 
 # constants  ###################################################################
 
