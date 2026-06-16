@@ -19,8 +19,18 @@
 
 ## [Unreleased]
 
+### Changed
 
+ANSI formatting (styling):
+- Level keywords: now displayed in bold with their assigned colors
+- Timestamp: bright black (grey) color
+- Source name: bright black (grey) color
+- Colon separator: bright black (grey) color
+- Message: uncolored (unchanged)
 
+Documentation:
+- Updated `docs/usage_doc.md` to document formatting colors and styles
+- Clarified output format with timestamp, level, source, and message styling
 
 ## [1.4.1] - 2026-06-16
 
