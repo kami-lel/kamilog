@@ -188,8 +188,8 @@ _PADDED_LEVELNAME_MAP = {
 
 _ANSI_RESET = "\033[0m"
 _ANSI_BOLD = "\033[1m"
-_ANSI_DATETIME = "\033[30m"
-_ANSI_SOURCE = "\033[90m"  # bright black (not bold)
+_ANSI_DATETIME = "\033[90m"  # bright black (grey)
+_ANSI_SOURCE = "\033[90m"  # bright black (grey)
 _ANSI_LEVEL_COLORS = {
     logging.DEBUG: "\033[34m",  # blue
     ENTER: "\033[94m",  # bright blue

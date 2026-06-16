@@ -155,9 +155,9 @@ Level-to-color mapping (16-color ANSI):
 | CRIT. | Bright Magenta | `\033[95m` |
 
 Formatting:
-- **Timestamp**: black
+- **Timestamp**: bright black (grey)
 - **Level name**: colored (by table) and bold
-- **Source name**: bright black (not bold)
+- **Source name**: bright black (grey)
 - **Message**: uncolored
 
 
