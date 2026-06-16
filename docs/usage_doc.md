@@ -154,8 +154,11 @@ Level-to-color mapping (16-color ANSI):
 | FAIL  | Bright Red | `\033[91m` |
 | CRIT. | Bright Magenta | `\033[95m` |
 
-Only the level name `[LEVEL]` is colored. The datetime and source name are
-rendered in dim black; the message is uncolored.
+Formatting:
+- **Timestamp**: black
+- **Level name**: colored (by table) and bold
+- **Source name**: bright black (not bold)
+- **Message**: uncolored
 
 
 

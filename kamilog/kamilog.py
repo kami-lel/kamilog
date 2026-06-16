@@ -187,8 +187,9 @@ _PADDED_LEVELNAME_MAP = {
 
 
 _ANSI_RESET = "\033[0m"
+_ANSI_BOLD = "\033[1m"
 _ANSI_DATETIME = "\033[30m"
-_ANSI_SOURCE = "\033[1;30m"  # bold black
+_ANSI_SOURCE = "\033[90m"  # bright black (not bold)
 _ANSI_LEVEL_COLORS = {
     logging.DEBUG: "\033[34m",  # blue
     ENTER: "\033[94m",  # bright blue
@@ -244,13 +245,13 @@ class _LogFormatter(Formatter):
         """
         :param levelno: numeric logging level
         :type levelno: int
-        :return: level name without brackets, e.g. ``DEBUG``, colored if enabled
+        :return: level name without brackets, e.g. ``DEBUG``, colored and bold if enabled
         :rtype: str
         """
         padded = _PADDED_LEVELNAME_MAP.get(levelno, str(levelno).ljust(5)[:5])
         if self.use_color:
             color = _ANSI_LEVEL_COLORS.get(levelno, "")
-            return "{}{}{}".format(color, padded, _ANSI_RESET)
+            return "{}{}{}{}".format(_ANSI_BOLD, color, padded, _ANSI_RESET)
         return padded
 
     def _fmt_source(self, name):
