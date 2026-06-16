@@ -19,6 +19,8 @@
 
 ## [Unreleased]
 
+### Added
+
 ### Changed
 
 ANSI formatting (styling):
@@ -26,11 +28,19 @@ ANSI formatting (styling):
 - Timestamp: bright black (grey) color
 - Source name: bright black (grey) color
 - Colon separator: bright black (grey) color
-- Message: uncolored (unchanged)
 
 Documentation:
 - Updated `docs/usage_doc.md` to document formatting colors and styles
-- Clarified output format with timestamp, level, source, and message styling
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+[unreleased]: https://github.com/kami-lel/kamilog/compare/v1.4.1...dev
 
 ## [1.4.1] - 2026-06-16
 
@@ -45,6 +55,8 @@ Documentation:
 - Restored missing README title
 - Updated usage examples to match level name formatting
 - Added custom log level output examples in usage documentation
+
+[1.4.1]: https://github.com/kami-lel/kamilog/compare/v1.4.0...v1.4.1
 
 
 
@@ -103,7 +115,6 @@ Examples & documentation:
 
 - Fixed spacing between timestamp and level when timestamp is present
 
-[1.4.1]: https://github.com/kami-lel/kamilog/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/kami-lel/kamilog/compare/v1.3.1...v1.4.0
 
 
