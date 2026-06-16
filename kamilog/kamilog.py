@@ -11,7 +11,7 @@ import logging
 import sys
 from logging import Formatter, StreamHandler
 
-__version__ = "1.4.2"
+__version__ = "1.4.3-alpha"
 __author__ = "kamiLeL"
 
 __all__ = (
@@ -210,9 +210,7 @@ class _LogFormatter(Formatter):
     internal log formatter producing structured, optionally colored output
     """
 
-    def __init__(
-        self, *, use_color=False, datefmt=None, relative_to=None
-    ):
+    def __init__(self, *, use_color=False, datefmt=None, relative_to=None):
         """
         :param use_color: enable ANSI color output
         :type use_color: bool
