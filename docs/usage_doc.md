@@ -158,6 +158,7 @@ Formatting:
 - **Timestamp**: bright black (grey)
 - **Level name**: colored (by table) and bold
 - **Source name**: bright black (grey)
+- **Colon separator** (`:`) : bright black (grey)
 - **Message**: uncolored
 
 
