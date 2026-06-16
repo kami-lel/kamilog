@@ -190,17 +190,17 @@ _ANSI_RESET = "\033[0m"
 _ANSI_DATETIME = "\033[30m"
 _ANSI_SOURCE = "\033[1;30m"  # bold black
 _ANSI_LEVEL_COLORS = {
-    logging.DEBUG: "\033[36m",  # cyan
-    ENTER: "\033[92m",  # bright green
-    SKIP: "\033[32m",  # green
+    logging.DEBUG: "\033[34m",  # blue
+    ENTER: "\033[94m",  # bright blue
+    SKIP: "\033[36m",  # cyan
     logging.INFO: "\033[96m",  # bright cyan
-    PASS: "\033[1;92m",  # bold bright green
-    SUCC: "\033[1;32m",  # bold green
+    PASS: "\033[32m",  # green
+    SUCC: "\033[92m",  # bright green
     DONE: "\033[93m",  # bright yellow
     logging.WARNING: "\033[33m",  # yellow
     logging.ERROR: "\033[31m",  # red
-    FAIL: "\033[1;31m",  # bold red
-    logging.CRITICAL: "\033[1;93m",  # bold bright yellow
+    FAIL: "\033[91m",  # bright red
+    logging.CRITICAL: "\033[95m",  # bright magenta
 }
 
 
