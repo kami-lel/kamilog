@@ -23,6 +23,32 @@
 
 ### Changed
 
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+[unreleased]: https://github.com/kami-lel/kamilog/compare/v1.4.2...dev
+
+
+
+
+
+
+
+
+
+
+
+
+
+## [1.4.2] - 2026-06-16
+
+### Changed
+
 ANSI formatting (styling):
 - Level keywords: now displayed in bold with their assigned colors
 - Timestamp: bright black (grey) color
@@ -32,15 +58,19 @@ ANSI formatting (styling):
 Documentation:
 - Updated `docs/usage_doc.md` to document formatting colors and styles
 
-### Deprecated
+[1.4.2]: https://github.com/kami-lel/kamilog/compare/v1.4.1...v1.4.2
 
-### Removed
 
-### Fixed
 
-### Security
 
-[unreleased]: https://github.com/kami-lel/kamilog/compare/v1.4.1...dev
+
+
+
+
+
+
+
+
 
 ## [1.4.1] - 2026-06-16
 
