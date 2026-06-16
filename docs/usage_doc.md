@@ -73,7 +73,7 @@ log = kamilog.getLogger("myapp")
 log.setLevel(kamilog.DEBUG)
 
 log.enter("entering setup")      # ENTER myapp: entering setup
-log.info("processing data")       # INFO  myapp: processing data
+log.info("processing data")      # INFO  myapp: processing data
 log.pass_("validation passed")   # PASS  myapp: validation passed
 log.succ("operation succeeded")  # SUCC. myapp: operation succeeded
 log.done("task completed")       # DONE  myapp: task completed
@@ -147,12 +147,12 @@ Level-to-color mapping (16-color ANSI):
 | `SKIP` | Green |
 | `INFO` | Bright Cyan |
 | `PASS` | Bold Bright Green |
-| `SUCC` | Bold Green |
+| `SUCC.` | Bold Green |
 | `DONE` | Bright Yellow |
-| `WARN` | Yellow |
+| `WARN.` | Yellow |
 | `ERROR` | Red |
 | `FAIL` | Bold Red |
-| `CRIT` | Bold Bright Yellow |
+| `CRIT.` | Bold Bright Yellow |
 
 Only the level name `[LEVEL]` is colored. The datetime and source name are
 rendered in dim black; the message is uncolored.
