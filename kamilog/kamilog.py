@@ -41,7 +41,7 @@ __all__ = (
 )
 
 
-# Todo smart logging
+# TODO smart logging
 
 # constants  ###################################################################
 
