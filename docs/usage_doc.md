@@ -73,7 +73,7 @@ log = kamilog.getLogger("myapp")
 log.setLevel(kamilog.DEBUG)
 
 log.enter("entering setup")      # ENTER myapp: entering setup
-log.info("processing data")       # INFO  myapp: processing data
+log.info("processing data")      # INFO  myapp: processing data
 log.pass_("validation passed")   # PASS  myapp: validation passed
 log.succ("operation succeeded")  # SUCC. myapp: operation succeeded
 log.done("task completed")       # DONE  myapp: task completed
@@ -140,22 +140,26 @@ when output is piped or redirected to a file.
 
 Level-to-color mapping (16-color ANSI):
 
-| Level | Color |
-|---|---|
-| `DEBUG` | Cyan |
-| `ENTER` | Bright Green |
-| `SKIP` | Green |
-| `INFO` | Bright Cyan |
-| `PASS` | Bold Bright Green |
-| `SUCC` | Bold Green |
-| `DONE` | Bright Yellow |
-| `WARN` | Yellow |
-| `ERROR` | Red |
-| `FAIL` | Bold Red |
-| `CRIT` | Bold Bright Yellow |
+| Level | Color | ANSI Code |
+|---|---|---|
+| DEBUG | Blue | `\033[34m` |
+| ENTER | Bright Blue | `\033[94m` |
+| SKIP  | Cyan | `\033[36m` |
+| INFO  | Bright Cyan | `\033[96m` |
+| PASS  | Green | `\033[32m` |
+| SUCC. | Bright Green | `\033[92m` |
+| DONE  | Bright Yellow | `\033[93m` |
+| WARN. | Yellow | `\033[33m` |
+| ERROR | Red | `\033[31m` |
+| FAIL  | Bright Red | `\033[91m` |
+| CRIT. | Bright Magenta | `\033[95m` |
 
-Only the level name `[LEVEL]` is colored. The datetime and source name are
-rendered in dim black; the message is uncolored.
+Formatting:
+- **Timestamp**: bright black (grey)
+- **Level name**: colored (by table) and bold
+- **Source name**: bright black (grey)
+- **Colon separator** (`:`) : bright black (grey)
+- **Message**: uncolored
 
 
 

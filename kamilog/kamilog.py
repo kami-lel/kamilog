@@ -11,7 +11,7 @@ import logging
 import sys
 from logging import Formatter, StreamHandler
 
-__version__ = "1.4.1"
+__version__ = "1.4.2"
 __author__ = "kamiLeL"
 
 __all__ = (
@@ -187,20 +187,21 @@ _PADDED_LEVELNAME_MAP = {
 
 
 _ANSI_RESET = "\033[0m"
-_ANSI_DATETIME = "\033[30m"
-_ANSI_SOURCE = "\033[1;30m"  # bold black
+_ANSI_BOLD = "\033[1m"
+_ANSI_DATETIME = "\033[90m"  # bright black (grey)
+_ANSI_SOURCE = "\033[90m"  # bright black (grey)
 _ANSI_LEVEL_COLORS = {
-    logging.DEBUG: "\033[36m",  # cyan
-    ENTER: "\033[92m",  # bright green
-    SKIP: "\033[32m",  # green
+    logging.DEBUG: "\033[34m",  # blue
+    ENTER: "\033[94m",  # bright blue
+    SKIP: "\033[36m",  # cyan
     logging.INFO: "\033[96m",  # bright cyan
-    PASS: "\033[1;92m",  # bold bright green
-    SUCC: "\033[1;32m",  # bold green
+    PASS: "\033[32m",  # green
+    SUCC: "\033[92m",  # bright green
     DONE: "\033[93m",  # bright yellow
     logging.WARNING: "\033[33m",  # yellow
     logging.ERROR: "\033[31m",  # red
-    FAIL: "\033[1;31m",  # bold red
-    logging.CRITICAL: "\033[1;93m",  # bold bright yellow
+    FAIL: "\033[91m",  # bright red
+    logging.CRITICAL: "\033[95m",  # bright magenta
 }
 
 
@@ -244,13 +245,13 @@ class _LogFormatter(Formatter):
         """
         :param levelno: numeric logging level
         :type levelno: int
-        :return: level name without brackets, e.g. ``DEBUG``, colored if enabled
+        :return: level name without brackets, e.g. ``DEBUG``, colored and bold if enabled
         :rtype: str
         """
         padded = _PADDED_LEVELNAME_MAP.get(levelno, str(levelno).ljust(5)[:5])
         if self.use_color:
             color = _ANSI_LEVEL_COLORS.get(levelno, "")
-            return "{}{}{}".format(color, padded, _ANSI_RESET)
+            return "{}{}{}{}".format(_ANSI_BOLD, color, padded, _ANSI_RESET)
         return padded
 
     def _fmt_source(self, name):

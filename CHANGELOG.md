@@ -19,6 +19,56 @@
 
 ## [Unreleased]
 
+### Added
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+[unreleased]: https://github.com/kami-lel/kamilog/compare/v1.4.2...dev
+
+
+
+
+
+
+
+
+
+
+
+
+
+## [1.4.2] - 2026-06-16
+
+### Changed
+
+ANSI formatting (styling):
+- Level keywords: now displayed in bold with their assigned colors
+- Timestamp: bright black (grey) color
+- Source name: bright black (grey) color
+- Colon separator: bright black (grey) color
+
+Documentation:
+- Updated `docs/usage_doc.md` to document formatting colors and styles
+
+[1.4.2]: https://github.com/kami-lel/kamilog/compare/v1.4.1...v1.4.2
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -35,6 +85,8 @@ Documentation:
 - Restored missing README title
 - Updated usage examples to match level name formatting
 - Added custom log level output examples in usage documentation
+
+[1.4.1]: https://github.com/kami-lel/kamilog/compare/v1.4.0...v1.4.1
 
 
 
@@ -93,7 +145,6 @@ Examples & documentation:
 
 - Fixed spacing between timestamp and level when timestamp is present
 
-[1.4.1]: https://github.com/kami-lel/kamilog/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/kami-lel/kamilog/compare/v1.3.1...v1.4.0
 
 
