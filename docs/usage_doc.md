@@ -140,19 +140,19 @@ when output is piped or redirected to a file.
 
 Level-to-color mapping (16-color ANSI):
 
-| Level | Color |
-|---|---|
-| DEBUG | Blue |
-| ENTER | Bright Blue |
-| SKIP  | Cyan |
-| INFO  | Bright Cyan |
-| PASS  | Green |
-| SUCC. | Bright Green |
-| DONE  | Bright Yellow |
-| WARN. | Yellow |
-| ERROR | Red |
-| FAIL  | Bright Red |
-| CRIT. | Bright Magenta |
+| Level | Color | ANSI Code |
+|---|---|---|
+| DEBUG | Blue | `\033[34m` |
+| ENTER | Bright Blue | `\033[94m` |
+| SKIP  | Cyan | `\033[36m` |
+| INFO  | Bright Cyan | `\033[96m` |
+| PASS  | Green | `\033[32m` |
+| SUCC. | Bright Green | `\033[92m` |
+| DONE  | Bright Yellow | `\033[93m` |
+| WARN. | Yellow | `\033[33m` |
+| ERROR | Red | `\033[31m` |
+| FAIL  | Bright Red | `\033[91m` |
+| CRIT. | Bright Magenta | `\033[95m` |
 
 Only the level name `[LEVEL]` is colored. The datetime and source name are
 rendered in dim black; the message is uncolored.
