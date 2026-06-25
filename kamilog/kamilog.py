@@ -360,13 +360,18 @@ class _DiffOnlyMsgFilter(logging.Filter):  # ===================================
 
     # TODO smart logging
 
-    def __init__(self, history=3):
+    def __init__(self):
         """
         :param history: number of prior messages to compare against
         :type history: int
         """
         super().__init__()
-        self._history = deque(maxlen=history)
+        self._history = deque(maxlen=self._PATTERN_TRIGGER_CNT)
+
+    _PATTERN_TRIGGER_CNT = 3
+
+    _pattern = ""
+    _pattern_cnt = 0
 
     def filter(self, record):
         """
@@ -540,4 +545,5 @@ def set_logging_level_by_verbosity(namespace, *, logger=None, logger_name=None):
 
     if logger is None:
         logger = logging.getLogger(logger_name)
+
     logger.setLevel(level)
