@@ -43,8 +43,10 @@ __all__ = (
 
 # Todo smart logging
 # Todo smart time print
+# Fixme reorganize values & names with enum
 
 # constants  ###################################################################
+
 
 # log level constants  =========================================================
 
