@@ -14,6 +14,7 @@ Key additions over stdlib `logging`:
 - Custom log levels: `ENTER` (11), `SKIP` (12), `PASS` (21), `SUCC` (22), `DONE` (25), `FAIL` (45)
 - `KamiLogger` subclass with `.enter()`, `.skip()`, `.pass_()`, `.succ()`, `.done()`, `.fail()` methods
 - `_LogFormatter` producing `LEVEL source: message` (no timestamp by default) with per-level ANSI color
+- `_DiffOnlyMsgFilter` auto-attached to all loggers: suppresses characters shared across the last 3 messages, collapsing repeated log lines; common runs of 10+ chars compress into `〃\t` markers, highlighting only what changed
 - stdout/stderr split handlers (< WARNING → stdout, >= WARNING → stderr)
 - Optional timestamps via `datefmt` parameter (constants: `DATEFMT_TIME`, `DATEFMT_TIME_MS`, `DATEFMT_DATETIME`, `DATEFMT_DATETIME_MS`)
 - Relative time display via `relative_to` parameter (elapsed time since a Unix timestamp)
@@ -37,6 +38,7 @@ kamilog/
 │   ├── logger_names_and_timestamps.py # logger names, timestamps, multiple messages
 │   ├── timestamp_formats.py # all four DATEFMT constants
 │   ├── relative_time.py     # elapsed time with relative_to
+│   ├── diff_only_filter.py  # _DiffOnlyMsgFilter demo (sensor, batch, sync scenarios)
 │   └── verbosity.py         # CLI -v/-q/-qq/-qqq flags demo
 ├── docs/
 │   ├── usage_doc.md

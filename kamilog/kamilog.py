@@ -9,6 +9,7 @@ Q.v. https://github.com/kami-lel/kamilog
 
 import logging
 import sys
+from collections import deque
 from logging import Formatter, StreamHandler
 
 __version__ = "1.4.2"
@@ -40,9 +41,6 @@ __all__ = (
     "DATEFMT_DATETIME_MS",
 )
 
-
-# Todo smart logging
-# Todo smart time print
 # Fixme reorganize values & names with enum
 
 # constants  ###################################################################
@@ -353,6 +351,109 @@ class _LogFormatter(Formatter):
         return result
 
 
+# diff only  ###################################################################
+
+
+class _DiffOnlyMsgFilter(logging.Filter):  # ===================================
+    """
+    suppress characters shared across the last ``window`` messages, so
+    repeated log lines collapse down to only what changed.
+
+    compares each incoming message against a sliding window of prior
+    messages; positions that are identical in all of them are candidates
+    for compression. contiguous common runs are replaced with ``〃\\t``
+    markers in multiples of 8: each group of 8 common chars becomes one
+    ``〃\\t`` pair. at least 2 original chars are preserved at each end of
+    the compressed block, giving visual context around the marker.
+
+
+    :param window: number of prior messages held for comparison;
+            suppression activates once this many messages have been seen
+    :type window: int
+    """
+
+    def __init__(self, window=3):
+        super().__init__()
+        self._history = deque(maxlen=window)
+        # _common[i] = shared char at position i across all history,
+        # or None where messages diverge or lengths differ
+        self._common: list = []
+
+    def _update_common(self):
+        """
+        recompute _common from current _history
+        """
+        history = list(self._history)
+        if not history:
+            self._common = []
+            return
+        min_len = min(len(s) for s in history)
+        max_len = max(len(s) for s in history)
+        common: list = []
+        for i in range(max_len):
+            if i >= min_len:
+                common.append(None)  # position missing in some messages
+            else:
+                ch = history[0][i]
+                common.append(
+                    ch if all(s[i] == ch for s in history[1:]) else None
+                )
+        self._common = common
+
+    def filter(self, record):
+        """
+        :param record: log record to mask in place
+        :type record: logging.LogRecord
+        :return: always ``True``; this filter never drops records
+        :rtype: bool
+        """
+        message = record.getMessage()
+
+        if len(self._history) == self._history.maxlen:
+            common = self._common
+            # mark positions where current message matches all history
+            n_common = len(common)
+            is_common = [
+                i < n_common and common[i] is not None and common[i] == ch
+                for i, ch in enumerate(message)
+            ]
+            # compress common runs: each 8-char block → one tab;
+            # keep ≥2 original chars at each end of the compressed block
+            result = []
+            i = 0
+            msg_len = len(message)
+            while i < msg_len:
+                if not is_common[i]:
+                    result.append(message[i])
+                    i += 1
+                else:
+                    run_s = i
+                    while i < msg_len and is_common[i]:
+                        i += 1
+                    run_e = i
+                    N = run_e - run_s
+                    # leading: chars to keep so ≥2 chars precede the tab
+                    leading = max(0, 2 - run_s)
+                    replaceable = N - leading - 2  # reserve ≥2 trailing
+                    k = replaceable // 8 if replaceable > 0 else 0
+                    if k == 0:
+                        result.append(message[run_s:run_e])
+                    else:
+                        tab_s = run_s + leading
+                        result.append(message[run_s:tab_s])
+                        result.append("〃\t" * k)
+                        result.append(message[tab_s + 8 * k : run_e])
+            masked = "".join(result)
+        else:
+            masked = message
+
+        self._history.append(message)
+        self._update_common()
+        record.msg = masked
+        record.args = ()
+        return True
+
+
 # get logger  ##################################################################
 
 
@@ -375,6 +476,9 @@ def getLogger(name=None, *, datefmt=None, relative_to=None):
 
     if not isinstance(logger, KamiLogger):
         logger.__class__ = KamiLogger
+
+    if not any(isinstance(f, _DiffOnlyMsgFilter) for f in logger.filters):
+        logger.addFilter(_DiffOnlyMsgFilter())
 
     if not logger.handlers:
         stdout_handler = StreamHandler(sys.stdout)
@@ -492,4 +596,5 @@ def set_logging_level_by_verbosity(namespace, *, logger=None, logger_name=None):
 
     if logger is None:
         logger = logging.getLogger(logger_name)
+
     logger.setLevel(level)
