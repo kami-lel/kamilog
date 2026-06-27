@@ -9,6 +9,7 @@ Q.v. https://github.com/kami-lel/kamilog
 
 import logging
 import sys
+import time
 from collections import deque
 from enum import IntEnum
 from logging import Formatter, StreamHandler
@@ -226,35 +227,46 @@ _ANSI_LEVEL_COLORS = {
 }
 
 
-class _LogFormatter(Formatter):
+class _LogFormatEngine:
     """
-    internal log formatter producing structured, optionally colored output
-    """
+    core log-line formatting logic, independent of ``logging.Formatter``.
 
-    # HACK refactorization for better readability
+    builds each log line from its constituent parts — optional timestamp,
+    5-char padded level name, source label, and message — applying ANSI
+    color codes when enabled. exposed via ``_LogFormatter.engine`` so
+    external callers can reach ``count_prefix_chars`` without going
+    through the adapter.
+
+
+    :param use_color: enable ANSI color codes in the output
+    :type use_color: bool
+    :param datefmt: strftime format string for wall-clock timestamps;
+            ignored when ``relative_to`` is set; ``None`` disables
+            timestamps
+    :type datefmt: str or None
+    :param relative_to: Unix timestamp used as the epoch for relative
+            time display; mutually exclusive with ``datefmt``
+    :type relative_to: float or None
+    """
 
     def __init__(self, *, use_color=False, datefmt=None, relative_to=None):
-        """
-        :param use_color: enable ANSI color output
-        :type use_color: bool
-        :param datefmt: strftime format for wall-clock timestamps;
-                ignored when ``relative_to`` is set; defaults to ``None`` (no timestamp)
-        :type datefmt: str, optional
-        :param relative_to: Unix timestamp used as epoch for relative time display;
-                mutually exclusive with ``datefmt``
-        :type relative_to: float, optional
-        """
-        super().__init__(datefmt=datefmt)
         self.use_color = use_color
         self._datefmt = datefmt
         self._relative_to = relative_to
 
+    # Public API  ##############################################################
+
     def count_prefix_chars(self, record):
         """
-        :param record: log record
+        return the count of printable characters before the message text.
+
+        accounts for the optional timestamp, 5-char padded level name,
+        and source label; ANSI escape codes are excluded from the count.
+
+
+        :param record: log record to measure
         :type record: logging.LogRecord
-        :return: number of printable characters before the message text,
-                 excluding any ANSI escape codes
+        :return: printable character count of the prefix
         :rtype: int
         """
         name = record.name
@@ -263,9 +275,9 @@ class _LogFormatter(Formatter):
         if self._relative_to is not None:
             ts_len = len(self._fmt_relative(record.created))
         elif self._datefmt:
-            plain = Formatter.formatTime(self, record, self._datefmt).replace(
-                "{ms}", "{:03d}".format(int(record.msecs))
-            )
+            plain = time.strftime(
+                self._datefmt, time.localtime(record.created)
+            ).replace("{ms}", "{:03d}".format(int(record.msecs)))
             ts_len = len(plain)
         else:
             ts_len = 0
@@ -278,13 +290,68 @@ class _LogFormatter(Formatter):
             return ts_len + 1 + level_len + space_len + source_len + 1
         return level_len + space_len + source_len + 1
 
+    def format_time(self, record, datefmt=None):
+        """
+        return the formatted and optionally colored timestamp string.
+
+
+        :param record: log record
+        :type record: logging.LogRecord
+        :param datefmt: strftime format override; falls back to ``_datefmt``
+        :type datefmt: str or None
+        :return: formatted timestamp, or empty string when disabled
+        :rtype: str
+        """
+        if self._relative_to is not None:
+            return self._fmt_asctime(self._fmt_relative(record.created))
+        elif datefmt or self._datefmt:
+            fmt = datefmt or self._datefmt
+            asctime = time.strftime(
+                fmt, time.localtime(record.created)
+            ).replace("{ms}", "{:03d}".format(int(record.msecs)))
+            return self._fmt_asctime(asctime)
+        return ""
+
+    def build_line(self, record):
+        """
+        build the main log line from a record's parts.
+
+        produces the ``LEVEL source: message`` line with optional
+        timestamp prefix. does not handle exc_info or stack_info —
+        those are appended by the ``_LogFormatter`` adapter.
+
+
+        :param record: log record to format
+        :type record: logging.LogRecord
+        :return: formatted log line
+        :rtype: str
+        """
+        asctime = self.format_time(record)
+        source = self._fmt_source(record.name)
+        space = " " if record.name and record.name != "root" else ""
+
+        if asctime:
+            return "{} {}{}{} {}".format(
+                asctime,
+                self._fmt_level(record.levelno),
+                space,
+                source,
+                record.getMessage(),
+            )
+        return "{}{}{} {}".format(
+            self._fmt_level(record.levelno),
+            space,
+            source,
+            record.getMessage(),
+        )
+
     # helpers  =================================================================
 
     def _fmt_asctime(self, asctime):
         """
         :param asctime: pre-formatted datetime string
         :type asctime: str
-        :return: asctime wrapped in black ANSI codes, or plain if color disabled
+        :return: asctime wrapped in grey ANSI codes, or plain if disabled
         :rtype: str
         """
         if self.use_color:
@@ -295,7 +362,7 @@ class _LogFormatter(Formatter):
         """
         :param levelno: numeric logging level
         :type levelno: int
-        :return: level name without brackets, e.g. ``DEBUG``, colored and bold if enabled
+        :return: 5-char padded level name, colored and bold if enabled
         :rtype: str
         """
         padded = _PADDED_LEVELNAME_MAP.get(levelno, str(levelno).ljust(5)[:5])
@@ -308,7 +375,8 @@ class _LogFormatter(Formatter):
         """
         :param name: logger name
         :type name: str
-        :return: ``"name:"`` with the name in bold black, or ``":"`` in black if name is root or absent
+        :return: ``"name:"`` in grey, or ``":"`` in grey if name is
+                root or absent
         :rtype: str
         """
         if not name or name == "root":
@@ -326,7 +394,7 @@ class _LogFormatter(Formatter):
         """
         :param created: Unix timestamp of the log record
         :type created: float
-        :return: elapsed time since ``_relative_to`` as ``+HH:MM:SS.mmm`` or ``-HH:MM:SS.mmm``
+        :return: elapsed time as ``+HH:MM:SS.mmm`` or ``-HH:MM:SS.mmm``
         :rtype: str
         """
         delta = created - self._relative_to
@@ -337,67 +405,75 @@ class _LogFormatter(Formatter):
         ms = int((delta % 1) * 1000)
         return "{}{:02d}:{:02d}:{:02d}.{:03d}".format(sign, h, m, s, ms)
 
-    # extend Formatter  ========================================================
+
+class _LogFormatter(Formatter):
+    """
+    ``logging.Formatter`` adapter wrapping ``_LogFormatEngine``.
+
+    delegates all line-building and timestamp logic to an internal
+    ``_LogFormatEngine`` instance exposed via the ``engine`` property.
+    exc_info and stack_info appending are handled here because they
+    depend on ``Formatter.formatException`` and ``Formatter.formatStack``.
+
+
+    :param use_color: forwarded to ``_LogFormatEngine``
+    :type use_color: bool
+    :param datefmt: forwarded to ``_LogFormatEngine``; also passed to
+            ``Formatter.__init__`` for stdlib compatibility
+    :type datefmt: str or None
+    :param relative_to: forwarded to ``_LogFormatEngine``
+    :type relative_to: float or None
+    """
+
+    def __init__(self, *, use_color=False, datefmt=None, relative_to=None):
+        super().__init__(datefmt=datefmt)
+        self._engine = _LogFormatEngine(
+            use_color=use_color, datefmt=datefmt, relative_to=relative_to
+        )
+
+    @property
+    def engine(self):
+        """
+        :return: the internal ``_LogFormatEngine`` instance
+        :rtype: _LogFormatEngine
+        """
+        return self._engine
 
     def formatTime(self, record, datefmt=None):
         """
+        delegate timestamp formatting to the engine.
+
+
         :param record: log record
         :type record: logging.LogRecord
-        :param datefmt: strftime format override; falls back to ``_datefmt`` if omitted
-        :type datefmt: str, optional
-        :return: formatted and optionally colored timestamp string, or empty string if no timestamp
+        :param datefmt: strftime format override
+        :type datefmt: str or None
+        :return: formatted timestamp, or empty string when disabled
         :rtype: str
         """
-        if self._relative_to is not None:
-            asctime = self._fmt_relative(record.created)
-            return self._fmt_asctime(asctime)
-        elif datefmt or self._datefmt:
-            asctime = super().formatTime(record, datefmt or self._datefmt)
-            asctime = asctime.replace(
-                "{ms}", "{:03d}".format(int(record.msecs))
-            )
-            return self._fmt_asctime(asctime)
-        else:
-            return ""
+        return self._engine.format_time(record, datefmt)
 
     def format(self, record):
         """
+        produce the complete log line, appending exc_info and stack_info.
+
+
         :param record: log record
         :type record: logging.LogRecord
-        :return: fully formatted log line: optional timestamp, level, source (or colon), message
+        :return: fully formatted log line with optional traceback and
+                stack info appended
         :rtype: str
         """
         record = logging.makeLogRecord(record.__dict__)
-
-        asctime = self.formatTime(record)
-        source = self._fmt_source(record.name)
-        space = " " if record.name and record.name != "root" else ""
-
-        if asctime:
-            result = "{} {}{}{} {}".format(
-                asctime,
-                self._fmt_level(record.levelno),
-                space,
-                source,
-                record.getMessage(),
-            )
-        else:
-            result = "{}{}{} {}".format(
-                self._fmt_level(record.levelno),
-                space,
-                source,
-                record.getMessage(),
-            )
-
         if record.exc_info and not record.exc_text:
             record.exc_text = self.formatException(record.exc_info)
+        result = self._engine.build_line(record)
         if record.exc_text:
             result = "{}\n{}".format(result, record.exc_text)
         if record.stack_info:
             result = "{}\n{}".format(
                 result, self.formatStack(record.stack_info)
             )
-
         return result
 
 
@@ -476,9 +552,8 @@ class _DiffOnlyEngine:  # ======================================================
         block = self._COMPRESSION_BLOCK_SIZE
         trail = self._PRESERVED_TRAILING_CHARS
         prefix_len = (
-            self._formatter.count_prefix_chars(record)
-            if self._formatter is not None
-            else 0
+            self._formatter.engine.count_prefix_chars(record)
+            if self._formatter is not None else 0
         )
         n_common = len(self._common)
         is_common = [
