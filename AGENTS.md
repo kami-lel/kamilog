@@ -1,63 +1,20 @@
 ---
-name: kamilog
-description: Agent guidelines for the kamilog Python logging utility library
+name: kamilog AGENTS
+alwaysApply: true
 ---
 
 # kamilog AGENTS
 
-## Project Overview
+kamilog is a lightweight Python logging utility extending the stdlib `logging` module. See [`CONTEXT.md`](CONTEXT.md) for architecture, module layout, and feature details.
 
-kamilog is a lightweight Python logging utility that extends Python's built-in `logging` module with structured output, custom log levels, ANSI 16-color support, and flexible timestamp options.
-
-Key additions over stdlib `logging`:
-
-- Custom log levels: `ENTER` (11), `SKIP` (12), `PASS` (21), `SUCC` (22), `DONE` (25), `FAIL` (45)
-- `KamiLogger` subclass with `.enter()`, `.skip()`, `.pass_()`, `.succ()`, `.done()`, `.fail()` methods
-- `_LogFormatter` producing `LEVEL source: message` (no timestamp by default) with per-level ANSI color
-- `_DiffOnlyMsgFilter` auto-attached to all loggers: suppresses characters shared across the last 3 messages, collapsing repeated log lines; common runs of 10+ chars compress into `〃\t` markers, highlighting only what changed
-- stdout/stderr split handlers (< WARNING → stdout, >= WARNING → stderr)
-- Optional timestamps via `datefmt` parameter (constants: `DATEFMT_TIME`, `DATEFMT_TIME_MS`, `DATEFMT_DATETIME`, `DATEFMT_DATETIME_MS`)
-- Relative time display via `relative_to` parameter (elapsed time since a Unix timestamp)
-- TTY-aware color (auto-disabled when piped/redirected)
-- Level constants (`kamilog.DEBUG`, `kamilog.ENTER`, etc.) re-exported in `__all__`
-- Verbosity helpers: `add_verbose_arguments`, `calc_verbosity`, `set_logging_level_by_verbosity`
-
-Repository layout:
-
-```
-kamilog/
-├── kamilog/
-│   ├── __init__.py          # re-exports all public symbols
-│   └── kamilog.py           # entire implementation
-├── tests/
-│   ├── verbosity_test.py    # pytest suite for verbosity helpers
-│   └── source_quality_test.py  # banned-marker scan (no TODO/FIXME/HACK/BUG)
-├── examples/
-│   ├── all_levels.py        # all log levels with descriptions
-│   ├── basic_logging.py     # standard + custom levels, three sections
-│   ├── logger_names_and_timestamps.py # logger names, timestamps, multiple messages
-│   ├── timestamp_formats.py # all four DATEFMT constants
-│   ├── relative_time.py     # elapsed time with relative_to
-│   ├── diff_only_filter.py  # _DiffOnlyMsgFilter demo (sensor, batch, sync scenarios)
-│   └── verbosity.py         # CLI -v/-q/-qq/-qqq flags demo
-├── docs/
-│   ├── usage_doc.md
-│   └── install_guide.md
-├── setup.cfg                # package metadata: name, version, author, dependencies
-├── setup.py                 # minimal setuptools stub
-├── requirements.txt         # pytest (test-only)
-├── CHANGELOG.md
-└── README.md
-```
-
-## Dev Environment
-
-No virtual-environment tooling is pinned; use whichever you prefer (`venv`, `uv`, `pipenv`).
+## Setup Commands
 
 ```bash
 pip install -e .                  # installs kamilog in editable mode
-pip install -r requirements.txt   # installs pytest
+pip install -r requirements.txt   # installs pytest (test-only dependency)
 ```
+
+No virtual-environment tooling is pinned; use whichever you prefer (`venv`, `uv`, `pipenv`).
 
 ## Build and Test Commands
 
@@ -69,57 +26,68 @@ Run the full test suite:
 pytest tests/
 ```
 
-Run a single test file:
+Run a single test file or test:
 
 ```bash
 pytest tests/verbosity_test.py
-pytest tests/source_quality_test.py
-```
-
-Run a single test:
-
-```bash
 pytest tests/verbosity_test.py::TestCalcVerbosity::test2
 ```
 
-The verbosity test file doubles as a manual smoke-test:
+The verbosity test doubles as a manual smoke-test:
 
 ```bash
 python tests/verbosity_test.py -vv    # verbosity 2, level DEBUG
 python tests/verbosity_test.py -q     # verbosity -1, level WARNING
-python tests/verbosity_test.py -qqq   # verbosity -3, level CRITICAL
 ```
+
+Scope tests to the changed module before pushing — `tests/verbosity_test.py` for verbosity helpers, `tests/source_quality_test.py` for banned-marker scan.
 
 ## Code Style
 
-- **Language**: Python 3 — no type annotations; Sphinx/reStructuredText docstrings (`:param:`, `:type:`, `:return:`, `:rtype:`) on all public functions and classes; single-line docstrings on private helpers.
-- **String formatting**: use `"".format()` style — not f-strings or `%` formatting.
-- **Formatting**: 4-space indentation, PEP 8 naming (`snake_case` functions, `_PrefixedPrivates`, `UPPER_CASE` constants).
-- **`__all__`**: both `kamilog.py` and `__init__.py` maintain explicit `__all__` tuples — update both when adding public symbols.
-- **No external runtime dependencies** — only the standard library (`logging`, `sys`, `argparse`). Keep it that way.
+- **Language**: Python 3 — no type annotations
+- **Docstrings**: Sphinx/reStructuredText style (`:param:`, `:type:`, `:return:`, `:rtype:`) on all public classes and functions; single-line docstrings on private helpers; `__init__` carries no docstring — documented by the class docstring
+- **String formatting**: `"".format()` only — not f-strings or `%`
+- **Naming**: `snake_case` functions, `_PrefixedPrivate` classes, `UPPER_CASE` constants; 4-space indentation, PEP 8 throughout
+- **`__all__`**: both `kamilog/kamilog.py` and `kamilog/__init__.py` maintain explicit `__all__` tuples — update both when adding public symbols
+- **Dependencies**: no external runtime dependencies; stdlib only (`logging`, `sys`, `collections`, `argparse`) — do not introduce new ones without explicit approval
 
 ## Testing Instructions
 
 Tests live in `tests/` and use `pytest` class-based style (`class TestFoo`).
 
-Before committing:
+Before merging:
 
-1. `pytest tests/` — all tests must pass with zero failures.
-2. `source_quality_test.py` scans both source files for `todo`, `bug`, `fixme`, `hack` (case-insensitive) — do not leave any in `kamilog/kamilog.py` or `kamilog/__init__.py`.
+1. `pytest tests/` — all 16 tests must pass with zero failures.
+2. `tests/source_quality_test.py` scans `kamilog/kamilog.py` and `kamilog/__init__.py` for `todo`, `bug`, `fixme`, `hack` (case-insensitive) — leave none behind.
 
-When adding new public functions, add corresponding tests to `tests/verbosity_test.py` or a new `tests/<feature>_test.py` file.
+When adding new public functions, add corresponding tests to an appropriate `tests/<feature>_test.py` file.
 
-## PR Instructions
+## PR & Commit Instructions
 
-- **Branch**: feature branches off `dev`; merge into `dev`. `main` tracks releases.
-- **Commit messages**: imperative mood, lowercase, no period — e.g. `add file handler option for getLogger`.
+- **Branch**: feature branches off `dev`; merge into `dev`. `main` tracks releases only.
+- **Commit messages**: imperative mood, lowercase, no period — e.g. `add diff-only message filter`.
 - **CHANGELOG**: update `CHANGELOG.md` under `## [Unreleased]` for every user-visible change before merging.
-- **Version bump**: update `__version__` in `kamilog/kamilog.py` and move `[Unreleased]` to a dated version block in `CHANGELOG.md` when cutting a release.
-- **Pre-merge checklist**:
-  - [ ] `pytest tests/` passes
-  - [ ] `__all__` in both `kamilog.py` and `__init__.py` is up to date
-  - [ ] CHANGELOG updated
-  - [ ] `docs/usage_doc.md` reflects any API changes
+- **Version bump**: update `__version__` in `kamilog/kamilog.py` and move `[Unreleased]` to a dated version block when cutting a release.
+
+Pre-merge checklist:
+
+- [ ] `pytest tests/` passes
+- [ ] `__all__` in both `kamilog.py` and `__init__.py` is up to date
+- [ ] CHANGELOG updated
+- [ ] `docs/usage_doc.md` reflects any API changes
+- [ ] `CONTEXT.md` updated if architecture or module layout changed
+
+## Documentation Maintenance
+
+Keep these files in sync with code changes:
+
+| file | update when |
+| --- | --- |
+| `CHANGELOG.md` | any user-visible change |
+| `AGENTS.md` | commands, conventions, or constraints change |
+| `CONTEXT.md` | architecture, module layout, or feature set changes |
+| `docs/usage_doc.md` | public API or output format changes |
+| `docs/install_guide.md` | installation steps or requirements change |
 
 ## Security Considerations
 

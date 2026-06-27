@@ -8,7 +8,6 @@ todo install as submodule
 todo comprehensive unit tests
 
 Fixme reorganize values & names with enum
-TODO split agents & context
 -->
 
 ## Features

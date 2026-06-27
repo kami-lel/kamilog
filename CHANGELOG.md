@@ -24,6 +24,7 @@
 
 - `_DiffOnlyMsgFilter` class: automatically applied to all loggers via `getLogger()` to suppress characters shared across the last N messages, collapsing repeated log lines down to only what changed. Common character runs of 10+ chars compress into `〃\t` markers (one per 8 chars); at least 2 original chars are preserved at each end for visual context.
 - `examples/diff_only_filter.py`: comprehensive demo of diff-only filtering behavior across three logging scenarios (periodic sensor reads, batch file processing, pattern break/recovery).
+- `CONTEXT.md`: new descriptive knowledge file covering project overview, repository layout, architecture (all three core classes), public API surface, and known limitations; `AGENTS.md` restructured to prescriptive-only content with a pointer to `CONTEXT.md`.
 
 ### Changed
 
