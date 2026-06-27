@@ -10,6 +10,7 @@ Q.v. https://github.com/kami-lel/kamilog
 import logging
 import sys
 from collections import deque
+from enum import IntEnum
 from logging import Formatter, StreamHandler
 
 __version__ = "1.4.2"
@@ -45,7 +46,7 @@ __all__ = (
 # constants  ###################################################################
 
 
-# log level constants  =========================================================
+# log levels  ==================================================================
 
 NOTSET = logging.NOTSET  # 0
 DEBUG = logging.DEBUG  # 10
@@ -54,34 +55,49 @@ WARNING = logging.WARNING  # 30
 ERROR = logging.ERROR  # 40
 CRITICAL = logging.CRITICAL  # 50
 
-# customized logging level
 
-ENTER = 11
-SKIP = 12
-PASS = 21
-SUCC = 22
-DONE = 25
-FAIL = 45
+class _CustomLogLevel(IntEnum):
+    """custom log level with padded display name."""
+
+    def __new__(cls, value, display):
+        obj = int.__new__(cls, value)
+        obj._value_ = value
+        obj.display = display
+        return obj
+
+    ENTER = (11, "ENTER")
+    SKIP = (12, "SKIP ")
+    PASS = (21, "PASS ")
+    SUCC = (22, "SUCC.")
+    DONE = (25, "DONE ")
+    FAIL = (45, "FAIL ")
 
 
-# Date Time Format  ============================================================
+ENTER = _CustomLogLevel.ENTER
+SKIP = _CustomLogLevel.SKIP
+PASS = _CustomLogLevel.PASS
+SUCC = _CustomLogLevel.SUCC
+DONE = _CustomLogLevel.DONE
+FAIL = _CustomLogLevel.FAIL
+
+
+# datetime formats  ============================================================
 DATEFMT_TIME = "%H:%M:%S"
 DATEFMT_TIME_MS = "%H:%M:%S.{ms}"
 DATEFMT_DATETIME = "%Y-%m-%d %H:%M:%S"
 DATEFMT_DATETIME_MS = "%Y-%m-%d %H:%M:%S.{ms}"
 
 
-# set up logging  ##############################################################
-logging.addLevelName(ENTER, "ENTER")
-logging.addLevelName(SKIP, "SKIP")
-logging.addLevelName(PASS, "PASS")
-logging.addLevelName(SUCC, "SUCC")
-logging.addLevelName(DONE, "DONE")
-logging.addLevelName(FAIL, "FAIL")
+# registration  ================================================================
+
+for _lvl in _CustomLogLevel:
+    logging.addLevelName(int(_lvl), _lvl.name)
 
 
-# Customized Logging  ##########################################################
-class KamiLogger(logging.Logger):  # ===========================================
+# KamiLogger  ##################################################################
+
+
+class KamiLogger(logging.Logger):
     """
     Logger subclass extending :class:`logging.Logger` with six additional levels.
 
@@ -97,13 +113,6 @@ class KamiLogger(logging.Logger):  # ===========================================
     Use :func:`getLogger` to obtain a configured instance.
     """
 
-    ENTER = 11
-    SKIP = 12
-    PASS = 21
-    SUCC = 22
-    DONE = 25
-    FAIL = 45
-
     def enter(self, message, *args, **kwargs):
         """
         Log at ``ENTER`` level (11): entering a hook or test case.
@@ -111,8 +120,8 @@ class KamiLogger(logging.Logger):  # ===========================================
         :param message: log message
         :type message: str
         """
-        if self.isEnabledFor(ENTER):
-            self._log(ENTER, message, args, stacklevel=2, **kwargs)
+        if self.isEnabledFor(_CustomLogLevel.ENTER):
+            self._log(_CustomLogLevel.ENTER, message, args, stacklevel=2, **kwargs)
 
     def skip(self, message, *args, **kwargs):
         """
@@ -121,8 +130,8 @@ class KamiLogger(logging.Logger):  # ===========================================
         :param message: log message
         :type message: str
         """
-        if self.isEnabledFor(SKIP):
-            self._log(SKIP, message, args, stacklevel=2, **kwargs)
+        if self.isEnabledFor(_CustomLogLevel.SKIP):
+            self._log(_CustomLogLevel.SKIP, message, args, stacklevel=2, **kwargs)
 
     def pass_(self, message, *args, **kwargs):
         """
@@ -131,8 +140,8 @@ class KamiLogger(logging.Logger):  # ===========================================
         :param message: log message
         :type message: str
         """
-        if self.isEnabledFor(self.PASS):
-            self._log(self.PASS, message, args, stacklevel=2, **kwargs)
+        if self.isEnabledFor(_CustomLogLevel.PASS):
+            self._log(_CustomLogLevel.PASS, message, args, stacklevel=2, **kwargs)
 
     def succ(self, message, *args, **kwargs):
         """
@@ -141,8 +150,8 @@ class KamiLogger(logging.Logger):  # ===========================================
         :param message: log message
         :type message: str
         """
-        if self.isEnabledFor(self.SUCC):
-            self._log(self.SUCC, message, args, stacklevel=2, **kwargs)
+        if self.isEnabledFor(_CustomLogLevel.SUCC):
+            self._log(_CustomLogLevel.SUCC, message, args, stacklevel=2, **kwargs)
 
     def done(self, message, *args, **kwargs):
         """
@@ -151,8 +160,8 @@ class KamiLogger(logging.Logger):  # ===========================================
         :param message: log message
         :type message: str
         """
-        if self.isEnabledFor(self.DONE):
-            self._log(self.DONE, message, args, stacklevel=2, **kwargs)
+        if self.isEnabledFor(_CustomLogLevel.DONE):
+            self._log(_CustomLogLevel.DONE, message, args, stacklevel=2, **kwargs)
 
     def fail(self, message, *args, **kwargs):
         """
@@ -161,8 +170,8 @@ class KamiLogger(logging.Logger):  # ===========================================
         :param message: log message
         :type message: str
         """
-        if self.isEnabledFor(FAIL):
-            self._log(FAIL, message, args, stacklevel=2, **kwargs)
+        if self.isEnabledFor(_CustomLogLevel.FAIL):
+            self._log(_CustomLogLevel.FAIL, message, args, stacklevel=2, **kwargs)
 
 
 logging.setLoggerClass(KamiLogger)
@@ -170,20 +179,22 @@ logging.setLoggerClass(KamiLogger)
 logging.root.__class__ = KamiLogger
 
 
-# log formatter   ==============================================================
+# _LogFormatter  ###############################################################
 
+
+# formatting tables  ===========================================================
 
 _PADDED_LEVELNAME_MAP = {
     logging.DEBUG: "DEBUG",
-    ENTER: "ENTER",
-    SKIP: "SKIP ",
+    _CustomLogLevel.ENTER: _CustomLogLevel.ENTER.display,
+    _CustomLogLevel.SKIP: _CustomLogLevel.SKIP.display,
     logging.INFO: "INFO ",
-    PASS: "PASS ",
-    SUCC: "SUCC.",
-    DONE: "DONE ",
+    _CustomLogLevel.PASS: _CustomLogLevel.PASS.display,
+    _CustomLogLevel.SUCC: _CustomLogLevel.SUCC.display,
+    _CustomLogLevel.DONE: _CustomLogLevel.DONE.display,
     logging.WARNING: "WARN.",
     logging.ERROR: "ERROR",
-    FAIL: "FAIL ",
+    _CustomLogLevel.FAIL: _CustomLogLevel.FAIL.display,
     logging.CRITICAL: "CRIT.",
 }
 
@@ -194,15 +205,15 @@ _ANSI_DATETIME = "\033[90m"  # bright black (grey)
 _ANSI_SOURCE = "\033[90m"  # bright black (grey)
 _ANSI_LEVEL_COLORS = {
     logging.DEBUG: "\033[34m",  # blue
-    ENTER: "\033[94m",  # bright blue
-    SKIP: "\033[36m",  # cyan
+    _CustomLogLevel.ENTER: "\033[94m",  # bright blue
+    _CustomLogLevel.SKIP: "\033[36m",  # cyan
     logging.INFO: "\033[96m",  # bright cyan
-    PASS: "\033[32m",  # green
-    SUCC: "\033[92m",  # bright green
-    DONE: "\033[93m",  # bright yellow
+    _CustomLogLevel.PASS: "\033[32m",  # green
+    _CustomLogLevel.SUCC: "\033[92m",  # bright green
+    _CustomLogLevel.DONE: "\033[93m",  # bright yellow
     logging.WARNING: "\033[33m",  # yellow
     logging.ERROR: "\033[31m",  # red
-    FAIL: "\033[91m",  # bright red
+    _CustomLogLevel.FAIL: "\033[91m",  # bright red
     logging.CRITICAL: "\033[95m",  # bright magenta
 }
 
@@ -350,10 +361,10 @@ class _LogFormatter(Formatter):
         return result
 
 
-# diff only  ###################################################################
+# _DiffOnlyMsgFilter  ##########################################################
 
 
-class _DiffOnlyMsgFilter(logging.Filter):  # ===================================
+class _DiffOnlyMsgFilter(logging.Filter):
     """
     suppress characters shared across the last ``window`` messages, so
     repeated log lines collapse down to only what changed.
@@ -453,7 +464,7 @@ class _DiffOnlyMsgFilter(logging.Filter):  # ===================================
         return True
 
 
-# get logger  ##################################################################
+# Public API  ##################################################################
 
 
 # pylint: disable-next=invalid-name
@@ -506,7 +517,7 @@ def getLogger(name=None, *, datefmt=None, relative_to=None):
     return logger
 
 
-# verbosity & logging level  ###################################################
+# verbosity helpers  ###########################################################
 
 
 def add_verbose_arguments(parser):
