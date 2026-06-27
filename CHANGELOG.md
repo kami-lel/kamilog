@@ -22,9 +22,9 @@
 
 ### Added
 
-- `_LogFormatter.count_prefix_chars(record)`: returns the printable character count before the message text, accounting for timestamp format (relative or datefmt), 5-char level name, and source name — ANSI codes excluded
-- `_DiffOnlyMsgFilter._COMPRESSION_BLOCK_SIZE` (8) and `_PRESERVED_TRAILING_CHARS` (2) private class constants replacing inline magic numbers
-- `calc_logging_level_from_verbosity(verbosity)` and `calc_logging_level_from_verbosity_namespace(namespace)` added to public API
+- `_LogFormatEngine`: new class holding all core formatting logic (`count_prefix_chars`, `format_time`, `build_line`, color helpers) independent of `logging.Formatter`; no stdlib inheritance
+- `_LogFormatter.engine` property: public access point to the internal `_LogFormatEngine` instance
+- `_DiffOnlyEngine._COMPRESSION_BLOCK_SIZE` (8), `_PRESERVED_TRAILING_CHARS` (2), and `_COMPRESSION_MARKER` (`"〃\t"`) private class constants replacing inline magic values
 - `examples/diff_only_stress.py`: dual-logger stress test contrasting short sensor-polling messages and long file-scanner output under diff-only compression
 
 ### Changed
@@ -36,7 +36,8 @@
 - `examples/all_levels.py` reordered `succ()` call to match updated level 15 position
 - verbosity mapping extended: `-vv` maps to `SUCC` (15); `-vvv` or more maps to `DEBUG` (10)
 - `set_logging_level_by_verbosity()` simplified to delegate to `_calc_logging_level_from_verbosity_namespace()`
-- `_DiffOnlyMsgFilter.__init__` now accepts `logger` as the first positional argument; the formatter used for prefix measurement is resolved lazily from the logger's handlers on the first `filter()` call
+- `_LogFormatter` refactored as a thin `logging.Formatter` adapter; all formatting logic moved to `_LogFormatEngine`; `exc_info`/`stack_info` appending remains on the adapter as it depends on `Formatter.formatException` and `Formatter.formatStack`
+- `_DiffOnlyEngine` and `_DiffOnlyMsgFilter` now accept `formatter` as the first positional argument; the formatter is passed directly at construction rather than resolved lazily from the logger's handlers
 - `_DiffOnlyMsgFilter` tab placement now aligns each `〃\t` to 8-column boundaries measured from the start of the rendered line (prefix included), so each marker spans exactly 8 visible columns
 - `examples/diff_only_filter.py` renamed to `examples/diff_only.py`
 
@@ -44,7 +45,7 @@
 
 ### Removed
 
-- `calc_verbosity()` removed from public API; replaced by `calc_logging_level_from_verbosity()` and `calc_logging_level_from_verbosity_namespace()`
+- `calc_verbosity()` removed from public API; verbosity-to-level logic is now handled internally by `_calc_logging_level_from_verbosity()` and `_calc_logging_level_from_verbosity_namespace()`
 
 ### Fixed
 

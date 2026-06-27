@@ -1,6 +1,6 @@
 # kamilog CONTEXT
 
-*Last updated: 2026-06-28* (fix-diff-only-printing branch)
+*Last updated: 2026-06-28*
 
 ## Project Overview
 
@@ -79,30 +79,40 @@ Subclasses `logging.Logger`. Adds six convenience methods mapping to the custom 
 
 The full level progression: `DEBUG`(10) → `ENTER`(11) → `SKIP`(12) → `SUCC`(15) → `INFO`(20) → `PASS`(21) → `DONE`(25) → `WARNING`(30) → `ERROR`(40) → `FAIL`(45) → `CRITICAL`(50).
 
+### `_LogFormatEngine`
+
+Holds all core formatting logic, independent of `logging.Formatter`. Instantiated by `_LogFormatter` and exposed via its `engine` property.
+
+Responsibilities:
+
+- `count_prefix_chars(record)` — returns the printable character count before the message text for a given record. Accounts for the optional timestamp (relative: always 13 chars; datefmt: rendered `time.strftime` length), the 5-char padded level name, and the source name with colon. ANSI escape codes are excluded. Uses `time.strftime` directly so there is no dependency on `Formatter`.
+- `format_time(record, datefmt)` — produces the optionally colored timestamp string, or an empty string when disabled.
+- `build_line(record)` — assembles the full `LEVEL source: message` line with optional timestamp prefix. Does not append `exc_info` or `stack_info`.
+- Color helpers `_fmt_asctime`, `_fmt_level`, `_fmt_source`, `_fmt_relative`.
+
+Level display names: `DEBUG`, `ENTER`, `SKIP `, `INFO `, `PASS `, `SUCC.`, `DONE `, `WARN.`, `ERROR`, `FAIL `, `CRIT.`
+
+Color scheme: `DEBUG`/`ENTER` cyan/bright cyan; `SKIP`/`INFO` blue/bright blue; `SUCC` green; `PASS` bright green; `DONE` bright yellow; `WARN.` yellow; `ERROR` red; `FAIL` bright red; `CRIT.` bright magenta.
+
 ### `_LogFormatter`
 
-Produces `LEVEL  source: message` lines (5-char padded level name, space-separated). Behavior:
+Thin `logging.Formatter` adapter wrapping `_LogFormatEngine`. Its `engine` property provides public access to the engine instance so external callers (e.g. `_DiffOnlyEngine`) can call `formatter.engine.count_prefix_chars(record)`.
 
-- **Color**: per-level ANSI 16-color; auto-disabled when stdout/stderr is not a TTY. Scheme: `DEBUG`/`ENTER` cyan/bright cyan; `SKIP`/`INFO` blue/bright blue; `SUCC` green; `PASS` bright green; `DONE` bright yellow; `WARN.` yellow; `ERROR` red; `FAIL` bright red; `CRIT.` bright magenta.
-- **Timestamps**: disabled by default. Enable via `datefmt` (strftime format string using `DATEFMT_*` constants) or `relative_to` (Unix timestamp; displays signed elapsed seconds).
-- **Record isolation**: copies the log record before formatting to prevent mutation across handlers.
-
-`count_prefix_chars(record)` returns the number of printable characters before the message text for a given record. It accounts for the optional timestamp (relative: always 13 chars; datefmt: rendered strftime length), the 5-char padded level name, and the source name with colon — ANSI escape codes are excluded from the count.
-
-Level display names: `DEBUG`, `ENTER`, `SKIP.`, `INFO `, `PASS.`, `SUCC.`, `DONE.`, `WARN.`, `ERROR`, `FAIL.`, `CRIT.`
+- `formatTime(record, datefmt)` — delegates to `engine.format_time`.
+- `format(record)` — copies the record, calls `engine.build_line`, then appends `exc_info` and `stack_info` via `Formatter.formatException`/`formatStack`. Color is auto-disabled when stdout/stderr is not a TTY.
 
 ### `_DiffOnlyMsgFilter`
 
 Automatically attached to every logger by `getLogger()`. Compresses repeated log lines by replacing characters shared across the last `window` (default 3) messages with `〃\t` markers.
 
-Constructor accepts the logger as its first positional argument. The `_LogFormatter` instance used for prefix measurement is resolved lazily on the first `filter()` call by scanning the logger's handlers for the first `_LogFormatter` — this allows the filter to be added before handlers are attached.
+`getLogger()` passes a dedicated `_LogFormatter` (no color, same `datefmt`/`relative_to`) as the first positional argument. The filter wraps a `_DiffOnlyEngine` which holds all compression state.
 
-Algorithm:
+Algorithm (`_DiffOnlyEngine`):
 
 1. **Warmup**: the first `window` messages pass through unchanged (history fills).
 2. **`_common` cache**: after each message, `_update_common()` recomputes a per-position list of characters common to *all* history messages in O(n × window).
-3. **Run detection**: on each incoming message, `filter()` marks positions where the message matches `_common` in O(n).
-4. **Tab-aligned compression**: contiguous common runs compress in multiples of `_COMPRESSION_BLOCK_SIZE` (8). Each `〃\t` is placed at the next column that is a multiple of 8 measured from the start of the rendered line (prefix length from `count_prefix_chars` + message offset), so `〃` (2 wide) + `\t` spans exactly 8 visible columns. At least `_PRESERVED_TRAILING_CHARS` (2) original chars are kept at the trailing end of each run.
+3. **Run detection**: on each incoming message, `_compress()` marks positions where the message matches `_common` in O(n).
+4. **Tab-aligned compression**: contiguous common runs compress in multiples of `_COMPRESSION_BLOCK_SIZE` (8). Each `_COMPRESSION_MARKER` (`〃\t`) is placed at the next column that is a multiple of 8 measured from the rendered line start (`formatter.engine.count_prefix_chars` + message offset), so `〃` (2 wide) + `\t` spans exactly 8 visible columns. At least `_PRESERVED_TRAILING_CHARS` (2) original chars are kept at the trailing end of each run.
 
 The original (uncompressed) message is stored in `_history` so compression decisions are always based on the raw text, not prior compressed output.
 
@@ -123,8 +133,6 @@ kamilog.DATEFMT_DATETIME_MS   # "YYYY-MM-DD HH:MM:SS.mmm"
 
 # verbosity helpers
 kamilog.add_verbose_arguments(parser)
-kamilog.calc_logging_level_from_verbosity(verbosity: int) -> int
-kamilog.calc_logging_level_from_verbosity_namespace(namespace) -> int
 kamilog.set_logging_level_by_verbosity(namespace, logger=None, logger_name=None)
 ```
 
