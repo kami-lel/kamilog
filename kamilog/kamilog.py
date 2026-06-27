@@ -768,7 +768,9 @@ def getLogger(name=None, *, datefmt=None, relative_to=None):
     if not any(isinstance(f, _DiffOnlyMsgFilter) for f in logger.filters):
         logger.addFilter(
             _DiffOnlyMsgFilter(
-                _LogFormatter(datefmt=datefmt, relative_to=relative_to)
+                _LogFormatter(
+                    sys.stdout, datefmt=datefmt, relative_to=relative_to
+                )
             )
         )
 
