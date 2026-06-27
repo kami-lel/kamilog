@@ -46,7 +46,7 @@ __all__ = (
 # constants  ###################################################################
 
 
-# log level constants  =========================================================
+# log levels  ==================================================================
 
 NOTSET = logging.NOTSET  # 0
 DEBUG = logging.DEBUG  # 10
@@ -54,8 +54,6 @@ INFO = logging.INFO  # 20
 WARNING = logging.WARNING  # 30
 ERROR = logging.ERROR  # 40
 CRITICAL = logging.CRITICAL  # 50
-
-# customized logging level  ====================================================
 
 
 class _CustomLogLevel(IntEnum):
@@ -83,20 +81,23 @@ DONE = _CustomLogLevel.DONE
 FAIL = _CustomLogLevel.FAIL
 
 
-# Date Time Format  ============================================================
+# datetime formats  ============================================================
 DATEFMT_TIME = "%H:%M:%S"
 DATEFMT_TIME_MS = "%H:%M:%S.{ms}"
 DATEFMT_DATETIME = "%Y-%m-%d %H:%M:%S"
 DATEFMT_DATETIME_MS = "%Y-%m-%d %H:%M:%S.{ms}"
 
 
-# set up logging  ##############################################################
+# registration  ================================================================
+
 for _lvl in _CustomLogLevel:
     logging.addLevelName(int(_lvl), _lvl.name)
 
 
-# Customized Logging  ##########################################################
-class KamiLogger(logging.Logger):  # ===========================================
+# KamiLogger  ##################################################################
+
+
+class KamiLogger(logging.Logger):
     """
     Logger subclass extending :class:`logging.Logger` with six additional levels.
 
@@ -178,8 +179,10 @@ logging.setLoggerClass(KamiLogger)
 logging.root.__class__ = KamiLogger
 
 
-# log formatter   ==============================================================
+# _LogFormatter  ###############################################################
 
+
+# formatting tables  ===========================================================
 
 _PADDED_LEVELNAME_MAP = {
     logging.DEBUG: "DEBUG",
@@ -358,10 +361,10 @@ class _LogFormatter(Formatter):
         return result
 
 
-# diff only  ###################################################################
+# _DiffOnlyMsgFilter  ##########################################################
 
 
-class _DiffOnlyMsgFilter(logging.Filter):  # ===================================
+class _DiffOnlyMsgFilter(logging.Filter):
     """
     suppress characters shared across the last ``window`` messages, so
     repeated log lines collapse down to only what changed.
@@ -461,7 +464,7 @@ class _DiffOnlyMsgFilter(logging.Filter):  # ===================================
         return True
 
 
-# get logger  ##################################################################
+# Public API  ##################################################################
 
 
 # pylint: disable-next=invalid-name
@@ -514,7 +517,7 @@ def getLogger(name=None, *, datefmt=None, relative_to=None):
     return logger
 
 
-# verbosity & logging level  ###################################################
+# verbosity helpers  ###########################################################
 
 
 def add_verbose_arguments(parser):
