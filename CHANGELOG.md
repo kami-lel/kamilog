@@ -30,7 +30,27 @@
 
 ### Security
 
-[unreleased]: https://github.com/kami-lel/kamilog/compare/v1.6.0...dev
+[unreleased]: https://github.com/kami-lel/kamilog/compare/v1.6.1...dev
+
+
+
+
+## [1.6.1] - 2026-06-28
+
+### Added
+
+- `_AnsiPalette`: internal class centralizing ANSI color detection and application; exposes `color_level(text, levelno)` and `color_grey(text)`; replaces module-level `_ANSI_*` constants
+
+### Changed
+
+- `_LogFormatter` now accepts `stream` as first positional argument instead of `use_color: bool`; `palette` and `engine` promoted to plain public attributes
+- `_LogFormatEngine` now accepts a `_AnsiPalette` instance instead of `use_color: bool`; all color output is routed through the palette
+
+### Fixed
+
+- `_DiffOnlyMsgFilter` compression markers (`〃\t`) now appear in grey when output is a TTY; the formatter for the filter was constructed without a stream, so `_AnsiPalette` disabled color unconditionally
+
+[1.6.1]: https://github.com/kami-lel/kamilog/compare/v1.6.0...v1.6.1
 
 
 
