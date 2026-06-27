@@ -20,38 +20,60 @@
 
 ### Added
 
-- `_LogFormatEngine`: new class holding all core formatting logic (`count_prefix_chars`, `format_time`, `build_line`, color helpers) independent of `logging.Formatter`; no stdlib inheritance
-- `_LogFormatter.engine` property: public access point to the internal `_LogFormatEngine` instance
-- `_DiffOnlyEngine._COMPRESSION_BLOCK_SIZE` (8), `_PRESERVED_TRAILING_CHARS` (2), and `_COMPRESSION_MARKER` (`"〃\t"`) private class constants replacing inline magic values
-- `examples/diff_only_stress.py`: dual-logger stress test contrasting short sensor-polling messages and long file-scanner output under diff-only compression
-
 ### Changed
-
-- `SUCC` custom log level renumbered 22 → 15, now sits between `SKIP` (12) and `INFO` (20)
-- ANSI color scheme revised: `DEBUG`/`ENTER` use cyan/bright cyan (`\033[36m`/`\033[96m`); `SKIP`/`INFO` use blue/bright blue (`\033[34m`/`\033[94m`); `SUCC` uses green (`\033[32m`); `PASS` uses bright green (`\033[92m`)
-- `docs/usage_doc.md` "Custom Log Levels" section rewritten: all levels (native and custom) consolidated into one reference table with level name, number, function, color, and ANSI code columns; duplicate color table removed from "ANSI Color Output"
-- `docs/usage_doc.md` "Logging" section example revised to show custom levels alongside native ones and exception handling in a single code block
-- `examples/all_levels.py` reordered `succ()` call to match updated level 15 position
-- verbosity mapping extended: `-vv` maps to `SUCC` (15); `-vvv` or more maps to `DEBUG` (10)
-- `set_logging_level_by_verbosity()` simplified to delegate to `_calc_logging_level_from_verbosity_namespace()`
-- `_LogFormatter` refactored as a thin `logging.Formatter` adapter; all formatting logic moved to `_LogFormatEngine`; `exc_info`/`stack_info` appending remains on the adapter as it depends on `Formatter.formatException` and `Formatter.formatStack`
-- `_DiffOnlyEngine` and `_DiffOnlyMsgFilter` now accept `formatter` as the first positional argument; the formatter is passed directly at construction rather than resolved lazily from the logger's handlers
-- `_DiffOnlyMsgFilter` tab placement now aligns each `〃\t` to 8-column boundaries measured from the start of the rendered line (prefix included), so each marker spans exactly 8 visible columns
-- `examples/diff_only_filter.py` renamed to `examples/diff_only.py`
 
 ### Deprecated
 
 ### Removed
 
-- `calc_verbosity()` removed from public API; verbosity-to-level logic is now handled internally by `_calc_logging_level_from_verbosity()` and `_calc_logging_level_from_verbosity_namespace()`
-
 ### Fixed
-
-- `_DiffOnlyMsgFilter` `〃\t` markers now align to correct tab stops regardless of prefix length; the previous leading-char heuristic ignored the rendered prefix, producing visually misaligned output
 
 ### Security
 
-[unreleased]: https://github.com/kami-lel/kamilog/compare/v1.5.0...dev
+[unreleased]: https://github.com/kami-lel/kamilog/compare/v1.6.0...dev
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## [1.6.0] - 2026-06-28
+
+### Added
+
+- `_LogFormatEngine`: internal class holding all log-line formatting logic, independent of `logging.Formatter`; exposes `count_prefix_chars`, `format_time`, and `build_line`
+- `_LogFormatter.engine` property: public access to the internal `_LogFormatEngine` instance
+- `_DiffOnlyEngine._COMPRESSION_BLOCK_SIZE` (8), `_PRESERVED_TRAILING_CHARS` (2), and `_COMPRESSION_MARKER` (`"〃\t"`) private class constants replacing inline magic values
+- `examples/diff_only_stress.py`: dual-logger stress test contrasting short and long message compression
+
+### Changed
+
+- `SUCC` log level renumbered 22 → 15, placing it between `SKIP` (12) and `INFO` (20)
+- ANSI color scheme revised: `DEBUG`/`ENTER` cyan/bright cyan; `SKIP`/`INFO` blue/bright blue; `SUCC` green; `PASS` bright green
+- verbosity mapping extended: `-vv` now maps to `SUCC` (15); `-vvv` or more maps to `DEBUG` (10)
+- `_LogFormatter` refactored as a thin `logging.Formatter` adapter; all formatting logic moved to `_LogFormatEngine`
+- `_DiffOnlyEngine` and `_DiffOnlyMsgFilter` now accept `formatter` directly at construction instead of resolving it lazily from a logger's handlers
+- `_DiffOnlyMsgFilter` tab placement aligns each `〃\t` to 8-column boundaries measured from the rendered line start, accounting for prefix length via `count_prefix_chars`
+- `docs/usage_doc.md` "Custom Log Levels" section consolidated into a single reference table covering all levels; duplicate color table removed
+- `examples/diff_only_filter.py` renamed to `examples/diff_only.py`
+
+### Removed
+
+- `calc_verbosity()` removed from public API; verbosity-to-level conversion is now handled internally
+
+### Fixed
+
+- `_DiffOnlyMsgFilter` `〃\t` markers now align to correct tab stops regardless of prefix length; the previous heuristic ignored the rendered prefix width
+
+[1.6.0]: https://github.com/kami-lel/kamilog/compare/v1.5.0...v1.6.0
 
 
 

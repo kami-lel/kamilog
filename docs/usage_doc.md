@@ -277,8 +277,3 @@ Verbosity-to-logging-level mapping:
 | `-qq` | -2 | `ERROR` | 40 |
 | `-qqq` or more | ≤ -3 | `CRITICAL` | 50 |
 
-Alternatively, read the verbosity value as an integer:
-
-```python
-print(kamilog.calc_verbosity(args))  # e.g. 1
-```
