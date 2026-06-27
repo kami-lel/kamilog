@@ -247,6 +247,35 @@ class _LogFormatter(Formatter):
         self._datefmt = datefmt
         self._relative_to = relative_to
 
+    def count_prefix_chars(self, record):
+        """
+        :param record: log record
+        :type record: logging.LogRecord
+        :return: number of printable characters before the message text,
+                 excluding any ANSI escape codes
+        :rtype: int
+        """
+        name = record.name
+        has_name = bool(name and name != "root")
+
+        if self._relative_to is not None:
+            ts_len = len(self._fmt_relative(record.created))
+        elif self._datefmt:
+            plain = Formatter.formatTime(self, record, self._datefmt).replace(
+                "{ms}", "{:03d}".format(int(record.msecs))
+            )
+            ts_len = len(plain)
+        else:
+            ts_len = 0
+
+        level_len = 5  # always padded/truncated to 5
+        space_len = 1 if has_name else 0
+        source_len = len(name) + 1 if has_name else 1  # "name:" or ":"
+
+        if ts_len:
+            return ts_len + 1 + level_len + space_len + source_len + 1
+        return level_len + space_len + source_len + 1
+
     # helpers  =================================================================
 
     def _fmt_asctime(self, asctime):
