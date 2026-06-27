@@ -36,7 +36,7 @@ pytest tests/verbosity_test.py::TestCalcVerbosity::test2
 The verbosity test doubles as a manual smoke-test:
 
 ```bash
-python tests/verbosity_test.py -vv    # verbosity 2, level DEBUG
+python tests/verbosity_test.py -vvv   # verbosity 3, level DEBUG
 python tests/verbosity_test.py -q     # verbosity -1, level WARNING
 ```
 

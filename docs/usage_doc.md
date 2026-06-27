@@ -265,15 +265,14 @@ log = kamilog.getLogger("myapp")
 kamilog.set_logging_level_by_verbosity(args, logger=log)
 ```
 
-<!-- Fixme add 15 level -->
-
 Verbosity-to-logging-level mapping:
 
 | Flags | Verbosity | Level | Number |
 |---|---|---|---|
-| `-vv` or more | ≥ 2 | `DEBUG` | 10 |
+| `-vvv` or more | ≥ 3 | `DEBUG` | 10 |
+| `-vv` | 2 | `SUCC` | 15 |
 | `-v` | 1 | `INFO` | 20 |
-| _(none)_ | 0 | `DONE` | 25 |
+| *(none)* | 0 | `DONE` | 25 |
 | `-q` | -1 | `WARNING` | 30 |
 | `-qq` | -2 | `ERROR` | 40 |
 | `-qqq` or more | ≤ -3 | `CRITICAL` | 50 |
