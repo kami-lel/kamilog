@@ -195,8 +195,6 @@ logging.root.__class__ = KamiLogger
 # _LogFormatter  ###############################################################
 
 
-# formatting tables  ===========================================================
-
 _PADDED_LEVELNAME_MAP = {
     logging.DEBUG: "DEBUG",
     _CustomLogLevel.ENTER: _CustomLogLevel.ENTER.display,
@@ -374,7 +372,7 @@ class _LogFormatter(Formatter):
         return result
 
 
-# _DiffOnlyMsgFilter  ##########################################################
+# Diff Only Msg  ###############################################################
 
 
 class _DiffOnlyMsgFilter(logging.Filter):
@@ -477,63 +475,7 @@ class _DiffOnlyMsgFilter(logging.Filter):
         return True
 
 
-# Public API  ##################################################################
-
-
-# pylint: disable-next=invalid-name
-def getLogger(name=None, *, datefmt=None, relative_to=None):
-    """
-    :param name: logger name
-    :type name: str
-    :param datefmt: strftime format for timestamps; ignored when ``relative_to`` is set;
-            defaults to ``None`` (no timestamp)
-    :type datefmt: str, optional
-    :param relative_to: Unix timestamp to use as epoch for relative time display;
-            mutually exclusive with ``datefmt``
-    :type relative_to: float, optional
-    :return: a logger with the `name`, create if non-existence;
-            root logger if `name` is `None`
-    :rtype: KamiLogger
-    """
-    logger = logging.getLogger(name)
-
-    if not isinstance(logger, KamiLogger):
-        logger.__class__ = KamiLogger
-
-    if not any(isinstance(f, _DiffOnlyMsgFilter) for f in logger.filters):
-        logger.addFilter(_DiffOnlyMsgFilter())
-
-    if not logger.handlers:
-        stdout_handler = StreamHandler(sys.stdout)
-        stdout_handler.setFormatter(
-            _LogFormatter(
-                use_color=sys.stdout.isatty(),
-                datefmt=datefmt,
-                relative_to=relative_to,
-            )
-        )
-        stdout_handler.addFilter(lambda r: r.levelno < logging.WARNING)
-
-        stderr_handler = StreamHandler(sys.stderr)
-        stderr_handler.setFormatter(
-            _LogFormatter(
-                use_color=sys.stderr.isatty(),
-                datefmt=datefmt,
-                relative_to=relative_to,
-            )
-        )
-        stderr_handler.addFilter(lambda r: r.levelno >= logging.WARNING)
-
-        logger.addHandler(stdout_handler)
-        logger.addHandler(stderr_handler)
-
-    return logger
-
-
 # verbosity helpers  ###########################################################
-
-
-# helpers  =====================================================================
 
 
 def calc_logging_level_from_verbosity(verbosity):
@@ -589,7 +531,57 @@ def calc_logging_level_from_verbosity_namespace(namespace):
     return calc_logging_level_from_verbosity(verbosity)
 
 
-# Public API  ==================================================================
+# Public API  ##################################################################
+
+
+# pylint: disable-next=invalid-name
+def getLogger(name=None, *, datefmt=None, relative_to=None):
+    """
+    :param name: logger name
+    :type name: str
+    :param datefmt: strftime format for timestamps; ignored when ``relative_to`` is set;
+            defaults to ``None`` (no timestamp)
+    :type datefmt: str, optional
+    :param relative_to: Unix timestamp to use as epoch for relative time display;
+            mutually exclusive with ``datefmt``
+    :type relative_to: float, optional
+    :return: a logger with the `name`, create if non-existence;
+            root logger if `name` is `None`
+    :rtype: KamiLogger
+    """
+    logger = logging.getLogger(name)
+
+    if not isinstance(logger, KamiLogger):
+        logger.__class__ = KamiLogger
+
+    if not any(isinstance(f, _DiffOnlyMsgFilter) for f in logger.filters):
+        logger.addFilter(_DiffOnlyMsgFilter())
+
+    if not logger.handlers:
+        stdout_handler = StreamHandler(sys.stdout)
+        stdout_handler.setFormatter(
+            _LogFormatter(
+                use_color=sys.stdout.isatty(),
+                datefmt=datefmt,
+                relative_to=relative_to,
+            )
+        )
+        stdout_handler.addFilter(lambda r: r.levelno < logging.WARNING)
+
+        stderr_handler = StreamHandler(sys.stderr)
+        stderr_handler.setFormatter(
+            _LogFormatter(
+                use_color=sys.stderr.isatty(),
+                datefmt=datefmt,
+                relative_to=relative_to,
+            )
+        )
+        stderr_handler.addFilter(lambda r: r.levelno >= logging.WARNING)
+
+        logger.addHandler(stdout_handler)
+        logger.addHandler(stderr_handler)
+
+    return logger
 
 
 def add_verbose_arguments(parser):
