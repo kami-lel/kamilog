@@ -17,8 +17,8 @@ sys.path.insert(
 )
 from kamilog.kamilog import (
     add_verbose_arguments,
-    calc_logging_level_from_verbosity,
-    calc_logging_level_from_verbosity_namespace,
+    _calc_logging_level_from_verbosity,
+    _calc_logging_level_from_verbosity_namespace,
     set_logging_level_by_verbosity,
     SUCC,
     DONE,
@@ -99,42 +99,42 @@ class TestCalcLoggingLevel:
     """
 
     def test_zero(_):
-        level = calc_logging_level_from_verbosity(0)
+        level = _calc_logging_level_from_verbosity(0)
         print(level)
         assert level == DONE  # 25
 
     def test_v1(_):
-        level = calc_logging_level_from_verbosity(1)
+        level = _calc_logging_level_from_verbosity(1)
         print(level)
         assert level == logging.INFO  # 20
 
     def test_v2(_):
-        level = calc_logging_level_from_verbosity(2)
+        level = _calc_logging_level_from_verbosity(2)
         print(level)
         assert level == SUCC  # 15
 
     def test_v3(_):
-        level = calc_logging_level_from_verbosity(3)
+        level = _calc_logging_level_from_verbosity(3)
         print(level)
         assert level == logging.DEBUG  # 10
 
     def test_v_over(_):
-        level = calc_logging_level_from_verbosity(99)
+        level = _calc_logging_level_from_verbosity(99)
         print(level)
         assert level == logging.DEBUG  # 10
 
     def test_q1(_):
-        level = calc_logging_level_from_verbosity(-1)
+        level = _calc_logging_level_from_verbosity(-1)
         print(level)
         assert level == logging.WARNING  # 30
 
     def test_q2(_):
-        level = calc_logging_level_from_verbosity(-2)
+        level = _calc_logging_level_from_verbosity(-2)
         print(level)
         assert level == logging.ERROR  # 40
 
     def test_q3(_):
-        level = calc_logging_level_from_verbosity(-3)
+        level = _calc_logging_level_from_verbosity(-3)
         print(level)
         assert level == logging.CRITICAL  # 50
 
@@ -148,7 +148,7 @@ class TestCalcLoggingLevelNamespace:
         parser = ArgumentParser()
         add_verbose_arguments(parser)
         args = parser.parse_args([])
-        level = calc_logging_level_from_verbosity_namespace(args)
+        level = _calc_logging_level_from_verbosity_namespace(args)
         print(level)
         assert level == DONE
 
@@ -156,7 +156,7 @@ class TestCalcLoggingLevelNamespace:
         parser = ArgumentParser()
         add_verbose_arguments(parser)
         args = parser.parse_args(["-v"])
-        level = calc_logging_level_from_verbosity_namespace(args)
+        level = _calc_logging_level_from_verbosity_namespace(args)
         print(level)
         assert level == logging.INFO
 
@@ -164,7 +164,7 @@ class TestCalcLoggingLevelNamespace:
         parser = ArgumentParser()
         add_verbose_arguments(parser)
         args = parser.parse_args(["-vv"])
-        level = calc_logging_level_from_verbosity_namespace(args)
+        level = _calc_logging_level_from_verbosity_namespace(args)
         print(level)
         assert level == SUCC
 
@@ -172,7 +172,7 @@ class TestCalcLoggingLevelNamespace:
         parser = ArgumentParser()
         add_verbose_arguments(parser)
         args = parser.parse_args(["-vv", "--verbose", "-qq"])  # net=1
-        level = calc_logging_level_from_verbosity_namespace(args)
+        level = _calc_logging_level_from_verbosity_namespace(args)
         print(level)
         assert level == logging.INFO
 
@@ -180,7 +180,7 @@ class TestCalcLoggingLevelNamespace:
         parser = ArgumentParser()
         add_verbose_arguments(parser)
         args = parser.parse_args(["--quiet"])
-        level = calc_logging_level_from_verbosity_namespace(args)
+        level = _calc_logging_level_from_verbosity_namespace(args)
         print(level)
         assert level == logging.WARNING
 
@@ -288,7 +288,7 @@ if __name__ == "__main__":
     args = sys_argv_parser.parse_args()
 
     # test calc_logging_level_from_verbosity_namespace
-    level = calc_logging_level_from_verbosity_namespace(args)
+    level = _calc_logging_level_from_verbosity_namespace(args)
     print("logging level:\t{}".format(level))
 
     # test set_logging_level_by_verbosity

@@ -9,19 +9,15 @@ Q.v. https://github.com/kami-lel/kamilog
 
 import logging
 import sys
+import time
 from collections import deque
 from enum import IntEnum
 from logging import Formatter, StreamHandler
-
-__version__ = "1.5.0"
-__author__ = "kamiLeL"
 
 __all__ = (
     "getLogger",
     "KamiLogger",
     "add_verbose_arguments",
-    "calc_logging_level_from_verbosity",
-    "calc_logging_level_from_verbosity_namespace",
     "set_logging_level_by_verbosity",
     # log levels
     "NOTSET",
@@ -42,6 +38,11 @@ __all__ = (
     "DATEFMT_DATETIME",
     "DATEFMT_DATETIME_MS",
 )
+
+
+# metadata  ####################################################################
+__version__ = "1.5.0"
+__author__ = "kamiLeL"
 
 
 # enum  ########################################################################
@@ -226,35 +227,46 @@ _ANSI_LEVEL_COLORS = {
 }
 
 
-class _LogFormatter(Formatter):
+class _LogFormatEngine:
     """
-    internal log formatter producing structured, optionally colored output
-    """
+    core log-line formatting logic, independent of ``logging.Formatter``.
 
-    # Hack refactorization for better readability
+    builds each log line from its constituent parts — optional timestamp,
+    5-char padded level name, source label, and message — applying ANSI
+    color codes when enabled. exposed via ``_LogFormatter.engine`` so
+    external callers can reach ``count_prefix_chars`` without going
+    through the adapter.
+
+
+    :param use_color: enable ANSI color codes in the output
+    :type use_color: bool
+    :param datefmt: strftime format string for wall-clock timestamps;
+            ignored when ``relative_to`` is set; ``None`` disables
+            timestamps
+    :type datefmt: str or None
+    :param relative_to: Unix timestamp used as the epoch for relative
+            time display; mutually exclusive with ``datefmt``
+    :type relative_to: float or None
+    """
 
     def __init__(self, *, use_color=False, datefmt=None, relative_to=None):
-        """
-        :param use_color: enable ANSI color output
-        :type use_color: bool
-        :param datefmt: strftime format for wall-clock timestamps;
-                ignored when ``relative_to`` is set; defaults to ``None`` (no timestamp)
-        :type datefmt: str, optional
-        :param relative_to: Unix timestamp used as epoch for relative time display;
-                mutually exclusive with ``datefmt``
-        :type relative_to: float, optional
-        """
-        super().__init__(datefmt=datefmt)
         self.use_color = use_color
         self._datefmt = datefmt
         self._relative_to = relative_to
 
+    # Public API  ##############################################################
+
     def count_prefix_chars(self, record):
         """
-        :param record: log record
+        return the count of printable characters before the message text.
+
+        accounts for the optional timestamp, 5-char padded level name,
+        and source label; ANSI escape codes are excluded from the count.
+
+
+        :param record: log record to measure
         :type record: logging.LogRecord
-        :return: number of printable characters before the message text,
-                 excluding any ANSI escape codes
+        :return: printable character count of the prefix
         :rtype: int
         """
         name = record.name
@@ -263,9 +275,9 @@ class _LogFormatter(Formatter):
         if self._relative_to is not None:
             ts_len = len(self._fmt_relative(record.created))
         elif self._datefmt:
-            plain = Formatter.formatTime(self, record, self._datefmt).replace(
-                "{ms}", "{:03d}".format(int(record.msecs))
-            )
+            plain = time.strftime(
+                self._datefmt, time.localtime(record.created)
+            ).replace("{ms}", "{:03d}".format(int(record.msecs)))
             ts_len = len(plain)
         else:
             ts_len = 0
@@ -278,13 +290,68 @@ class _LogFormatter(Formatter):
             return ts_len + 1 + level_len + space_len + source_len + 1
         return level_len + space_len + source_len + 1
 
+    def format_time(self, record, datefmt=None):
+        """
+        return the formatted and optionally colored timestamp string.
+
+
+        :param record: log record
+        :type record: logging.LogRecord
+        :param datefmt: strftime format override; falls back to ``_datefmt``
+        :type datefmt: str or None
+        :return: formatted timestamp, or empty string when disabled
+        :rtype: str
+        """
+        if self._relative_to is not None:
+            return self._fmt_asctime(self._fmt_relative(record.created))
+        elif datefmt or self._datefmt:
+            fmt = datefmt or self._datefmt
+            asctime = time.strftime(
+                fmt, time.localtime(record.created)
+            ).replace("{ms}", "{:03d}".format(int(record.msecs)))
+            return self._fmt_asctime(asctime)
+        return ""
+
+    def build_line(self, record):
+        """
+        build the main log line from a record's parts.
+
+        produces the ``LEVEL source: message`` line with optional
+        timestamp prefix. does not handle exc_info or stack_info —
+        those are appended by the ``_LogFormatter`` adapter.
+
+
+        :param record: log record to format
+        :type record: logging.LogRecord
+        :return: formatted log line
+        :rtype: str
+        """
+        asctime = self.format_time(record)
+        source = self._fmt_source(record.name)
+        space = " " if record.name and record.name != "root" else ""
+
+        if asctime:
+            return "{} {}{}{} {}".format(
+                asctime,
+                self._fmt_level(record.levelno),
+                space,
+                source,
+                record.getMessage(),
+            )
+        return "{}{}{} {}".format(
+            self._fmt_level(record.levelno),
+            space,
+            source,
+            record.getMessage(),
+        )
+
     # helpers  =================================================================
 
     def _fmt_asctime(self, asctime):
         """
         :param asctime: pre-formatted datetime string
         :type asctime: str
-        :return: asctime wrapped in black ANSI codes, or plain if color disabled
+        :return: asctime wrapped in grey ANSI codes, or plain if disabled
         :rtype: str
         """
         if self.use_color:
@@ -295,7 +362,7 @@ class _LogFormatter(Formatter):
         """
         :param levelno: numeric logging level
         :type levelno: int
-        :return: level name without brackets, e.g. ``DEBUG``, colored and bold if enabled
+        :return: 5-char padded level name, colored and bold if enabled
         :rtype: str
         """
         padded = _PADDED_LEVELNAME_MAP.get(levelno, str(levelno).ljust(5)[:5])
@@ -308,7 +375,8 @@ class _LogFormatter(Formatter):
         """
         :param name: logger name
         :type name: str
-        :return: ``"name:"`` with the name in bold black, or ``":"`` in black if name is root or absent
+        :return: ``"name:"`` in grey, or ``":"`` in grey if name is
+                root or absent
         :rtype: str
         """
         if not name or name == "root":
@@ -326,7 +394,7 @@ class _LogFormatter(Formatter):
         """
         :param created: Unix timestamp of the log record
         :type created: float
-        :return: elapsed time since ``_relative_to`` as ``+HH:MM:SS.mmm`` or ``-HH:MM:SS.mmm``
+        :return: elapsed time as ``+HH:MM:SS.mmm`` or ``-HH:MM:SS.mmm``
         :rtype: str
         """
         delta = created - self._relative_to
@@ -337,111 +405,115 @@ class _LogFormatter(Formatter):
         ms = int((delta % 1) * 1000)
         return "{}{:02d}:{:02d}:{:02d}.{:03d}".format(sign, h, m, s, ms)
 
-    # extend Formatter  ========================================================
+
+class _LogFormatter(Formatter):
+    """
+    ``logging.Formatter`` adapter wrapping ``_LogFormatEngine``.
+
+    delegates all line-building and timestamp logic to an internal
+    ``_LogFormatEngine`` instance exposed via the ``engine`` property.
+    exc_info and stack_info appending are handled here because they
+    depend on ``Formatter.formatException`` and ``Formatter.formatStack``.
+
+
+    :param use_color: forwarded to ``_LogFormatEngine``
+    :type use_color: bool
+    :param datefmt: forwarded to ``_LogFormatEngine``; also passed to
+            ``Formatter.__init__`` for stdlib compatibility
+    :type datefmt: str or None
+    :param relative_to: forwarded to ``_LogFormatEngine``
+    :type relative_to: float or None
+    """
+
+    def __init__(self, *, use_color=False, datefmt=None, relative_to=None):
+        super().__init__(datefmt=datefmt)
+        self._engine = _LogFormatEngine(
+            use_color=use_color, datefmt=datefmt, relative_to=relative_to
+        )
+
+    @property
+    def engine(self):
+        """
+        :return: the internal ``_LogFormatEngine`` instance
+        :rtype: _LogFormatEngine
+        """
+        return self._engine
 
     def formatTime(self, record, datefmt=None):
         """
+        delegate timestamp formatting to the engine.
+
+
         :param record: log record
         :type record: logging.LogRecord
-        :param datefmt: strftime format override; falls back to ``_datefmt`` if omitted
-        :type datefmt: str, optional
-        :return: formatted and optionally colored timestamp string, or empty string if no timestamp
+        :param datefmt: strftime format override
+        :type datefmt: str or None
+        :return: formatted timestamp, or empty string when disabled
         :rtype: str
         """
-        if self._relative_to is not None:
-            asctime = self._fmt_relative(record.created)
-            return self._fmt_asctime(asctime)
-        elif datefmt or self._datefmt:
-            asctime = super().formatTime(record, datefmt or self._datefmt)
-            asctime = asctime.replace(
-                "{ms}", "{:03d}".format(int(record.msecs))
-            )
-            return self._fmt_asctime(asctime)
-        else:
-            return ""
+        return self._engine.format_time(record, datefmt)
 
     def format(self, record):
         """
+        produce the complete log line, appending exc_info and stack_info.
+
+
         :param record: log record
         :type record: logging.LogRecord
-        :return: fully formatted log line: optional timestamp, level, source (or colon), message
+        :return: fully formatted log line with optional traceback and
+                stack info appended
         :rtype: str
         """
         record = logging.makeLogRecord(record.__dict__)
-
-        asctime = self.formatTime(record)
-        source = self._fmt_source(record.name)
-        space = " " if record.name and record.name != "root" else ""
-
-        if asctime:
-            result = "{} {}{}{} {}".format(
-                asctime,
-                self._fmt_level(record.levelno),
-                space,
-                source,
-                record.getMessage(),
-            )
-        else:
-            result = "{}{}{} {}".format(
-                self._fmt_level(record.levelno),
-                space,
-                source,
-                record.getMessage(),
-            )
-
         if record.exc_info and not record.exc_text:
             record.exc_text = self.formatException(record.exc_info)
+        result = self._engine.build_line(record)
         if record.exc_text:
             result = "{}\n{}".format(result, record.exc_text)
         if record.stack_info:
             result = "{}\n{}".format(
                 result, self.formatStack(record.stack_info)
             )
-
         return result
 
 
-class _DiffOnlyMsgFilter(logging.Filter):  #####################################
+# diff only message   ##########################################################
+
+
+class _DiffOnlyEngine:  # ======================================================
     """
-    suppress characters shared across the last ``window`` messages, so
-    repeated log lines collapse down to only what changed.
+    engine for diff-only compression of log message text.
 
-    compares each incoming message against a sliding window of prior
-    messages; positions that are identical in all of them are candidates
-    for compression. contiguous common runs are replaced with ``〃\\t``
-    markers aligned to tab stops: the ``〃`` is placed at the next
-    column that is a multiple of 8 from the start of the rendered line
-    (prefix included), so each ``〃\\t`` spans exactly 8 visible columns.
-    at least 2 original chars are kept at the trailing end of each
-    compressed block for context.
+    maintains a sliding window of prior messages; once the window is
+    full, compresses character runs common to all of them into ``〃\\t``
+    markers aligned to 8-column boundaries from the rendered line start.
+    prefix-width measurement uses ``formatter`` directly; pass ``None``
+    to treat the prefix as zero.
 
-    :param logger: logger whose first ``_LogFormatter`` handler is used
-            to measure the rendered prefix width for tab alignment;
-            resolved lazily on the first filter call so handlers need
-            not exist at construction time
-    :type logger: logging.Logger
+
+    :param formatter: formatter used to measure the printable prefix
+            width of each record for tab alignment; ``None`` disables
+            prefix measurement and treats all markers as column-0 aligned
+    :type formatter: _LogFormatter or None
     :param window: number of prior messages held for comparison;
-            suppression activates once this many messages have been seen
+            compression activates once this many messages have been seen
     :type window: int
     """
 
-    # Hack refactorization for better readability
-
     _COMPRESSION_BLOCK_SIZE = 8
     _PRESERVED_TRAILING_CHARS = 2
+    _COMPRESSION_MARKER = "〃\t"
 
-    def __init__(self, logger, window=3):
-        super().__init__()
-        self._logger = logger
+    def __init__(self, formatter, window=3):
+        self._formatter = formatter
         self._history = deque(maxlen=window)
         # _common[i] = shared char at position i across all history,
         # or None where messages diverge or lengths differ
         self._common: list = []
-        self._formatter = None  # resolved lazily on first filter call
 
     def _update_common(self):
         """
-        recompute _common from current _history
+        recompute ``_common`` from the current ``_history`` window
         """
         history = list(self._history)
         if not history:
@@ -460,72 +532,120 @@ class _DiffOnlyMsgFilter(logging.Filter):  #####################################
                 )
         self._common = common
 
-    def filter(self, record):
+    def _compress(self, record, message):
         """
-        :param record: log record to mask in place
+        compress positions in ``message`` matching ``_common`` into
+        ``〃\\t`` markers.
+
+        aligns each marker to the next multiple-of-8 column measured
+        from the rendered line start (prefix + message offset); runs
+        too short to fit one full block after alignment are kept as-is.
+
+
+        :param record: log record used to measure the prefix width
         :type record: logging.LogRecord
-        :return: always ``True``; this filter never drops records
-        :rtype: bool
+        :param message: raw message text to compress
+        :type message: str
+        :return: compressed message string
+        :rtype: str
+        """
+        block = self._COMPRESSION_BLOCK_SIZE
+        trail = self._PRESERVED_TRAILING_CHARS
+        prefix_len = (
+            self._formatter.engine.count_prefix_chars(record)
+            if self._formatter is not None
+            else 0
+        )
+        n_common = len(self._common)
+        is_common = [
+            i < n_common
+            and self._common[i] is not None
+            and self._common[i] == ch
+            for i, ch in enumerate(message)
+        ]
+        result = []
+        i = 0
+        msg_len = len(message)
+        while i < msg_len:
+            if not is_common[i]:
+                result.append(message[i])
+                i += 1
+            else:
+                run_s = i
+                while i < msg_len and is_common[i]:
+                    i += 1
+                run_e = i
+                col_offset = (prefix_len + run_s) % block
+                padding = (block - col_offset) % block
+                tab_s = run_s + padding
+                replaceable = run_e - tab_s - trail
+                k = replaceable // block if replaceable > 0 else 0
+                if k == 0:
+                    result.append(message[run_s:run_e])
+                else:
+                    result.append(message[run_s:tab_s])
+                    result.append(self._COMPRESSION_MARKER * k)
+                    result.append(message[tab_s + block * k : run_e])
+        return "".join(result)
+
+    def process(self, record):
+        """
+        process ``record`` and return the (possibly compressed) message.
+
+        if the history window is not yet full, the raw message is
+        returned unchanged. once full, character positions common to
+        all history messages are compressed into ``〃\\t`` markers.
+
+
+        :param record: log record being processed
+        :type record: logging.LogRecord
+        :return: compressed message, or the original during warmup
+        :rtype: str
         """
         message = record.getMessage()
 
         if len(self._history) == self._history.maxlen:
-            if self._formatter is None:
-                self._formatter = next(
-                    (
-                        h.formatter
-                        for h in self._logger.handlers
-                        if isinstance(h.formatter, _LogFormatter)
-                    ),
-                    None,
-                )
-            block = self._COMPRESSION_BLOCK_SIZE
-            trail = self._PRESERVED_TRAILING_CHARS
-            prefix_len = (
-                self._formatter.count_prefix_chars(record)
-                if self._formatter is not None
-                else 0
-            )
-            common = self._common
-            # mark positions where current message matches all history
-            n_common = len(common)
-            is_common = [
-                i < n_common and common[i] is not None and common[i] == ch
-                for i, ch in enumerate(message)
-            ]
-            # compress common runs: align each 〃\t to an 8-column boundary
-            # from line start so the tab spans exactly 8 visible columns;
-            # keep ≥2 original chars at the trailing end of each run
-            result = []
-            i = 0
-            msg_len = len(message)
-            while i < msg_len:
-                if not is_common[i]:
-                    result.append(message[i])
-                    i += 1
-                else:
-                    run_s = i
-                    while i < msg_len and is_common[i]:
-                        i += 1
-                    run_e = i
-                    col_offset = (prefix_len + run_s) % block
-                    padding = (block - col_offset) % block
-                    tab_s = run_s + padding
-                    replaceable = run_e - tab_s - trail
-                    k = replaceable // block if replaceable > 0 else 0
-                    if k == 0:
-                        result.append(message[run_s:run_e])
-                    else:
-                        result.append(message[run_s:tab_s])
-                        result.append("〃\t" * k)
-                        result.append(message[tab_s + block * k : run_e])
-            masked = "".join(result)
+            masked = self._compress(record, message)
         else:
             masked = message
 
         self._history.append(message)
         self._update_common()
-        record.msg = masked
+        return masked
+
+
+class _DiffOnlyMsgFilter(logging.Filter):  # ===================================
+    """
+    ``logging.Filter`` adapter that applies ``_DiffOnlyEngine`` to records.
+
+    delegates all compression logic to an internal ``_DiffOnlyEngine``
+    instance; ``filter()`` mutates ``record.msg`` in place with the
+    result.
+
+
+    :param formatter: forwarded to ``_DiffOnlyEngine`` for prefix-width
+            measurement; pass ``None`` to disable prefix alignment
+    :type formatter: _LogFormatter or None
+    :param window: forwarded to ``_DiffOnlyEngine`` as the history
+            window size
+    :type window: int
+    """
+
+    def __init__(self, formatter, window=3):
+        super().__init__()
+        self._engine = _DiffOnlyEngine(formatter, window)
+
+    def filter(self, record):
+        """
+        apply diff-only compression to ``record.msg`` in place.
+
+
+        :param record: log record to mask in place
+        :type record: logging.LogRecord
+        :return: always ``True``; this filter never drops records
+        :rtype: bool
+        """
+        record.msg = self._engine.process(record)
         record.args = ()
         return True
 
@@ -533,7 +653,7 @@ class _DiffOnlyMsgFilter(logging.Filter):  #####################################
 # verbosity helpers  ###########################################################
 
 
-def calc_logging_level_from_verbosity(verbosity):
+def _calc_logging_level_from_verbosity(verbosity):
     """
     Map a verbosity integer to a logging level.
 
@@ -566,7 +686,7 @@ def calc_logging_level_from_verbosity(verbosity):
         return logging.CRITICAL
 
 
-def calc_logging_level_from_verbosity_namespace(namespace):
+def _calc_logging_level_from_verbosity_namespace(namespace):
     """
     Extract verbosity from a parsed namespace and return the corresponding
     logging level.
@@ -583,7 +703,7 @@ def calc_logging_level_from_verbosity_namespace(namespace):
         verbosity += namespace.verbose
     if hasattr(namespace, "quiet"):
         verbosity -= namespace.quiet
-    return calc_logging_level_from_verbosity(verbosity)
+    return _calc_logging_level_from_verbosity(verbosity)
 
 
 # Public API  ##################################################################
@@ -610,7 +730,11 @@ def getLogger(name=None, *, datefmt=None, relative_to=None):
         logger.__class__ = KamiLogger
 
     if not any(isinstance(f, _DiffOnlyMsgFilter) for f in logger.filters):
-        logger.addFilter(_DiffOnlyMsgFilter(logger))
+        logger.addFilter(
+            _DiffOnlyMsgFilter(
+                _LogFormatter(datefmt=datefmt, relative_to=relative_to)
+            )
+        )
 
     if not logger.handlers:
         stdout_handler = StreamHandler(sys.stdout)
@@ -678,4 +802,4 @@ def set_logging_level_by_verbosity(namespace, *, logger=None, logger_name=None):
     """
     if logger is None:
         logger = logging.getLogger(logger_name)
-    logger.setLevel(calc_logging_level_from_verbosity_namespace(namespace))
+    logger.setLevel(_calc_logging_level_from_verbosity_namespace(namespace))
