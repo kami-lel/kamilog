@@ -239,6 +239,8 @@ The filter is invisible during a warmup period (first 3 messages) and resets aut
 
 ## Verbosity and Logging Level
 
+<!-- TODO update doc for verbosity -->
+
 Set up a parser with `-v`/`--verbose` and `-q`/`--quiet` options:
 
 ```python
