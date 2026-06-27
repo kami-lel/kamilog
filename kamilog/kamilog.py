@@ -359,29 +359,28 @@ class _DiffOnlyMsgFilter(logging.Filter):  # ===================================
 
     compares each incoming message against a sliding window of prior
     messages; positions that are identical in all of them are candidates
-    for blanking. Only contiguous runs of ``suppress_len`` or more such
-    positions are actually replaced — spaces within a run count toward
-    its length but are never replaced themselves.
+    for compression. contiguous common runs are replaced with tab
+    characters in multiples of 8: each group of 8 common chars becomes
+    one ``\\t``. at least 2 original chars are preserved at each end of
+    the compressed block, giving visual context around the tab.
 
 
     :param window: number of prior messages held for comparison;
             suppression activates once this many messages have been seen
     :type window: int
-    :param suppress_len: minimum consecutive-position run length required
-            before the run is blanked out
-    :type suppress_len: int
     """
 
-    def __init__(self, window=3, suppress_len=8):
+    def __init__(self, window=3):
         super().__init__()
-        self._min_repeat_len = suppress_len
         self._history = deque(maxlen=window)
         # _common[i] = shared char at position i across all history,
         # or None where messages diverge or lengths differ
         self._common: list = []
 
     def _update_common(self):
-        """recompute _common from current _history"""
+        """
+        recompute _common from current _history
+        """
         history = list(self._history)
         if not history:
             self._common = []
@@ -410,34 +409,39 @@ class _DiffOnlyMsgFilter(logging.Filter):  # ===================================
 
         if len(self._history) == self._history.maxlen:
             common = self._common
-            n = len(common)
-            # mark positions where current message matches all history;
-            # spaces are included so they count toward run length
+            # mark positions where current message matches all history
+            n_common = len(common)
             is_common = [
-                i < n and common[i] is not None and common[i] == ch
+                i < n_common and common[i] is not None and common[i] == ch
                 for i, ch in enumerate(message)
             ]
-            # blank non-space chars only inside runs >= _MIN_REPEAT_LEN;
-            # spaces within a run count toward length but are not replaced
-            chars = list(message)
-            run_start = None
-            for i, f in enumerate(is_common):
-                if f:
-                    if run_start is None:
-                        run_start = i
+            # compress common runs: each 8-char block → one tab;
+            # keep ≥2 original chars at each end of the compressed block
+            result = []
+            i = 0
+            msg_len = len(message)
+            while i < msg_len:
+                if not is_common[i]:
+                    result.append(message[i])
+                    i += 1
                 else:
-                    if run_start is not None:
-                        if i - run_start >= self._min_repeat_len:
-                            for j in range(run_start, i):
-                                if chars[j] != " ":
-                                    chars[j] = " "
-                        run_start = None
-            if run_start is not None:
-                if len(message) - run_start >= self._min_repeat_len:
-                    for j in range(run_start, len(message)):
-                        if chars[j] != " ":
-                            chars[j] = " "
-            masked = "".join(chars)
+                    run_s = i
+                    while i < msg_len and is_common[i]:
+                        i += 1
+                    run_e = i
+                    N = run_e - run_s
+                    # leading: chars to keep so ≥2 chars precede the tab
+                    leading = max(0, 2 - run_s)
+                    replaceable = N - leading - 2  # reserve ≥2 trailing
+                    k = replaceable // 8 if replaceable > 0 else 0
+                    if k == 0:
+                        result.append(message[run_s:run_e])
+                    else:
+                        tab_s = run_s + leading
+                        result.append(message[run_s:tab_s])
+                        result.append('\t' * k)
+                        result.append(message[tab_s + 8 * k:run_e])
+            masked = "".join(result)
         else:
             masked = message
 
