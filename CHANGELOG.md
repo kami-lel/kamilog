@@ -24,6 +24,12 @@
 
 ### Changed
 
+- `SUCC` custom log level renumbered 22 → 15, now sits between `SKIP` (12) and `INFO` (20)
+- ANSI color scheme revised: `DEBUG`/`ENTER` use cyan/bright cyan (`\033[36m`/`\033[96m`); `SKIP`/`INFO` use blue/bright blue (`\033[34m`/`\033[94m`); `SUCC` uses green (`\033[32m`); `PASS` uses bright green (`\033[92m`)
+- `docs/usage_doc.md` "Custom Log Levels" section rewritten: all levels (native and custom) consolidated into one reference table with level name, number, function, color, and ANSI code columns; duplicate color table removed from "ANSI Color Output"
+- `docs/usage_doc.md` "Logging" section example revised to show custom levels alongside native ones and exception handling in a single code block
+- `examples/all_levels.py` reordered `succ()` call to match updated level 15 position
+
 ### Deprecated
 
 ### Removed
@@ -33,6 +39,17 @@
 ### Security
 
 [unreleased]: https://github.com/kami-lel/kamilog/compare/v1.5.0...dev
+
+
+
+
+
+
+
+
+
+
+
 
 
 ## [1.5.0] - 2026-06-27
