@@ -411,14 +411,14 @@ class _DiffOnlyEngine:  # ======================================================
     maintains a sliding window of prior messages; once the window is
     full, compresses character runs common to all of them into ``〃\\t``
     markers aligned to 8-column boundaries from the rendered line start.
-    the formatter needed for prefix-width measurement is resolved lazily
-    from the logger's handlers on the first ``process()`` call, so
-    handlers need not exist at construction time.
+    prefix-width measurement uses ``formatter`` directly; pass ``None``
+    to treat the prefix as zero.
 
 
-    :param logger: logger whose first ``_LogFormatter`` handler supplies
-            the formatter for prefix-width measurement
-    :type logger: logging.Logger
+    :param formatter: formatter used to measure the printable prefix
+            width of each record for tab alignment; ``None`` disables
+            prefix measurement and treats all markers as column-0 aligned
+    :type formatter: _LogFormatter or None
     :param window: number of prior messages held for comparison;
             compression activates once this many messages have been seen
     :type window: int
@@ -427,28 +427,12 @@ class _DiffOnlyEngine:  # ======================================================
     _COMPRESSION_BLOCK_SIZE = 8
     _PRESERVED_TRAILING_CHARS = 2
 
-    def __init__(self, logger, window=3):
-        self._logger = logger
+    def __init__(self, formatter, window=3):
+        self._formatter = formatter
         self._history = deque(maxlen=window)
         # _common[i] = shared char at position i across all history,
         # or None where messages diverge or lengths differ
         self._common: list = []
-        self._formatter = None  # resolved lazily on first process() call
-
-    # TODO better way to do this?
-
-    def _resolve_formatter(self):
-        """
-        find and cache the first ``_LogFormatter`` from logger's handlers
-        """
-        self._formatter = next(
-            (
-                h.formatter
-                for h in self._logger.handlers
-                if isinstance(h.formatter, _LogFormatter)
-            ),
-            None,
-        )
 
     def _update_common(self):
         """
@@ -544,8 +528,6 @@ class _DiffOnlyEngine:  # ======================================================
         message = record.getMessage()
 
         if len(self._history) == self._history.maxlen:
-            if self._formatter is None:
-                self._resolve_formatter()
             masked = self._compress(record, message)
         else:
             masked = message
@@ -564,17 +546,17 @@ class _DiffOnlyMsgFilter(logging.Filter):  # ===================================
     result.
 
 
-    :param logger: forwarded to ``_DiffOnlyEngine`` for formatter
-            resolution
-    :type logger: logging.Logger
+    :param formatter: forwarded to ``_DiffOnlyEngine`` for prefix-width
+            measurement; pass ``None`` to disable prefix alignment
+    :type formatter: _LogFormatter or None
     :param window: forwarded to ``_DiffOnlyEngine`` as the history
             window size
     :type window: int
     """
 
-    def __init__(self, logger, window=3):
+    def __init__(self, formatter, window=3):
         super().__init__()
-        self._engine = _DiffOnlyEngine(logger, window)
+        self._engine = _DiffOnlyEngine(formatter, window)
 
     def filter(self, record):
         """
@@ -673,7 +655,11 @@ def getLogger(name=None, *, datefmt=None, relative_to=None):
         logger.__class__ = KamiLogger
 
     if not any(isinstance(f, _DiffOnlyMsgFilter) for f in logger.filters):
-        logger.addFilter(_DiffOnlyMsgFilter(logger))
+        logger.addFilter(
+            _DiffOnlyMsgFilter(
+                _LogFormatter(datefmt=datefmt, relative_to=relative_to)
+            )
+        )
 
     if not logger.handlers:
         stdout_handler = StreamHandler(sys.stdout)
