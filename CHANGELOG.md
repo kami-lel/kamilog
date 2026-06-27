@@ -2,8 +2,6 @@
 
 [^format]
 
-<!-- todo smart time print -->
-
 
 
 
