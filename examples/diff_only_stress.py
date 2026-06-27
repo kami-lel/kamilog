@@ -1,102 +1,92 @@
 """
 diff_only_stress.py
 
-high-volume file-scanner demonstration of _DiffOnlyMsgFilter.
-Two independent named loggers (scanner-2024, scanner-2025) scan
-sibling archive directories; their filter windows never mix.
-Long fixed paths and metadata fields produce multiple 〃\t markers
-per line after the 3-message warmup completes.
+contrast long and short message compression under _DiffOnlyMsgFilter.
 """
 
 import kamilog
 
-log_a = kamilog.getLogger("scanner-2024")
-log_b = kamilog.getLogger("scanner-2025")
-for _lg in (log_a, log_b):
-    _lg.setLevel(kamilog.DEBUG)
-    _lg.propagate = False
+# ============================================================================
+# short messages: sensor polling with brief format
+# ============================================================================
 
-# 72-char base; first 80 chars compress to 9 markers once warmup fills
-BASE_A = (
-    "scan /mnt/srv/storage/datastore/archive/"
-    "datasets/fiscal_2024/q1/export/"
+log_short = kamilog.getLogger("sensor")
+log_short.setLevel(kamilog.DEBUG)
+log_short.propagate = False
+
+
+readings = [
+    (21.4, 55, "ok"),
+    (21.6, 55, "ok"),
+    (21.9, 55, "ok"),
+    (22.1, 55, "ok"),
+    (22.3, 55, "ok"),
+    (22.0, 56, "ok"),
+    (74.5, 92, "high"),  # spike
+    (89.1, 96, "crit"),
+    (21.2, 54, "ok"),
+    (21.1, 55, "ok"),
+]
+
+for temp, humid, status in readings:
+    msg = "sensor=cpu  temp={:5.1f}C  humid={:3d}%  st={}".format(
+        temp, humid, status
+    )
+    if status == "crit":
+        log_short.critical(msg)
+    elif status == "high":
+        log_short.warning(msg)
+    else:
+        log_short.info(msg)
+
+
+# ============================================================================
+# long messages: file scanner with extended metadata
+# ============================================================================
+
+log_long = kamilog.getLogger("scanner-long")
+log_long.setLevel(kamilog.DEBUG)
+log_long.propagate = False
+
+# 95-char base; compresses heavily once warmup (3) messages fill the window
+BASE_LONG = (
+    "scan /mnt/srv/storage/datastore/archive/datasets/fiscal_2024/q1/export/"
 )
-BASE_B = (
-    "scan /mnt/srv/storage/datastore/archive/"
-    "datasets/fiscal_2025/q1/export/"
-)
 
 
-def log_file_scan(log, base, fname, outcome, size, crc):
-    """emit enter + result for one file"""
+def log_long_file(log, base, fname, outcome, size, crc):
+    """emit enter + result for one file with extended metadata"""
     path = base + fname
     log.enter("{} starting".format(path))
     if outcome == "succ":
         log.succ(
             "{}  size={:7d}B  crc={}  "
-            "owner=etl-service  mode=rw-r--r--  st=ok"
-            .format(path, size, crc)
+            "owner=etl-service  mode=rw-r--r--  st=ok".format(path, size, crc)
         )
     elif outcome == "skip":
         log.skip(
             "{}  size=      0B  crc={}  "
-            "owner=etl-service  mode=rw-r--r--  empty"
-            .format(path, crc)
+            "owner=etl-service  mode=rw-r--r--  empty".format(path, crc)
         )
     else:
         log.fail(
             "{}  size={:7d}B  crc={}  "
-            "owner=etl-service  mode=rw-r--r--  st=FAIL"
-            .format(path, size, crc)
+            "owner=etl-service  mode=rw-r--r--  st=FAIL".format(path, size, crc)
         )
 
 
-# (fname, outcome, size_bytes, crc32)
-# crc constant across ok files → long common suffix after the path
-FILES_A = [
+FILES_LONG = [
     ("batch_001.csv", "succ", 104857, "1a2b3c4d"),
     ("batch_002.csv", "succ", 104923, "1a2b3c4d"),
     ("batch_003.csv", "succ", 103982, "1a2b3c4d"),
     ("batch_004.csv", "succ", 104711, "1a2b3c4d"),
     ("batch_005.csv", "succ", 105102, "1a2b3c4d"),
-    ("batch_006.csv", "skip",      0, "00000000"),
+    ("batch_006.csv", "skip", 0, "00000000"),
     ("batch_007.csv", "succ", 104399, "1a2b3c4d"),
     ("batch_008.csv", "succ", 104882, "1a2b3c4d"),
-    ("batch_009.csv", "fail", 104771, "deadbeef"),  # bad crc
+    ("batch_009.csv", "fail", 104771, "deadbeef"),
     ("batch_010.csv", "succ", 104500, "1a2b3c4d"),
-    ("batch_011.csv", "succ", 104619, "1a2b3c4d"),
-    ("batch_012.csv", "succ", 104930, "1a2b3c4d"),
-    ("batch_013.csv", "skip",      0, "00000000"),
-    ("batch_014.csv", "succ", 104733, "1a2b3c4d"),
-    ("batch_015.csv", "succ", 105001, "1a2b3c4d"),
-    ("batch_016.csv", "succ", 104844, "1a2b3c4d"),
-    ("batch_017.csv", "succ", 104772, "1a2b3c4d"),
-    ("batch_018.csv", "succ", 105033, "1a2b3c4d"),
-]
-FILES_B = [
-    ("batch_001.csv", "succ", 209714, "2b3c4d5e"),
-    ("batch_002.csv", "succ", 209846, "2b3c4d5e"),
-    ("batch_003.csv", "succ", 207964, "2b3c4d5e"),
-    ("batch_004.csv", "succ", 210422, "2b3c4d5e"),
-    ("batch_005.csv", "fail", 208113, "cafebabe"),  # bad crc
-    ("batch_006.csv", "succ", 209788, "2b3c4d5e"),
-    ("batch_007.csv", "succ", 210099, "2b3c4d5e"),
-    ("batch_008.csv", "skip",      0, "00000000"),
-    ("batch_009.csv", "succ", 209500, "2b3c4d5e"),
-    ("batch_010.csv", "succ", 209619, "2b3c4d5e"),
-    ("batch_011.csv", "succ", 209930, "2b3c4d5e"),
-    ("batch_012.csv", "succ", 210111, "2b3c4d5e"),
-    ("batch_013.csv", "succ", 209844, "2b3c4d5e"),
-    ("batch_014.csv", "skip",      0, "00000000"),
-    ("batch_015.csv", "succ", 210001, "2b3c4d5e"),
-    ("batch_016.csv", "succ", 209753, "2b3c4d5e"),
-    ("batch_017.csv", "succ", 210288, "2b3c4d5e"),
-    ("batch_018.csv", "succ", 209617, "2b3c4d5e"),
 ]
 
-print("# file scanner  #" + "#" * 59)
-
-# interleave A and B — each logger maintains its own independent window
-for (fa, oa, sa, ca), (fb, ob, sb, cb) in zip(FILES_A, FILES_B):
-    log_file_scan(log_a, BASE_A, fa, oa, sa, ca)
-    log_file_scan(log_b, BASE_B, fb, ob, sb, cb)
+for fname, outcome, size, crc in FILES_LONG:
+    log_long_file(log_long, BASE_LONG, fname, outcome, size, crc)
