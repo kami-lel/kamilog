@@ -265,7 +265,7 @@ log = kamilog.getLogger("myapp")
 kamilog.set_logging_level_by_verbosity(args, logger=log)
 ```
 
-<!-- Fixme add 15 level -->
+<!-- FIXME add 15 level -->
 
 Verbosity-to-logging-level mapping:
 
