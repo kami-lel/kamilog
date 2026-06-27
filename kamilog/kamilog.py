@@ -58,7 +58,7 @@ CRITICAL = logging.CRITICAL  # 50
 # customized logging level  ====================================================
 
 
-class _KamiLevel(IntEnum):
+class _CustomLogLevel(IntEnum):
     """custom log level with padded display name."""
 
     def __new__(cls, value, display):
@@ -75,12 +75,12 @@ class _KamiLevel(IntEnum):
     FAIL = (45, "FAIL ")
 
 
-ENTER = _KamiLevel.ENTER
-SKIP = _KamiLevel.SKIP
-PASS = _KamiLevel.PASS
-SUCC = _KamiLevel.SUCC
-DONE = _KamiLevel.DONE
-FAIL = _KamiLevel.FAIL
+ENTER = _CustomLogLevel.ENTER
+SKIP = _CustomLogLevel.SKIP
+PASS = _CustomLogLevel.PASS
+SUCC = _CustomLogLevel.SUCC
+DONE = _CustomLogLevel.DONE
+FAIL = _CustomLogLevel.FAIL
 
 
 # Date Time Format  ============================================================
@@ -91,7 +91,7 @@ DATEFMT_DATETIME_MS = "%Y-%m-%d %H:%M:%S.{ms}"
 
 
 # set up logging  ##############################################################
-for _lvl in _KamiLevel:
+for _lvl in _CustomLogLevel:
     logging.addLevelName(int(_lvl), _lvl.name)
 
 
@@ -119,8 +119,8 @@ class KamiLogger(logging.Logger):  # ===========================================
         :param message: log message
         :type message: str
         """
-        if self.isEnabledFor(_KamiLevel.ENTER):
-            self._log(_KamiLevel.ENTER, message, args, stacklevel=2, **kwargs)
+        if self.isEnabledFor(_CustomLogLevel.ENTER):
+            self._log(_CustomLogLevel.ENTER, message, args, stacklevel=2, **kwargs)
 
     def skip(self, message, *args, **kwargs):
         """
@@ -129,8 +129,8 @@ class KamiLogger(logging.Logger):  # ===========================================
         :param message: log message
         :type message: str
         """
-        if self.isEnabledFor(_KamiLevel.SKIP):
-            self._log(_KamiLevel.SKIP, message, args, stacklevel=2, **kwargs)
+        if self.isEnabledFor(_CustomLogLevel.SKIP):
+            self._log(_CustomLogLevel.SKIP, message, args, stacklevel=2, **kwargs)
 
     def pass_(self, message, *args, **kwargs):
         """
@@ -139,8 +139,8 @@ class KamiLogger(logging.Logger):  # ===========================================
         :param message: log message
         :type message: str
         """
-        if self.isEnabledFor(_KamiLevel.PASS):
-            self._log(_KamiLevel.PASS, message, args, stacklevel=2, **kwargs)
+        if self.isEnabledFor(_CustomLogLevel.PASS):
+            self._log(_CustomLogLevel.PASS, message, args, stacklevel=2, **kwargs)
 
     def succ(self, message, *args, **kwargs):
         """
@@ -149,8 +149,8 @@ class KamiLogger(logging.Logger):  # ===========================================
         :param message: log message
         :type message: str
         """
-        if self.isEnabledFor(_KamiLevel.SUCC):
-            self._log(_KamiLevel.SUCC, message, args, stacklevel=2, **kwargs)
+        if self.isEnabledFor(_CustomLogLevel.SUCC):
+            self._log(_CustomLogLevel.SUCC, message, args, stacklevel=2, **kwargs)
 
     def done(self, message, *args, **kwargs):
         """
@@ -159,8 +159,8 @@ class KamiLogger(logging.Logger):  # ===========================================
         :param message: log message
         :type message: str
         """
-        if self.isEnabledFor(_KamiLevel.DONE):
-            self._log(_KamiLevel.DONE, message, args, stacklevel=2, **kwargs)
+        if self.isEnabledFor(_CustomLogLevel.DONE):
+            self._log(_CustomLogLevel.DONE, message, args, stacklevel=2, **kwargs)
 
     def fail(self, message, *args, **kwargs):
         """
@@ -169,8 +169,8 @@ class KamiLogger(logging.Logger):  # ===========================================
         :param message: log message
         :type message: str
         """
-        if self.isEnabledFor(_KamiLevel.FAIL):
-            self._log(_KamiLevel.FAIL, message, args, stacklevel=2, **kwargs)
+        if self.isEnabledFor(_CustomLogLevel.FAIL):
+            self._log(_CustomLogLevel.FAIL, message, args, stacklevel=2, **kwargs)
 
 
 logging.setLoggerClass(KamiLogger)
@@ -183,15 +183,15 @@ logging.root.__class__ = KamiLogger
 
 _PADDED_LEVELNAME_MAP = {
     logging.DEBUG: "DEBUG",
-    _KamiLevel.ENTER: _KamiLevel.ENTER.display,
-    _KamiLevel.SKIP: _KamiLevel.SKIP.display,
+    _CustomLogLevel.ENTER: _CustomLogLevel.ENTER.display,
+    _CustomLogLevel.SKIP: _CustomLogLevel.SKIP.display,
     logging.INFO: "INFO ",
-    _KamiLevel.PASS: _KamiLevel.PASS.display,
-    _KamiLevel.SUCC: _KamiLevel.SUCC.display,
-    _KamiLevel.DONE: _KamiLevel.DONE.display,
+    _CustomLogLevel.PASS: _CustomLogLevel.PASS.display,
+    _CustomLogLevel.SUCC: _CustomLogLevel.SUCC.display,
+    _CustomLogLevel.DONE: _CustomLogLevel.DONE.display,
     logging.WARNING: "WARN.",
     logging.ERROR: "ERROR",
-    _KamiLevel.FAIL: _KamiLevel.FAIL.display,
+    _CustomLogLevel.FAIL: _CustomLogLevel.FAIL.display,
     logging.CRITICAL: "CRIT.",
 }
 
@@ -202,15 +202,15 @@ _ANSI_DATETIME = "\033[90m"  # bright black (grey)
 _ANSI_SOURCE = "\033[90m"  # bright black (grey)
 _ANSI_LEVEL_COLORS = {
     logging.DEBUG: "\033[34m",  # blue
-    _KamiLevel.ENTER: "\033[94m",  # bright blue
-    _KamiLevel.SKIP: "\033[36m",  # cyan
+    _CustomLogLevel.ENTER: "\033[94m",  # bright blue
+    _CustomLogLevel.SKIP: "\033[36m",  # cyan
     logging.INFO: "\033[96m",  # bright cyan
-    _KamiLevel.PASS: "\033[32m",  # green
-    _KamiLevel.SUCC: "\033[92m",  # bright green
-    _KamiLevel.DONE: "\033[93m",  # bright yellow
+    _CustomLogLevel.PASS: "\033[32m",  # green
+    _CustomLogLevel.SUCC: "\033[92m",  # bright green
+    _CustomLogLevel.DONE: "\033[93m",  # bright yellow
     logging.WARNING: "\033[33m",  # yellow
     logging.ERROR: "\033[31m",  # red
-    _KamiLevel.FAIL: "\033[91m",  # bright red
+    _CustomLogLevel.FAIL: "\033[91m",  # bright red
     logging.CRITICAL: "\033[95m",  # bright magenta
 }
 
