@@ -22,8 +22,6 @@ from .kamilog import (
     DATEFMT_DATETIME_MS,
     getLogger,
     add_verbose_arguments,
-    _calc_logging_level_from_verbosity,
-    _calc_logging_level_from_verbosity_namespace,
     set_logging_level_by_verbosity,
 )
 
@@ -47,7 +45,5 @@ __all__ = (
     "DATEFMT_DATETIME_MS",
     "getLogger",
     "add_verbose_arguments",
-    "_calc_logging_level_from_verbosity",
-    "_calc_logging_level_from_verbosity_namespace",
     "set_logging_level_by_verbosity",
 )

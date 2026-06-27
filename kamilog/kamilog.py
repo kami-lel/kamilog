@@ -14,15 +14,10 @@ from collections import deque
 from enum import IntEnum
 from logging import Formatter, StreamHandler
 
-__version__ = "1.5.0"
-__author__ = "kamiLeL"
-
 __all__ = (
     "getLogger",
     "KamiLogger",
     "add_verbose_arguments",
-    "_calc_logging_level_from_verbosity",
-    "_calc_logging_level_from_verbosity_namespace",
     "set_logging_level_by_verbosity",
     # log levels
     "NOTSET",
@@ -43,6 +38,11 @@ __all__ = (
     "DATEFMT_DATETIME",
     "DATEFMT_DATETIME_MS",
 )
+
+
+# metadata  ####################################################################
+__version__ = "1.5.0"
+__author__ = "kamiLeL"
 
 
 # enum  ########################################################################
@@ -553,7 +553,8 @@ class _DiffOnlyEngine:  # ======================================================
         trail = self._PRESERVED_TRAILING_CHARS
         prefix_len = (
             self._formatter.engine.count_prefix_chars(record)
-            if self._formatter is not None else 0
+            if self._formatter is not None
+            else 0
         )
         n_common = len(self._common)
         is_common = [
