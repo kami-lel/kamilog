@@ -112,30 +112,16 @@ Logger name (`myapp:`) is omitted when `name` is `None` or `"root"`.
 
 ## Logger Settings
 
-#### ANSI Color Output
+### ANSI Color Output
 
 Color is enabled automatically when stdout/stderr is a TTY, and suppressed
 when output is piped or redirected to a file.
 
-Level-to-color mapping (16-color ANSI):
-
-| Level | Color | ANSI Code |
-|---|---|---|
-| DEBUG | Blue | `\033[34m` |
-| ENTER | Bright Blue | `\033[94m` |
-| SKIP  | Cyan | `\033[36m` |
-| INFO  | Bright Cyan | `\033[96m` |
-| PASS  | Green | `\033[32m` |
-| SUCC. | Bright Green | `\033[92m` |
-| DONE  | Bright Yellow | `\033[93m` |
-| WARN. | Yellow | `\033[33m` |
-| ERROR | Red | `\033[31m` |
-| FAIL  | Bright Red | `\033[91m` |
-| CRIT. | Bright Magenta | `\033[95m` |
+See the [Custom Log Levels](#custom-log-levels) table for level-to-color mapping (16-color ANSI).
 
 Formatting:
 - **Timestamp**: bright black (grey)
-- **Level name**: colored (by table) and bold
+- **Level name**: colored (by log level) and bold
 - **Source name**: bright black (grey)
 - **Colon separator** (`:`) : bright black (grey)
 - **Message**: uncolored
