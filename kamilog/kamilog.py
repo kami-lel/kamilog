@@ -591,8 +591,6 @@ def calc_logging_level_from_verbosity_namespace(namespace):
 
 # Public API  ==================================================================
 
-# TODO add different behavior args
-
 
 def add_verbose_arguments(parser):
     """
