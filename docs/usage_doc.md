@@ -13,6 +13,8 @@ log.setLevel(kamilog.DEBUG)
 
 log.debug("Debugging details here")
 log.info("Informational message")
+log.enter("starting operation")
+log.done("operation completed")
 log.warning("Warning message")
 log.error("Error occurred!")
 log.critical("Critical issue!")
@@ -28,6 +30,8 @@ Default output (no timestamp):
 ```
 DEBUG myapp: Debugging details here
 INFO  myapp: Informational message
+ENTER myapp: starting operation
+DONE  myapp: operation completed
 WARN. myapp: Warning message
 ERROR myapp: Error occurred!
 CRIT. myapp: Critical issue!
@@ -53,53 +57,26 @@ Logger name (`myapp:`) is omitted when `name` is `None` or `"root"`.
 
 
 
-### Custom Log Levels
+## Custom Log Levels
 
-<!-- TODO rewrite a single table contains all levels (native & customize), function, level & color -->
+`KamiLogger` adds six levels for hook and test-case workflows. All log levels (native and custom) are shown in the table below, ordered by numeric value:
 
-`KamiLogger` adds six levels for hook and test-case workflows:
-
-| Method | Constant | Number |
-|---|---|---|
-| `log.enter(msg)` | `kamilog.ENTER` | 11 |
-| `log.skip(msg)` | `kamilog.SKIP` | 12 |
-| `log.pass_(msg)` | `kamilog.PASS` | 21 |
-| `log.succ(msg)` | `kamilog.SUCC` | 22 |
-| `log.done(msg)` | `kamilog.DONE` | 25 |
-| `log.fail(msg)` | `kamilog.FAIL` | 45 |
-
-Example output with custom levels:
-
-```python
-log = kamilog.getLogger("myapp")
-log.setLevel(kamilog.DEBUG)
-
-log.enter("entering setup")      # ENTER myapp: entering setup
-log.info("processing data")      # INFO  myapp: processing data
-log.pass_("validation passed")   # PASS  myapp: validation passed
-log.succ("operation succeeded")  # SUCC. myapp: operation succeeded
-log.done("task completed")       # DONE  myapp: task completed
-log.fail("task failed")          # FAIL  myapp: task failed
-```
+| Level | Num | Function | Color | ANSI Code | Meaning |
+|---|---|---|---|---|---|
+| DEBUG | 10 | `.debug()` | Blue | `\033[34m` | debugging information shown only during development |
+| ENTER | 11 | `.enter()` | Bright Blue | `\033[94m` | marks start of a routine; useful for tracking program logic during development |
+| SKIP | 12 | `.skip()` | Cyan | `\033[36m` | marks skipped portion of routine; useful for tracking program logic during development |
+| INFO | 20 | `.info()` | Bright Cyan | `\033[96m` | general informational message related to program function |
+| PASS | 21 | `.pass_()` | Green | `\033[32m` | test case passed |
+| SUCC | 22 | `.succ()` | Bright Green | `\033[92m` | subroutine or execution succeeded |
+| DONE | 25 | `.done()` | Bright Yellow | `\033[93m` | entire program or major component completed successfully |
+| WARNING | 30 | `.warning()` | Yellow | `\033[33m` | warning condition that should be investigated |
+| ERROR | 40 | `.error()` | Red | `\033[31m` | error condition that prevented operation completion |
+| FAIL | 45 | `.fail()` | Bright Red | `\033[91m` | test case or subroutine/execution failed |
+| CRITICAL | 50 | `.critical()` | Bright Magenta | `\033[95m` | program stopping or crashing immediately |
 
 > [!NOTE]
-> `pass_` uses a trailing underscore because `pass` is a Python keyword.
-
-### All Log Levels
-
-| Function | Meaning |
-|---|---|
-| `.debug()` | debugging information shown only during development |
-| `.enter()` | marks start of a routine; useful for tracking program logic during development |
-| `.skip()` | marks skipped portion of routine; useful for tracking program logic during development |
-| `.info()` | general informational message related to program function |
-| `.pass_()` | test case passed |
-| `.succ()` | subroutine or execution succeeded |
-| `.done()` | entire program or major component completed successfully |
-| `.warning()` | warning condition that should be investigated |
-| `.error()` | error condition that prevented operation completion |
-| `.fail()` | test case or subroutine/execution failed |
-| `.critical()` | program stopping or crashing immediately |
+> `.pass_()` uses a trailing underscore because `pass` is a Python keyword.
 
 
 
