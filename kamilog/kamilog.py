@@ -605,8 +605,10 @@ def set_logging_level_by_verbosity(namespace, *, logger=None, logger_name=None):
     """
     verbosity = calc_verbosity(namespace)
 
-    if verbosity >= 2:
+    if verbosity >= 3:
         level = logging.DEBUG
+    elif verbosity == 2:
+        level = SUCC
     elif verbosity == 1:
         level = logging.INFO
     elif verbosity == 0:
