@@ -359,10 +359,10 @@ class _DiffOnlyMsgFilter(logging.Filter):  # ===================================
 
     compares each incoming message against a sliding window of prior
     messages; positions that are identical in all of them are candidates
-    for compression. contiguous common runs are replaced with tab
-    characters in multiples of 8: each group of 8 common chars becomes
-    one ``\\t``. at least 2 original chars are preserved at each end of
-    the compressed block, giving visual context around the tab.
+    for compression. contiguous common runs are replaced with ``〃\\t``
+    markers in multiples of 8: each group of 8 common chars becomes one
+    ``〃\\t`` pair. at least 2 original chars are preserved at each end of
+    the compressed block, giving visual context around the marker.
 
 
     :param window: number of prior messages held for comparison;
@@ -439,7 +439,7 @@ class _DiffOnlyMsgFilter(logging.Filter):  # ===================================
                     else:
                         tab_s = run_s + leading
                         result.append(message[run_s:tab_s])
-                        result.append('\t' * k)
+                        result.append('〃\t' * k)
                         result.append(message[tab_s + 8 * k:run_e])
             masked = "".join(result)
         else:
