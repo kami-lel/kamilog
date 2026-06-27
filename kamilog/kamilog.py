@@ -426,6 +426,7 @@ class _DiffOnlyEngine:  # ======================================================
 
     _COMPRESSION_BLOCK_SIZE = 8
     _PRESERVED_TRAILING_CHARS = 2
+    _COMPRESSION_MARKER = "〃\t"
 
     def __init__(self, formatter, window=3):
         self._formatter = formatter
@@ -507,7 +508,7 @@ class _DiffOnlyEngine:  # ======================================================
                     result.append(message[run_s:run_e])
                 else:
                     result.append(message[run_s:tab_s])
-                    result.append("〃\t" * k)
+                    result.append(self._COMPRESSION_MARKER * k)
                     result.append(message[tab_s + block * k : run_e])
         return "".join(result)
 
