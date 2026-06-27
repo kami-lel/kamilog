@@ -44,17 +44,7 @@ __all__ = (
 )
 
 
-# constants  ###################################################################
-
-
-# log levels  ==================================================================
-
-NOTSET = logging.NOTSET  # 0
-DEBUG = logging.DEBUG  # 10
-INFO = logging.INFO  # 20
-WARNING = logging.WARNING  # 30
-ERROR = logging.ERROR  # 40
-CRITICAL = logging.CRITICAL  # 50
+# enum  ########################################################################
 
 
 class _CustomLogLevel(IntEnum):
@@ -74,12 +64,25 @@ class _CustomLogLevel(IntEnum):
     FAIL = (45, "FAIL ")
 
 
-ENTER = _CustomLogLevel.ENTER
-SKIP = _CustomLogLevel.SKIP
-PASS = _CustomLogLevel.PASS
-SUCC = _CustomLogLevel.SUCC
-DONE = _CustomLogLevel.DONE
-FAIL = _CustomLogLevel.FAIL
+# level registration during import
+for _lvl in _CustomLogLevel:
+    logging.addLevelName(int(_lvl), _lvl.name)
+
+
+# constants  ###################################################################
+
+NOTSET = logging.NOTSET  # 0
+DEBUG = logging.DEBUG  # 10
+ENTER = _CustomLogLevel.ENTER  # 11
+SKIP = _CustomLogLevel.SKIP  # 12
+SUCC = _CustomLogLevel.SUCC  # 15
+INFO = logging.INFO  # 20
+PASS = _CustomLogLevel.PASS  # 21
+DONE = _CustomLogLevel.DONE  # 25
+WARNING = logging.WARNING  # 30
+ERROR = logging.ERROR  # 40
+FAIL = _CustomLogLevel.FAIL  # 45
+CRITICAL = logging.CRITICAL  # 50
 
 
 # datetime formats  ============================================================
@@ -87,12 +90,6 @@ DATEFMT_TIME = "%H:%M:%S"
 DATEFMT_TIME_MS = "%H:%M:%S.{ms}"
 DATEFMT_DATETIME = "%Y-%m-%d %H:%M:%S"
 DATEFMT_DATETIME_MS = "%Y-%m-%d %H:%M:%S.{ms}"
-
-
-# registration  ================================================================
-
-for _lvl in _CustomLogLevel:
-    logging.addLevelName(int(_lvl), _lvl.name)
 
 
 # KamiLogger  ##################################################################
@@ -372,10 +369,7 @@ class _LogFormatter(Formatter):
         return result
 
 
-# Diff Only Msg  ###############################################################
-
-
-class _DiffOnlyMsgFilter(logging.Filter):
+class _DiffOnlyMsgFilter(logging.Filter):  #####################################
     """
     suppress characters shared across the last ``window`` messages, so
     repeated log lines collapse down to only what changed.
