@@ -401,47 +401,58 @@ class _LogFormatter(Formatter):
         return result
 
 
-class _DiffOnlyMsgFilter(logging.Filter):  #####################################
+# diff only message   ##########################################################
+
+
+class _DiffOnlyEngine:  # ======================================================
     """
-    suppress characters shared across the last ``window`` messages, so
-    repeated log lines collapse down to only what changed.
+    engine for diff-only compression of log message text.
 
-    compares each incoming message against a sliding window of prior
-    messages; positions that are identical in all of them are candidates
-    for compression. contiguous common runs are replaced with ``〃\\t``
-    markers aligned to tab stops: the ``〃`` is placed at the next
-    column that is a multiple of 8 from the start of the rendered line
-    (prefix included), so each ``〃\\t`` spans exactly 8 visible columns.
-    at least 2 original chars are kept at the trailing end of each
-    compressed block for context.
+    maintains a sliding window of prior messages; once the window is
+    full, compresses character runs common to all of them into ``〃\\t``
+    markers aligned to 8-column boundaries from the rendered line start.
+    the formatter needed for prefix-width measurement is resolved lazily
+    from the logger's handlers on the first ``process()`` call, so
+    handlers need not exist at construction time.
 
-    :param logger: logger whose first ``_LogFormatter`` handler is used
-            to measure the rendered prefix width for tab alignment;
-            resolved lazily on the first filter call so handlers need
-            not exist at construction time
+
+    :param logger: logger whose first ``_LogFormatter`` handler supplies
+            the formatter for prefix-width measurement
     :type logger: logging.Logger
     :param window: number of prior messages held for comparison;
-            suppression activates once this many messages have been seen
+            compression activates once this many messages have been seen
     :type window: int
     """
-
-    # HACK refactorization for better readability
 
     _COMPRESSION_BLOCK_SIZE = 8
     _PRESERVED_TRAILING_CHARS = 2
 
     def __init__(self, logger, window=3):
-        super().__init__()
         self._logger = logger
         self._history = deque(maxlen=window)
         # _common[i] = shared char at position i across all history,
         # or None where messages diverge or lengths differ
         self._common: list = []
-        self._formatter = None  # resolved lazily on first filter call
+        self._formatter = None  # resolved lazily on first process() call
+
+    # TODO better way to do this?
+
+    def _resolve_formatter(self):
+        """
+        find and cache the first ``_LogFormatter`` from logger's handlers
+        """
+        self._formatter = next(
+            (
+                h.formatter
+                for h in self._logger.handlers
+                if isinstance(h.formatter, _LogFormatter)
+            ),
+            None,
+        )
 
     def _update_common(self):
         """
-        recompute _common from current _history
+        recompute ``_common`` from the current ``_history`` window
         """
         history = list(self._history)
         if not history:
@@ -460,77 +471,129 @@ class _DiffOnlyMsgFilter(logging.Filter):  #####################################
                 )
         self._common = common
 
-    def filter(self, record):
+    def _compress(self, record, message):
         """
-        :param record: log record to mask in place
+        compress positions in ``message`` matching ``_common`` into
+        ``〃\\t`` markers.
+
+        aligns each marker to the next multiple-of-8 column measured
+        from the rendered line start (prefix + message offset); runs
+        too short to fit one full block after alignment are kept as-is.
+
+
+        :param record: log record used to measure the prefix width
         :type record: logging.LogRecord
-        :return: always ``True``; this filter never drops records
-        :rtype: bool
+        :param message: raw message text to compress
+        :type message: str
+        :return: compressed message string
+        :rtype: str
+        """
+        block = self._COMPRESSION_BLOCK_SIZE
+        trail = self._PRESERVED_TRAILING_CHARS
+        prefix_len = (
+            self._formatter.count_prefix_chars(record)
+            if self._formatter is not None
+            else 0
+        )
+        n_common = len(self._common)
+        is_common = [
+            i < n_common
+            and self._common[i] is not None
+            and self._common[i] == ch
+            for i, ch in enumerate(message)
+        ]
+        result = []
+        i = 0
+        msg_len = len(message)
+        while i < msg_len:
+            if not is_common[i]:
+                result.append(message[i])
+                i += 1
+            else:
+                run_s = i
+                while i < msg_len and is_common[i]:
+                    i += 1
+                run_e = i
+                col_offset = (prefix_len + run_s) % block
+                padding = (block - col_offset) % block
+                tab_s = run_s + padding
+                replaceable = run_e - tab_s - trail
+                k = replaceable // block if replaceable > 0 else 0
+                if k == 0:
+                    result.append(message[run_s:run_e])
+                else:
+                    result.append(message[run_s:tab_s])
+                    result.append("〃\t" * k)
+                    result.append(message[tab_s + block * k : run_e])
+        return "".join(result)
+
+    def process(self, record):
+        """
+        process ``record`` and return the (possibly compressed) message.
+
+        if the history window is not yet full, the raw message is
+        returned unchanged. once full, character positions common to
+        all history messages are compressed into ``〃\\t`` markers.
+
+
+        :param record: log record being processed
+        :type record: logging.LogRecord
+        :return: compressed message, or the original during warmup
+        :rtype: str
         """
         message = record.getMessage()
 
         if len(self._history) == self._history.maxlen:
             if self._formatter is None:
-                self._formatter = next(
-                    (
-                        h.formatter
-                        for h in self._logger.handlers
-                        if isinstance(h.formatter, _LogFormatter)
-                    ),
-                    None,
-                )
-            block = self._COMPRESSION_BLOCK_SIZE
-            trail = self._PRESERVED_TRAILING_CHARS
-            prefix_len = (
-                self._formatter.count_prefix_chars(record)
-                if self._formatter is not None
-                else 0
-            )
-            common = self._common
-            # mark positions where current message matches all history
-            n_common = len(common)
-            is_common = [
-                i < n_common and common[i] is not None and common[i] == ch
-                for i, ch in enumerate(message)
-            ]
-            # compress common runs: align each 〃\t to an 8-column boundary
-            # from line start so the tab spans exactly 8 visible columns;
-            # keep ≥2 original chars at the trailing end of each run
-            result = []
-            i = 0
-            msg_len = len(message)
-            while i < msg_len:
-                if not is_common[i]:
-                    result.append(message[i])
-                    i += 1
-                else:
-                    run_s = i
-                    while i < msg_len and is_common[i]:
-                        i += 1
-                    run_e = i
-                    col_offset = (prefix_len + run_s) % block
-                    padding = (block - col_offset) % block
-                    tab_s = run_s + padding
-                    replaceable = run_e - tab_s - trail
-                    k = replaceable // block if replaceable > 0 else 0
-                    if k == 0:
-                        result.append(message[run_s:run_e])
-                    else:
-                        result.append(message[run_s:tab_s])
-                        result.append("〃\t" * k)
-                        result.append(message[tab_s + block * k : run_e])
-            masked = "".join(result)
+                self._resolve_formatter()
+            masked = self._compress(record, message)
         else:
             masked = message
 
         self._history.append(message)
         self._update_common()
-        record.msg = masked
+        return masked
+
+
+class _DiffOnlyMsgFilter(logging.Filter):  # ===================================
+    """
+    ``logging.Filter`` adapter that applies ``_DiffOnlyEngine`` to records.
+
+    delegates all compression logic to an internal ``_DiffOnlyEngine``
+    instance; ``filter()`` mutates ``record.msg`` in place with the
+    result.
+
+
+    :param logger: forwarded to ``_DiffOnlyEngine`` for formatter
+            resolution
+    :type logger: logging.Logger
+    :param window: forwarded to ``_DiffOnlyEngine`` as the history
+            window size
+    :type window: int
+    """
+
+    def __init__(self, logger, window=3):
+        super().__init__()
+        self._engine = _DiffOnlyEngine(logger, window)
+
+    def filter(self, record):
+        """
+        apply diff-only compression to ``record.msg`` in place.
+
+
+        :param record: log record to mask in place
+        :type record: logging.LogRecord
+        :return: always ``True``; this filter never drops records
+        :rtype: bool
+        """
+        record.msg = self._engine.process(record)
         record.args = ()
         return True
 
 
 # verbosity helpers  ###########################################################
+
+# HACK make privates
 
 
 def calc_logging_level_from_verbosity(verbosity):
