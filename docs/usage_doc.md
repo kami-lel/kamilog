@@ -55,7 +55,7 @@ Logger name (`myapp:`) is omitted when `name` is `None` or `"root"`.
 
 ### Custom Log Levels
 
-<!-- Todo rewrite a single table contains all levels (native & customize), function, level & color -->
+<!-- TODO rewrite a single table contains all levels (native & customize), function, level & color -->
 
 `KamiLogger` adds six levels for hook and test-case workflows:
 
