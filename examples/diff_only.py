@@ -4,19 +4,9 @@ diff_only.py
 demonstrate _DiffOnlyMsgFilter: characters repeated across the last
 ``window`` messages compress into 〃\\t markers; only what changed
 stays visible.
-
-  - warmup    first ``window`` (default 3) messages always print in full
-  - compress  runs of ≥10 repeated chars fold into 〃\\t per 8 chars;
-              ≥2 original chars are kept at each end for context
-  - threshold runs shorter than 10 chars are never compressed — they
-              carry useful identity context
-  - break     one outlier message poisons the window; compression drops
-              until regular lines fill the window again
 """
 
 import kamilog
-
-# HACK fix this to better structure
 
 # Diff-Only Filter Examples  ##################################################
 

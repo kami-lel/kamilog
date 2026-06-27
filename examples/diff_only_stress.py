@@ -1,163 +1,102 @@
 """
 diff_only_stress.py
 
-high-volume demonstration of _DiffOnlyMsgFilter across diverse
-message shapes and log-level functions. each section fires enough
-messages for warmup (3) plus several compressed rounds.
+high-volume file-scanner demonstration of _DiffOnlyMsgFilter.
+Two independent named loggers (scanner-2024, scanner-2025) scan
+sibling archive directories; their filter windows never mix.
+Long fixed paths and metadata fields produce multiple 〃\t markers
+per line after the 3-message warmup completes.
 """
 
 import kamilog
 
-# server metrics — long fixed frame; only numeric readings vary  ##############
-# "node=srv-01  cpu=" (17 chars) and the trailing section each compress;
-# mixed info/warning levels still share the same filter window
+log_a = kamilog.getLogger("scanner-2024")
+log_b = kamilog.getLogger("scanner-2025")
+for _lg in (log_a, log_b):
+    _lg.setLevel(kamilog.DEBUG)
+    _lg.propagate = False
 
-log_srv = kamilog.getLogger("metrics")
-log_srv.setLevel(kamilog.DEBUG)
-log_srv.propagate = False
-
-print("# server metrics  #" + "#" * 57)
-readings = [
-    (12.4,  1.9, 1.2,  "ok"),
-    (14.7,  2.0, 1.1,  "ok"),
-    (11.8,  1.9, 1.3,  "ok"),
-    (13.2,  1.9, 1.4,  "ok"),
-    (15.0,  2.0, 1.2,  "ok"),
-    (16.3,  2.1, 1.0,  "ok"),
-    (74.5,  2.3, 0.4,  "high"),   # spike — breaks suffix "ok" pattern
-    (89.1,  2.5, 0.2,  "high"),
-    (91.3,  2.6, 0.1,  "crit"),   # critical
-    (14.2,  1.9, 1.2,  "ok"),     # back to normal
-    (13.7,  1.8, 1.3,  "ok"),
-    (12.9,  1.9, 1.1,  "ok"),     # window refills; compression resumes
-]
-for cpu, mem, net, st in readings:
-    msg = "node=srv-01  cpu={:5.1f}%  mem={:.1f}GB  net={:.1f}Mbps  st={}".format(
-        cpu, mem, net, st
-    )
-    if st == "crit":
-        log_srv.critical(msg)
-    elif st == "high":
-        log_srv.warning(msg)
-    else:
-        log_srv.info(msg)
+# 72-char base; first 80 chars compress to 9 markers once warmup fills
+BASE_A = (
+    "scan /mnt/srv/storage/datastore/archive/"
+    "datasets/fiscal_2024/q1/export/"
+)
+BASE_B = (
+    "scan /mnt/srv/storage/datastore/archive/"
+    "datasets/fiscal_2025/q1/export/"
+)
 
 
-# api request log — fixed path; status and latency vary  ######################
-# debug/succ/done/warning all go through the same window on log_api;
-# the fixed prefix "GET /api/v2/users  status=" compresses first
-
-log_api = kamilog.getLogger("api")
-log_api.setLevel(kamilog.DEBUG)
-log_api.propagate = False
-
-print("\n# api requests  #" + "#" * 59)
-requests = [
-    (200, 12,  "alice"),
-    (200, 15,  "bob"),
-    (200, 11,  "carol"),
-    (200, 14,  "dave"),
-    (200, 13,  "eve"),
-    (404,  3,  "ghost"),    # not-found — suffix changes
-    (200, 16,  "frank"),
-    (200, 10,  "grace"),
-    (500, 42,  "system"),   # server error
-    (200, 18,  "hank"),
-    (200, 12,  "iris"),
-    (200, 11,  "judy"),
-]
-for status, ms, user in requests:
-    msg = "GET /api/v2/users  status={}  latency={:3d}ms  user={}".format(
-        status, ms, user
-    )
-    if status >= 500:
-        log_api.error(msg)
-    elif status >= 400:
-        log_api.warning(msg)
-    elif ms < 12:
-        log_api.succ(msg)
-    else:
-        log_api.info(msg)
-
-
-# file scanner — enter/skip/succ/fail across a fixed base path  ###############
-# "scan /opt/data/archive/2024/" (29 chars) compresses after warmup;
-# enter marks start, succ/skip/fail mark outcome
-
-log_scan = kamilog.getLogger("scanner")
-log_scan.setLevel(kamilog.DEBUG)
-log_scan.propagate = False
-
-print("\n# file scanner  #" + "#" * 59)
-files = [
-    ("jan_export.csv",  "succ",  1024),
-    ("feb_export.csv",  "succ",   980),
-    ("mar_export.csv",  "succ",  1100),
-    ("apr_export.csv",  "skip",     0),   # empty — skip
-    ("may_export.csv",  "succ",  1050),
-    ("jun_export.csv",  "fail",    -1),   # corrupt
-    ("jul_export.csv",  "succ",  1020),
-    ("aug_export.csv",  "succ",   995),
-    ("sep_export.csv",  "succ",  1030),
-    ("oct_export.csv",  "skip",     0),
-    ("nov_export.csv",  "succ",  1010),
-    ("dec_export.csv",  "succ",  1005),
-]
-for fname, outcome, rows in files:
-    base = "scan /opt/data/archive/2024/{}".format(fname)
-    log_scan.enter("{} starting".format(base))
+def log_file_scan(log, base, fname, outcome, size, crc):
+    """emit enter + result for one file"""
+    path = base + fname
+    log.enter("{} starting".format(path))
     if outcome == "succ":
-        log_scan.succ("{}  rows={:5d}  ok".format(base, rows))
+        log.succ(
+            "{}  size={:7d}B  crc={}  "
+            "owner=etl-service  mode=rw-r--r--  st=ok"
+            .format(path, size, crc)
+        )
     elif outcome == "skip":
-        log_scan.skip("{}  empty — skipped".format(base))
+        log.skip(
+            "{}  size=      0B  crc={}  "
+            "owner=etl-service  mode=rw-r--r--  empty"
+            .format(path, crc)
+        )
     else:
-        log_scan.fail("{}  corrupt — failed".format(base))
+        log.fail(
+            "{}  size={:7d}B  crc={}  "
+            "owner=etl-service  mode=rw-r--r--  st=FAIL"
+            .format(path, size, crc)
+        )
 
 
-# test runner — enter/pass_/skip/fail with fixed test prefix  #################
-# "test_auth :: case=" (19 chars) and result suffix both compress;
-# mixed outcomes keep the window from stabilizing, slowing compression
-
-log_test = kamilog.getLogger("runner")
-log_test.setLevel(kamilog.DEBUG)
-log_test.propagate = False
-
-print("\n# test runner  #" + "#" * 60)
-cases = [
-    ("login_valid_pw",     "pass"),
-    ("login_wrong_pw",     "pass"),
-    ("login_empty_pw",     "pass"),
-    ("login_sql_inject",   "pass"),
-    ("login_unicode_pw",   "pass"),
-    ("login_expired_tok",  "fail"),   # failure — suffix changes
-    ("login_revoked_tok",  "fail"),
-    ("login_no_session",   "pass"),
-    ("login_mfa_ok",       "pass"),
-    ("login_mfa_fail",     "fail"),
-    ("login_rate_limit",   "skip"),   # not yet implemented
-    ("login_sso_google",   "pass"),
+# (fname, outcome, size_bytes, crc32)
+# crc constant across ok files → long common suffix after the path
+FILES_A = [
+    ("batch_001.csv", "succ", 104857, "1a2b3c4d"),
+    ("batch_002.csv", "succ", 104923, "1a2b3c4d"),
+    ("batch_003.csv", "succ", 103982, "1a2b3c4d"),
+    ("batch_004.csv", "succ", 104711, "1a2b3c4d"),
+    ("batch_005.csv", "succ", 105102, "1a2b3c4d"),
+    ("batch_006.csv", "skip",      0, "00000000"),
+    ("batch_007.csv", "succ", 104399, "1a2b3c4d"),
+    ("batch_008.csv", "succ", 104882, "1a2b3c4d"),
+    ("batch_009.csv", "fail", 104771, "deadbeef"),  # bad crc
+    ("batch_010.csv", "succ", 104500, "1a2b3c4d"),
+    ("batch_011.csv", "succ", 104619, "1a2b3c4d"),
+    ("batch_012.csv", "succ", 104930, "1a2b3c4d"),
+    ("batch_013.csv", "skip",      0, "00000000"),
+    ("batch_014.csv", "succ", 104733, "1a2b3c4d"),
+    ("batch_015.csv", "succ", 105001, "1a2b3c4d"),
+    ("batch_016.csv", "succ", 104844, "1a2b3c4d"),
+    ("batch_017.csv", "succ", 104772, "1a2b3c4d"),
+    ("batch_018.csv", "succ", 105033, "1a2b3c4d"),
 ]
-for case, result in cases:
-    log_test.enter("test_auth :: case={}  run".format(case))
-    if result == "pass":
-        log_test.pass_("test_auth :: case={}  pass".format(case))
-    elif result == "fail":
-        log_test.fail("test_auth :: case={}  FAIL".format(case))
-    else:
-        log_test.skip("test_auth :: case={}  skip".format(case))
+FILES_B = [
+    ("batch_001.csv", "succ", 209714, "2b3c4d5e"),
+    ("batch_002.csv", "succ", 209846, "2b3c4d5e"),
+    ("batch_003.csv", "succ", 207964, "2b3c4d5e"),
+    ("batch_004.csv", "succ", 210422, "2b3c4d5e"),
+    ("batch_005.csv", "fail", 208113, "cafebabe"),  # bad crc
+    ("batch_006.csv", "succ", 209788, "2b3c4d5e"),
+    ("batch_007.csv", "succ", 210099, "2b3c4d5e"),
+    ("batch_008.csv", "skip",      0, "00000000"),
+    ("batch_009.csv", "succ", 209500, "2b3c4d5e"),
+    ("batch_010.csv", "succ", 209619, "2b3c4d5e"),
+    ("batch_011.csv", "succ", 209930, "2b3c4d5e"),
+    ("batch_012.csv", "succ", 210111, "2b3c4d5e"),
+    ("batch_013.csv", "succ", 209844, "2b3c4d5e"),
+    ("batch_014.csv", "skip",      0, "00000000"),
+    ("batch_015.csv", "succ", 210001, "2b3c4d5e"),
+    ("batch_016.csv", "succ", 209753, "2b3c4d5e"),
+    ("batch_017.csv", "succ", 210288, "2b3c4d5e"),
+    ("batch_018.csv", "succ", 209617, "2b3c4d5e"),
+]
 
+print("# file scanner  #" + "#" * 59)
 
-# dual loggers — each has an independent filter window  #######################
-# worker-A and worker-B share identical message structure but differ in
-# "items" count; their histories never mix — compression is per-logger
-
-log_a = kamilog.getLogger("worker-A")
-log_b = kamilog.getLogger("worker-B")
-for lg in (log_a, log_b):
-    lg.setLevel(kamilog.DEBUG)
-    lg.propagate = False
-
-print("\n# dual loggers  #" + "#" * 59)
-for i in range(1, 13):
-    log_a.done("batch={:03d}  items=1000  status=complete".format(i))
-    log_b.done("batch={:03d}  items=2000  status=complete".format(i))
+# interleave A and B — each logger maintains its own independent window
+for (fa, oa, sa, ca), (fb, ob, sb, cb) in zip(FILES_A, FILES_B):
+    log_file_scan(log_a, BASE_A, fa, oa, sa, ca)
+    log_file_scan(log_b, BASE_B, fb, ob, sb, cb)
