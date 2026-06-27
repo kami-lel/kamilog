@@ -8,6 +8,8 @@ stays visible.
 
 import kamilog
 
+# fixme rewrite to better demonstrate diff only function
+
 # Diff-Only Filter Examples  ##################################################
 
 # == periodic sensor read =====================================================
@@ -74,3 +76,45 @@ log3.info("sync /home/alice/docs/q7_report.pdf  →  remote:backup  ok")
 log3.info("sync /home/alice/docs/q8_report.pdf  →  remote:backup  ok")
 print("# full recovery: outlier aged out of window")
 log3.info("sync /home/alice/docs/q9_report.pdf  →  remote:backup  ok")
+
+# == multi-logger: different timestamp settings ================================
+# three independent loggers emit the same pipeline messages; each uses
+# a different timestamp format — none, time-only, and time+ms — so
+# their rendered prefix widths differ.  each logger's
+# _DiffOnlyMsgFilter was constructed with a matching formatter so
+# count_prefix_chars returns the correct width; 〃\t lands on an
+# 8-column tab stop from each line's own start regardless of how wide
+# the prefix is.
+
+log_none = kamilog.getLogger("node")
+log_none.setLevel(kamilog.DEBUG)
+log_none.propagate = False
+
+log_t = kamilog.getLogger("node.t", datefmt=kamilog.DATEFMT_TIME)
+log_t.setLevel(kamilog.DEBUG)
+log_t.propagate = False
+
+log_ms = kamilog.getLogger("node.ms", datefmt=kamilog.DATEFMT_TIME_MS)
+log_ms.setLevel(kamilog.DEBUG)
+log_ms.propagate = False
+
+msgs = [
+    "job=compress  src=archive/2025-01  out=store/q1  rows=14332",
+    "job=compress  src=archive/2025-02  out=store/q1  rows=14019",
+    "job=compress  src=archive/2025-03  out=store/q1  rows=15204",
+    "job=compress  src=archive/2025-04  out=store/q1  rows=13887",
+    "job=compress  src=archive/2025-05  out=store/q1  rows=14556",
+    "job=compress  src=archive/2025-06  out=store/q1  rows=14103",
+]
+
+print("\n# multi-logger: different timestamp settings  " + "#" * 34)
+print("# warmup — each logger builds its own window independently")
+for msg in msgs[:3]:
+    log_none.info(msg)
+    log_t.info(msg)
+    log_ms.info(msg)
+print("# compression: marker column shifts per logger but stays on tab stop")
+for msg in msgs[3:]:
+    log_none.info(msg)
+    log_t.info(msg)
+    log_ms.info(msg)
