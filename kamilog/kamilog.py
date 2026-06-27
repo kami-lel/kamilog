@@ -285,6 +285,7 @@ class _LogFormatter(Formatter):
                 return "{}:{}".format(_ANSI_DATETIME, _ANSI_RESET)
             return ":"
         if self.use_color:
+            # pylint: disable-next=duplicate-string-formatting-argument
             return "{}{}{}{}:{}".format(
                 _ANSI_SOURCE, name, _ANSI_RESET, _ANSI_DATETIME, _ANSI_RESET
             )
