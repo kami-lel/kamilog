@@ -40,9 +40,6 @@ __all__ = (
 )
 
 
-# HACK review all CB
-
-
 # metadata  ####################################################################
 __version__ = "1.6.0"
 __author__ = "kamiLeL"
@@ -96,10 +93,7 @@ DATEFMT_DATETIME = "%Y-%m-%d %H:%M:%S"
 DATEFMT_DATETIME_MS = "%Y-%m-%d %H:%M:%S.{ms}"
 
 
-# KamiLogger  ##################################################################
-
-
-class KamiLogger(logging.Logger):
+class KamiLogger(logging.Logger):  #############################################
     """
     Logger subclass extending :class:`logging.Logger` with six additional levels.
 
@@ -193,10 +187,7 @@ logging.setLoggerClass(KamiLogger)
 logging.root.__class__ = KamiLogger
 
 
-# color  ########################################################################
-
-
-class _AnsiPalette:
+class _AnsiPalette:  ###########################################################
     """
     ANSI color palette; detects TTY at construction time and applies
     color codes through its public methods.
@@ -286,7 +277,7 @@ _PADDED_LEVELNAME_MAP = {
 }
 
 
-class _LogFormatEngine:
+class _LogFormatEngine:  # =====================================================
     """
     core log-line formatting logic, independent of ``logging.Formatter``.
 
@@ -313,7 +304,7 @@ class _LogFormatEngine:
         self._datefmt = datefmt
         self._relative_to = relative_to
 
-    # Public API  ##############################################################
+    # Public API  **************************************************************
 
     def count_prefix_chars(self, record):
         """
@@ -404,7 +395,7 @@ class _LogFormatEngine:
             record.getMessage(),
         )
 
-    # helpers  =================================================================
+    # helpers  *****************************************************************
 
     def _fmt_asctime(self, asctime):
         """
@@ -456,7 +447,7 @@ class _LogFormatEngine:
         return "{}{:02d}:{:02d}:{:02d}.{:03d}".format(sign, h, m, s, ms)
 
 
-class _LogFormatter(Formatter):
+class _LogFormatter(Formatter):  # =============================================
     """
     ``logging.Formatter`` adapter wrapping ``_LogFormatEngine``.
 
@@ -754,7 +745,7 @@ def _calc_logging_level_from_verbosity_namespace(namespace):
     return _calc_logging_level_from_verbosity(verbosity)
 
 
-# Public API  ##################################################################
+# Entry Point  #################################################################
 
 
 # pylint: disable-next=invalid-name
