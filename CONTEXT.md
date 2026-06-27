@@ -121,15 +121,15 @@ kamilog.DATEFMT_DATETIME_MS   # "YYYY-MM-DD HH:MM:SS.mmm"
 
 # verbosity helpers
 kamilog.add_verbose_arguments(parser)
-kamilog.calc_verbosity(args) -> int
-kamilog.set_logging_level_by_verbosity(verbosity, logger=None)
+kamilog.set_logging_level_by_verbosity(namespace, logger=None, logger_name=None)
 ```
 
 Verbosity mapping (default level is `DONE` = 25):
 
 | flags | verbosity | level |
 | --- | --- | --- |
-| `-vv` or more | ≥ 2 | `DEBUG` (10) |
+| `-vvv` or more | ≥ 3 | `DEBUG` (10) |
+| `-vv` | 2 | `SUCC` (15) |
 | `-v` | 1 | `INFO` (20) |
 | *(none)* | 0 | `DONE` (25) |
 | `-q` | -1 | `WARNING` (30) |

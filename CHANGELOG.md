@@ -29,10 +29,14 @@
 - `docs/usage_doc.md` "Custom Log Levels" section rewritten: all levels (native and custom) consolidated into one reference table with level name, number, function, color, and ANSI code columns; duplicate color table removed from "ANSI Color Output"
 - `docs/usage_doc.md` "Logging" section example revised to show custom levels alongside native ones and exception handling in a single code block
 - `examples/all_levels.py` reordered `succ()` call to match updated level 15 position
+- verbosity mapping extended: `-vv` maps to `SUCC` (15); `-vvv` or more maps to `DEBUG` (10)
+- `set_logging_level_by_verbosity()` simplified to delegate to `_calc_logging_level_from_verbosity_namespace()`
 
 ### Deprecated
 
 ### Removed
+
+- `calc_verbosity()` removed from public API; verbosity-to-level logic now handled internally by `_calc_logging_level_from_verbosity()` and `_calc_logging_level_from_verbosity_namespace()`
 
 ### Fixed
 
