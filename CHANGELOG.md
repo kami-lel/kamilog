@@ -2,8 +2,6 @@
 
 [^format]
 
-<!-- todo smart time print -->
-
 
 
 
@@ -32,7 +30,61 @@
 
 ### Security
 
-[unreleased]: https://github.com/kami-lel/kamilog/compare/v1.5.0...dev
+[unreleased]: https://github.com/kami-lel/kamilog/compare/v1.6.0...dev
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## [1.6.0] - 2026-06-28
+
+### Added
+
+- `_LogFormatEngine`: internal class holding all log-line formatting logic, independent of `logging.Formatter`; exposes `count_prefix_chars`, `format_time`, and `build_line`
+- `_LogFormatter.engine` property: public access to the internal `_LogFormatEngine` instance
+- `_DiffOnlyEngine._COMPRESSION_BLOCK_SIZE` (8), `_PRESERVED_TRAILING_CHARS` (2), and `_COMPRESSION_MARKER` (`"〃\t"`) private class constants replacing inline magic values
+- `examples/diff_only_stress.py`: dual-logger stress test contrasting short and long message compression
+
+### Changed
+
+- `SUCC` log level renumbered 22 → 15, placing it between `SKIP` (12) and `INFO` (20)
+- ANSI color scheme revised: `DEBUG`/`ENTER` cyan/bright cyan; `SKIP`/`INFO` blue/bright blue; `SUCC` green; `PASS` bright green
+- verbosity mapping extended: `-vv` now maps to `SUCC` (15); `-vvv` or more maps to `DEBUG` (10)
+- `_LogFormatter` refactored as a thin `logging.Formatter` adapter; all formatting logic moved to `_LogFormatEngine`
+- `_DiffOnlyEngine` and `_DiffOnlyMsgFilter` now accept `formatter` directly at construction instead of resolving it lazily from a logger's handlers
+- `_DiffOnlyMsgFilter` tab placement aligns each `〃\t` to 8-column boundaries measured from the rendered line start, accounting for prefix length via `count_prefix_chars`
+- `docs/usage_doc.md` "Custom Log Levels" section consolidated into a single reference table covering all levels; duplicate color table removed
+- `examples/diff_only_filter.py` renamed to `examples/diff_only.py`
+
+### Removed
+
+- `calc_verbosity()` removed from public API; verbosity-to-level conversion is now handled internally
+
+### Fixed
+
+- `_DiffOnlyMsgFilter` `〃\t` markers now align to correct tab stops regardless of prefix length; the previous heuristic ignored the rendered prefix width
+
+[1.6.0]: https://github.com/kami-lel/kamilog/compare/v1.5.0...v1.6.0
+
+
+
+
+
+
+
+
+
+
+
 
 
 ## [1.5.0] - 2026-06-27

@@ -6,11 +6,15 @@ A lightweight Python logging wrapper with structured output, custom log levels, 
 todo add file handler option for getLogger
 todo install as submodule
 todo comprehensive unit tests
+todo allows use -V being equivalent to -vvv (v.v.)
+todo allows to use only -V, dont add -v (v.v.)
+todo smart time print
+bug using different logger to print & diff only can produce confusing result
 -->
 
 ## Features
 
-- **Custom log levels** — `ENTER` (11), `SKIP` (12), `PASS` (21), `SUCC` (22), `DONE` (25), `FAIL` (45) for hook and test-case workflows
+- **Custom log levels** — `ENTER` (11), `SKIP` (12), `SUCC` (15), `PASS` (21), `DONE` (25), `FAIL` (45) for hook and test-case workflows
 - **Structured output** — `LEVEL source: message` with padded 5-char level names
 - **ANSI 16-color output** — per-level colors, auto-disabled when output is piped
 - **stdout/stderr split** — `< WARNING` goes to stdout, `>= WARNING` goes to stderr

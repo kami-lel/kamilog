@@ -30,13 +30,13 @@ Run a single test file or test:
 
 ```bash
 pytest tests/verbosity_test.py
-pytest tests/verbosity_test.py::TestCalcVerbosity::test2
+pytest tests/verbosity_test.py::TestCalcLoggingLevel::test_v2
 ```
 
 The verbosity test doubles as a manual smoke-test:
 
 ```bash
-python tests/verbosity_test.py -vv    # verbosity 2, level DEBUG
+python tests/verbosity_test.py -vvv   # verbosity 3, level DEBUG
 python tests/verbosity_test.py -q     # verbosity -1, level WARNING
 ```
 
@@ -57,7 +57,7 @@ Tests live in `tests/` and use `pytest` class-based style (`class TestFoo`).
 
 Before merging:
 
-1. `pytest tests/` — all 16 tests must pass with zero failures.
+1. `pytest tests/` — all 25 tests must pass with zero failures.
 2. `tests/source_quality_test.py` scans `kamilog/kamilog.py` and `kamilog/__init__.py` for `todo`, `bug`, `fixme`, `hack` (case-insensitive) — leave none behind.
 
 When adding new public functions, add corresponding tests to an appropriate `tests/<feature>_test.py` file.
