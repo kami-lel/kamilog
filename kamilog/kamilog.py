@@ -531,7 +531,7 @@ def getLogger(name=None, *, datefmt=None, relative_to=None):
 
 # verbosity helpers  ###########################################################
 
-# TODO add different behavior
+# TODO add different behavior args
 
 
 def add_verbose_arguments(parser):
