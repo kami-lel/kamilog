@@ -524,20 +524,17 @@ class _DiffOnlyEngine:  # ======================================================
     maintains a sliding window of prior messages; once the window is
     full, compresses character runs common to all of them into ``〃\\t``
     markers aligned to 8-column boundaries from the rendered line start.
-    prefix-width measurement uses ``formatter`` directly; pass ``None``
-    to treat the prefix as zero.
+    prefix-width measurement and marker coloring use ``formatter``
+    directly.
 
 
-    :param formatter: formatter used to measure the printable prefix
-            width of each record for tab alignment; ``None`` disables
-            prefix measurement and treats all markers as column-0 aligned
-    :type formatter: _LogFormatter or None
+    :param formatter: formatter used to measure the prefix width and
+            apply ``color_grey`` to compression markers
+    :type formatter: _LogFormatter
     :param window: number of prior messages held for comparison;
             compression activates once this many messages have been seen
     :type window: int
     """
-
-    # TODO use color
 
     _COMPRESSION_BLOCK_SIZE = 8
     _PRESERVED_TRAILING_CHARS = 2
@@ -590,11 +587,7 @@ class _DiffOnlyEngine:  # ======================================================
         """
         block = self._COMPRESSION_BLOCK_SIZE
         trail = self._PRESERVED_TRAILING_CHARS
-        prefix_len = (
-            self._formatter.engine.count_prefix_chars(record)
-            if self._formatter is not None
-            else 0
-        )
+        prefix_len = self._formatter.engine.count_prefix_chars(record)
         n_common = len(self._common)
         is_common = [
             i < n_common
@@ -623,7 +616,11 @@ class _DiffOnlyEngine:  # ======================================================
                     result.append(message[run_s:run_e])
                 else:
                     result.append(message[run_s:tab_s])
-                    result.append(self._COMPRESSION_MARKER * k)
+                    result.append(
+                        self._formatter.palette.color_grey(
+                            self._COMPRESSION_MARKER * k
+                        )
+                    )
                     result.append(message[tab_s + block * k : run_e])
         return "".join(result)
 
