@@ -1,6 +1,6 @@
 # kamilog CONTEXT
 
-*Last updated: 2026-06-28*
+*Last updated: 2026-06-28 (v1.6.1)*
 
 ## Project Overview
 
@@ -54,7 +54,17 @@ Private `IntEnum` subclass that consolidates every custom log level in one place
 | `DONE` | 25 | `"DONE"` | `"DONE "` |
 | `FAIL` | 45 | `"FAIL"` | `"FAIL "` |
 
-Module-level aliases (`ENTER = _CustomLogLevel.ENTER`, etc.) keep the public API unchanged. `_PADDED_LEVELNAME_MAP`, `_ANSI_LEVEL_COLORS`, and `KamiLogger`'s log methods all reference `_CustomLogLevel` directly.
+Module-level aliases (`ENTER = _CustomLogLevel.ENTER`, etc.) keep the public API unchanged. `_PADDED_LEVELNAME_MAP` and `KamiLogger`'s log methods all reference `_CustomLogLevel` directly.
+
+### `_AnsiPalette`
+
+Internal class that centralizes ANSI color detection and application. Instantiated by `_LogFormatter` and exposed via its `palette` attribute; also reachable from `_DiffOnlyEngine` as `formatter.palette`.
+
+- Detects TTY status once at construction via `stream.isatty()`; when `stream` is `None` or not a TTY, all methods return their input unchanged.
+- `color_level(text, levelno)` — wraps `text` in bold + per-level ANSI color codes.
+- `color_grey(text)` — wraps `text` in bright-black (grey) codes; used for timestamps, source labels, and compression markers.
+
+ANSI level color map: `DEBUG` cyan; `ENTER` bright cyan; `SKIP`/`INFO` blue/bright blue; `SUCC` green; `PASS` bright green; `DONE` bright yellow; `WARN.` yellow; `ERROR` red; `FAIL` bright red; `CRIT.` bright magenta.
 
 ### `getLogger(name, *, datefmt, relative_to)`
 
@@ -81,31 +91,33 @@ The full level progression: `DEBUG`(10) → `ENTER`(11) → `SKIP`(12) → `SUCC
 
 ### `_LogFormatEngine`
 
-Holds all core formatting logic, independent of `logging.Formatter`. Instantiated by `_LogFormatter` and exposed via its `engine` property.
+Holds all core formatting logic, independent of `logging.Formatter`. Instantiated by `_LogFormatter` and exposed via its `engine` attribute. Takes a `_AnsiPalette` instance at construction; all color output is routed through the palette.
 
 Responsibilities:
 
 - `count_prefix_chars(record)` — returns the printable character count before the message text for a given record. Accounts for the optional timestamp (relative: always 13 chars; datefmt: rendered `time.strftime` length), the 5-char padded level name, and the source name with colon. ANSI escape codes are excluded. Uses `time.strftime` directly so there is no dependency on `Formatter`.
 - `format_time(record, datefmt)` — produces the optionally colored timestamp string, or an empty string when disabled.
 - `build_line(record)` — assembles the full `LEVEL source: message` line with optional timestamp prefix. Does not append `exc_info` or `stack_info`.
-- Color helpers `_fmt_asctime`, `_fmt_level`, `_fmt_source`, `_fmt_relative`.
+- Private helpers `_fmt_asctime`, `_fmt_level`, `_fmt_source`, `_fmt_relative` delegate color application to `self._palette`.
 
 Level display names: `DEBUG`, `ENTER`, `SKIP `, `INFO `, `PASS `, `SUCC.`, `DONE `, `WARN.`, `ERROR`, `FAIL `, `CRIT.`
 
-Color scheme: `DEBUG`/`ENTER` cyan/bright cyan; `SKIP`/`INFO` blue/bright blue; `SUCC` green; `PASS` bright green; `DONE` bright yellow; `WARN.` yellow; `ERROR` red; `FAIL` bright red; `CRIT.` bright magenta.
-
 ### `_LogFormatter`
 
-Thin `logging.Formatter` adapter wrapping `_LogFormatEngine`. Its `engine` property provides public access to the engine instance so external callers (e.g. `_DiffOnlyEngine`) can call `formatter.engine.count_prefix_chars(record)`.
+Thin `logging.Formatter` adapter wrapping `_LogFormatEngine`. Accepts a `stream` positional argument forwarded to `_AnsiPalette` for TTY detection. Exposes two public attributes:
 
+- `palette` — the `_AnsiPalette` instance; used directly by `_DiffOnlyEngine` for marker coloring.
+- `engine` — the `_LogFormatEngine` instance; used by `_DiffOnlyEngine` for `count_prefix_chars`.
+
+Methods:
 - `formatTime(record, datefmt)` — delegates to `engine.format_time`.
-- `format(record)` — copies the record, calls `engine.build_line`, then appends `exc_info` and `stack_info` via `Formatter.formatException`/`formatStack`. Color is auto-disabled when stdout/stderr is not a TTY.
+- `format(record)` — copies the record, calls `engine.build_line`, then appends `exc_info` and `stack_info` via `Formatter.formatException`/`formatStack`.
 
 ### `_DiffOnlyMsgFilter`
 
 Automatically attached to every logger by `getLogger()`. Compresses repeated log lines by replacing characters shared across the last `window` (default 3) messages with `〃\t` markers.
 
-`getLogger()` passes a dedicated `_LogFormatter` (no color, same `datefmt`/`relative_to`) as the first positional argument. The filter wraps a `_DiffOnlyEngine` which holds all compression state.
+`getLogger()` passes a dedicated `_LogFormatter(sys.stdout, …)` as the first positional argument so the filter's palette inherits the same TTY state as the stdout handler. The filter wraps a `_DiffOnlyEngine` which holds all compression state.
 
 Algorithm (`_DiffOnlyEngine`):
 
