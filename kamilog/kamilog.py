@@ -13,7 +13,7 @@ from collections import deque
 from enum import IntEnum
 from logging import Formatter, StreamHandler
 
-__version__ = "1.4.2"
+__version__ = "1.5.0"
 __author__ = "kamiLeL"
 
 __all__ = (

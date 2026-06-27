@@ -22,14 +22,7 @@
 
 ### Added
 
-- `_DiffOnlyMsgFilter` class: automatically applied to all loggers via `getLogger()` to suppress characters shared across the last N messages, collapsing repeated log lines down to only what changed. Common character runs of 10+ chars compress into `〃\t` markers (one per 8 chars); at least 2 original chars are preserved at each end for visual context.
-- `examples/diff_only_filter.py`: comprehensive demo of diff-only filtering behavior across three logging scenarios (periodic sensor reads, batch file processing, pattern break/recovery).
-- `CONTEXT.md`: new descriptive knowledge file covering project overview, repository layout, architecture (all three core classes), public API surface, and known limitations; `AGENTS.md` restructured to prescriptive-only content with a pointer to `CONTEXT.md`.
-
 ### Changed
-
-- `_CustomLogLevel(IntEnum)`: custom log levels (`ENTER`, `SKIP`, `PASS`, `SUCC`, `DONE`, `FAIL`) consolidated into an `IntEnum` subclass; each member carries its numeric value and 5-char padded display name as a `.display` attribute. Module-level aliases remain unchanged and are still int-compatible. `KamiLogger` log methods, `_PADDED_LEVELNAME_MAP`, `_ANSI_LEVEL_COLORS`, and the `addLevelName` registration loop all reference `_CustomLogLevel` directly.
-- `kamilog.py` internal structure: comment banner hierarchy revised — `KamiLogger`, `_LogFormatter`, `_DiffOnlyMsgFilter`, `Public API`, and `verbosity helpers` are now clear level-1 sections; `log levels`, `datetime formats`, `registration`, and `formatting tables` are level-2 subsections.
 
 ### Deprecated
 
@@ -39,7 +32,23 @@
 
 ### Security
 
-[unreleased]: https://github.com/kami-lel/kamilog/compare/v1.4.2...dev
+[unreleased]: https://github.com/kami-lel/kamilog/compare/v1.5.0...dev
+
+
+## [1.5.0] - 2026-06-27
+
+### Added
+
+- `_DiffOnlyMsgFilter`: auto-attached to every logger by `getLogger()`; compresses character runs shared across the last 3 messages into `〃\t` markers (one per 8 chars), preserving 2 original chars at each end for visual context.
+- `examples/diff_only_filter.py`: runnable demo of diff-only filtering across three scenarios — sensor polling, batch file processing, and pattern break/recovery.
+- `CONTEXT.md`: descriptive architecture reference covering repository layout, core classes (`_CustomLogLevel`, `KamiLogger`, `_LogFormatter`, `_DiffOnlyMsgFilter`), public API surface, and known limitations.
+
+### Changed
+
+- Custom log levels (`ENTER`, `SKIP`, `PASS`, `SUCC`, `DONE`, `FAIL`) consolidated into `_CustomLogLevel(IntEnum)`; each member carries the numeric level value and a padded 5-char display name (`.display`). Public module-level aliases are unchanged and remain int-compatible.
+- `AGENTS.md` restructured to prescriptive-only content (commands, conventions, constraints); descriptive content moved to `CONTEXT.md`.
+
+[1.5.0]: https://github.com/kami-lel/kamilog/compare/v1.4.2...v1.5.0
 
 
 
