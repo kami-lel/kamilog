@@ -360,15 +360,17 @@ class _DiffOnlyMsgFilter(logging.Filter):  # ===================================
     """
 
     _PATTERN_TRIGGER_CNT = 3
+    _MIN_REPEAT_LEN = 8  # min consecutive common chars to blank
 
-    def __init__(self):
+    def __init__(self):  # TODO take args instead of constant
+        # TODO add tab size
         super().__init__()
         self._history = deque(maxlen=self._PATTERN_TRIGGER_CNT)
         # _common[i] = shared char at position i across all history,
         # or None where messages diverge or lengths differ
         self._common: list = []
 
-    def _update_common(self) -> None:
+    def _update_common(self):
         """recompute _common from current _history"""
         history = list(self._history)
         if not history:
@@ -383,13 +385,11 @@ class _DiffOnlyMsgFilter(logging.Filter):  # ===================================
             else:
                 ch = history[0][i]
                 common.append(
-                    ch
-                    if all(s[i] == ch for s in history[1:])
-                    else None
+                    ch if all(s[i] == ch for s in history[1:]) else None
                 )
         self._common = common
 
-    def filter(self, record) -> bool:
+    def filter(self, record):
         """
         :param record: log record to mask in place
         :type record: logging.LogRecord
@@ -401,15 +401,33 @@ class _DiffOnlyMsgFilter(logging.Filter):  # ===================================
         if len(self._history) == self._history.maxlen:
             common = self._common
             n = len(common)
-            masked = "".join(
-                " "
-                if i < n
-                and common[i] is not None
-                and common[i] == ch
-                and ch != " "
-                else ch
+            # mark positions where current message matches all history;
+            # spaces are included so they count toward run length
+            is_common = [
+                i < n and common[i] is not None and common[i] == ch
                 for i, ch in enumerate(message)
-            )
+            ]
+            # blank non-space chars only inside runs >= _MIN_REPEAT_LEN;
+            # spaces within a run count toward length but are not replaced
+            chars = list(message)
+            run_start = None
+            for i, f in enumerate(is_common):
+                if f:
+                    if run_start is None:
+                        run_start = i
+                else:
+                    if run_start is not None:
+                        if i - run_start >= self._MIN_REPEAT_LEN:
+                            for j in range(run_start, i):
+                                if chars[j] != " ":
+                                    chars[j] = " "
+                        run_start = None
+            if run_start is not None:
+                if len(message) - run_start >= self._MIN_REPEAT_LEN:
+                    for j in range(run_start, len(message)):
+                        if chars[j] != " ":
+                            chars[j] = " "
+            masked = "".join(chars)
         else:
             masked = message
 
