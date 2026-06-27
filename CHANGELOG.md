@@ -28,6 +28,9 @@
 
 ### Changed
 
+- `_CustomLogLevel(IntEnum)`: custom log levels (`ENTER`, `SKIP`, `PASS`, `SUCC`, `DONE`, `FAIL`) consolidated into an `IntEnum` subclass; each member carries its numeric value and 5-char padded display name as a `.display` attribute. Module-level aliases remain unchanged and are still int-compatible. `KamiLogger` log methods, `_PADDED_LEVELNAME_MAP`, `_ANSI_LEVEL_COLORS`, and the `addLevelName` registration loop all reference `_CustomLogLevel` directly.
+- `kamilog.py` internal structure: comment banner hierarchy revised — `KamiLogger`, `_LogFormatter`, `_DiffOnlyMsgFilter`, `Public API`, and `verbosity helpers` are now clear level-1 sections; `log levels`, `datetime formats`, `registration`, and `formatting tables` are level-2 subsections.
+
 ### Deprecated
 
 ### Removed

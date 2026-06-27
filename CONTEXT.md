@@ -1,6 +1,6 @@
 # kamilog CONTEXT
 
-*Last updated: 2026-06-27*
+*Last updated: 2026-06-27* (mpl-smart-logging branch)
 
 ## Project Overview
 
@@ -39,6 +39,21 @@ kamilog/
 ## Architecture
 
 The entire library lives in `kamilog/kamilog.py`. There is no build step and no external runtime dependency.
+
+### `_CustomLogLevel`
+
+Private `IntEnum` subclass that consolidates every custom log level in one place. Each member stores two values: the numeric level (the enum's int value, used wherever an int is expected) and a 5-char padded display name accessed via `.display`. The `.name` property yields the bare name string used in `logging.addLevelName()`.
+
+| member | value | `.name` | `.display` |
+| --- | --- | --- | --- |
+| `ENTER` | 11 | `"ENTER"` | `"ENTER"` |
+| `SKIP` | 12 | `"SKIP"` | `"SKIP "` |
+| `PASS` | 21 | `"PASS"` | `"PASS "` |
+| `SUCC` | 22 | `"SUCC"` | `"SUCC."` |
+| `DONE` | 25 | `"DONE"` | `"DONE "` |
+| `FAIL` | 45 | `"FAIL"` | `"FAIL "` |
+
+Module-level aliases (`ENTER = _CustomLogLevel.ENTER`, etc.) keep the public API unchanged. `_PADDED_LEVELNAME_MAP`, `_ANSI_LEVEL_COLORS`, and `KamiLogger`'s log methods all reference `_CustomLogLevel` directly.
 
 ### `getLogger(name, *, datefmt, relative_to)`
 
@@ -124,5 +139,4 @@ Verbosity mapping (default level is `DONE` = 25):
 ## Known Limitations and Future Work
 
 - No file handler option on `getLogger()` — stdout/stderr only.
-- No enum for level values/names (`FIXME` noted in README).
 - Test coverage is limited to verbosity helpers and a banned-marker scan; no unit tests for `_LogFormatter` or `_DiffOnlyMsgFilter`.
