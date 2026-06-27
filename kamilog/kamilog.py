@@ -231,6 +231,8 @@ class _LogFormatter(Formatter):
     internal log formatter producing structured, optionally colored output
     """
 
+    # Hack refactorization for better readability
+
     def __init__(self, *, use_color=False, datefmt=None, relative_to=None):
         """
         :param use_color: enable ANSI color output
@@ -246,6 +248,35 @@ class _LogFormatter(Formatter):
         self.use_color = use_color
         self._datefmt = datefmt
         self._relative_to = relative_to
+
+    def count_prefix_chars(self, record):
+        """
+        :param record: log record
+        :type record: logging.LogRecord
+        :return: number of printable characters before the message text,
+                 excluding any ANSI escape codes
+        :rtype: int
+        """
+        name = record.name
+        has_name = bool(name and name != "root")
+
+        if self._relative_to is not None:
+            ts_len = len(self._fmt_relative(record.created))
+        elif self._datefmt:
+            plain = Formatter.formatTime(self, record, self._datefmt).replace(
+                "{ms}", "{:03d}".format(int(record.msecs))
+            )
+            ts_len = len(plain)
+        else:
+            ts_len = 0
+
+        level_len = 5  # always padded/truncated to 5
+        space_len = 1 if has_name else 0
+        source_len = len(name) + 1 if has_name else 1  # "name:" or ":"
+
+        if ts_len:
+            return ts_len + 1 + level_len + space_len + source_len + 1
+        return level_len + space_len + source_len + 1
 
     # helpers  =================================================================
 
@@ -285,6 +316,7 @@ class _LogFormatter(Formatter):
                 return "{}:{}".format(_ANSI_DATETIME, _ANSI_RESET)
             return ":"
         if self.use_color:
+            # pylint: disable-next=duplicate-string-formatting-argument
             return "{}{}{}{}:{}".format(
                 _ANSI_SOURCE, name, _ANSI_RESET, _ANSI_DATETIME, _ANSI_RESET
             )
@@ -377,22 +409,35 @@ class _DiffOnlyMsgFilter(logging.Filter):  #####################################
     compares each incoming message against a sliding window of prior
     messages; positions that are identical in all of them are candidates
     for compression. contiguous common runs are replaced with ``〃\\t``
-    markers in multiples of 8: each group of 8 common chars becomes one
-    ``〃\\t`` pair. at least 2 original chars are preserved at each end of
-    the compressed block, giving visual context around the marker.
+    markers aligned to tab stops: the ``〃`` is placed at the next
+    column that is a multiple of 8 from the start of the rendered line
+    (prefix included), so each ``〃\\t`` spans exactly 8 visible columns.
+    at least 2 original chars are kept at the trailing end of each
+    compressed block for context.
 
-
+    :param logger: logger whose first ``_LogFormatter`` handler is used
+            to measure the rendered prefix width for tab alignment;
+            resolved lazily on the first filter call so handlers need
+            not exist at construction time
+    :type logger: logging.Logger
     :param window: number of prior messages held for comparison;
             suppression activates once this many messages have been seen
     :type window: int
     """
 
-    def __init__(self, window=3):
+    # Hack refactorization for better readability
+
+    _COMPRESSION_BLOCK_SIZE = 8
+    _PRESERVED_TRAILING_CHARS = 2
+
+    def __init__(self, logger, window=3):
         super().__init__()
+        self._logger = logger
         self._history = deque(maxlen=window)
         # _common[i] = shared char at position i across all history,
         # or None where messages diverge or lengths differ
         self._common: list = []
+        self._formatter = None  # resolved lazily on first filter call
 
     def _update_common(self):
         """
@@ -425,6 +470,22 @@ class _DiffOnlyMsgFilter(logging.Filter):  #####################################
         message = record.getMessage()
 
         if len(self._history) == self._history.maxlen:
+            if self._formatter is None:
+                self._formatter = next(
+                    (
+                        h.formatter
+                        for h in self._logger.handlers
+                        if isinstance(h.formatter, _LogFormatter)
+                    ),
+                    None,
+                )
+            block = self._COMPRESSION_BLOCK_SIZE
+            trail = self._PRESERVED_TRAILING_CHARS
+            prefix_len = (
+                self._formatter.count_prefix_chars(record)
+                if self._formatter is not None
+                else 0
+            )
             common = self._common
             # mark positions where current message matches all history
             n_common = len(common)
@@ -432,8 +493,9 @@ class _DiffOnlyMsgFilter(logging.Filter):  #####################################
                 i < n_common and common[i] is not None and common[i] == ch
                 for i, ch in enumerate(message)
             ]
-            # compress common runs: each 8-char block → one tab;
-            # keep ≥2 original chars at each end of the compressed block
+            # compress common runs: align each 〃\t to an 8-column boundary
+            # from line start so the tab spans exactly 8 visible columns;
+            # keep ≥2 original chars at the trailing end of each run
             result = []
             i = 0
             msg_len = len(message)
@@ -446,18 +508,17 @@ class _DiffOnlyMsgFilter(logging.Filter):  #####################################
                     while i < msg_len and is_common[i]:
                         i += 1
                     run_e = i
-                    N = run_e - run_s
-                    # leading: chars to keep so ≥2 chars precede the tab
-                    leading = max(0, 2 - run_s)
-                    replaceable = N - leading - 2  # reserve ≥2 trailing
-                    k = replaceable // 8 if replaceable > 0 else 0
+                    col_offset = (prefix_len + run_s) % block
+                    padding = (block - col_offset) % block
+                    tab_s = run_s + padding
+                    replaceable = run_e - tab_s - trail
+                    k = replaceable // block if replaceable > 0 else 0
                     if k == 0:
                         result.append(message[run_s:run_e])
                     else:
-                        tab_s = run_s + leading
                         result.append(message[run_s:tab_s])
                         result.append("〃\t" * k)
-                        result.append(message[tab_s + 8 * k : run_e])
+                        result.append(message[tab_s + block * k : run_e])
             masked = "".join(result)
         else:
             masked = message
@@ -549,7 +610,7 @@ def getLogger(name=None, *, datefmt=None, relative_to=None):
         logger.__class__ = KamiLogger
 
     if not any(isinstance(f, _DiffOnlyMsgFilter) for f in logger.filters):
-        logger.addFilter(_DiffOnlyMsgFilter())
+        logger.addFilter(_DiffOnlyMsgFilter(logger))
 
     if not logger.handlers:
         stdout_handler = StreamHandler(sys.stdout)

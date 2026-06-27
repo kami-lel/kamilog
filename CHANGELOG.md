@@ -22,6 +22,11 @@
 
 ### Added
 
+- `_LogFormatter.count_prefix_chars(record)`: returns the printable character count before the message text, accounting for timestamp format (relative or datefmt), 5-char level name, and source name — ANSI codes excluded
+- `_DiffOnlyMsgFilter._COMPRESSION_BLOCK_SIZE` (8) and `_PRESERVED_TRAILING_CHARS` (2) private class constants replacing inline magic numbers
+- `calc_logging_level_from_verbosity(verbosity)` and `calc_logging_level_from_verbosity_namespace(namespace)` added to public API
+- `examples/diff_only_stress.py`: dual-logger stress test contrasting short sensor-polling messages and long file-scanner output under diff-only compression
+
 ### Changed
 
 - `SUCC` custom log level renumbered 22 → 15, now sits between `SKIP` (12) and `INFO` (20)
@@ -31,14 +36,19 @@
 - `examples/all_levels.py` reordered `succ()` call to match updated level 15 position
 - verbosity mapping extended: `-vv` maps to `SUCC` (15); `-vvv` or more maps to `DEBUG` (10)
 - `set_logging_level_by_verbosity()` simplified to delegate to `_calc_logging_level_from_verbosity_namespace()`
+- `_DiffOnlyMsgFilter.__init__` now accepts `logger` as the first positional argument; the formatter used for prefix measurement is resolved lazily from the logger's handlers on the first `filter()` call
+- `_DiffOnlyMsgFilter` tab placement now aligns each `〃\t` to 8-column boundaries measured from the start of the rendered line (prefix included), so each marker spans exactly 8 visible columns
+- `examples/diff_only_filter.py` renamed to `examples/diff_only.py`
 
 ### Deprecated
 
 ### Removed
 
-- `calc_verbosity()` removed from public API; verbosity-to-level logic now handled internally by `_calc_logging_level_from_verbosity()` and `_calc_logging_level_from_verbosity_namespace()`
+- `calc_verbosity()` removed from public API; replaced by `calc_logging_level_from_verbosity()` and `calc_logging_level_from_verbosity_namespace()`
 
 ### Fixed
+
+- `_DiffOnlyMsgFilter` `〃\t` markers now align to correct tab stops regardless of prefix length; the previous leading-char heuristic ignored the rendered prefix, producing visually misaligned output
 
 ### Security
 

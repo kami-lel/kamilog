@@ -30,7 +30,7 @@ Run a single test file or test:
 
 ```bash
 pytest tests/verbosity_test.py
-pytest tests/verbosity_test.py::TestCalcVerbosity::test2
+pytest tests/verbosity_test.py::TestCalcLoggingLevel::test_v2
 ```
 
 The verbosity test doubles as a manual smoke-test:
