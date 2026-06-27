@@ -121,7 +121,9 @@ class KamiLogger(logging.Logger):
         :type message: str
         """
         if self.isEnabledFor(_CustomLogLevel.ENTER):
-            self._log(_CustomLogLevel.ENTER, message, args, stacklevel=2, **kwargs)
+            self._log(
+                _CustomLogLevel.ENTER, message, args, stacklevel=2, **kwargs
+            )
 
     def skip(self, message, *args, **kwargs):
         """
@@ -131,7 +133,9 @@ class KamiLogger(logging.Logger):
         :type message: str
         """
         if self.isEnabledFor(_CustomLogLevel.SKIP):
-            self._log(_CustomLogLevel.SKIP, message, args, stacklevel=2, **kwargs)
+            self._log(
+                _CustomLogLevel.SKIP, message, args, stacklevel=2, **kwargs
+            )
 
     def pass_(self, message, *args, **kwargs):
         """
@@ -141,7 +145,9 @@ class KamiLogger(logging.Logger):
         :type message: str
         """
         if self.isEnabledFor(_CustomLogLevel.PASS):
-            self._log(_CustomLogLevel.PASS, message, args, stacklevel=2, **kwargs)
+            self._log(
+                _CustomLogLevel.PASS, message, args, stacklevel=2, **kwargs
+            )
 
     def succ(self, message, *args, **kwargs):
         """
@@ -151,7 +157,9 @@ class KamiLogger(logging.Logger):
         :type message: str
         """
         if self.isEnabledFor(_CustomLogLevel.SUCC):
-            self._log(_CustomLogLevel.SUCC, message, args, stacklevel=2, **kwargs)
+            self._log(
+                _CustomLogLevel.SUCC, message, args, stacklevel=2, **kwargs
+            )
 
     def done(self, message, *args, **kwargs):
         """
@@ -161,7 +169,9 @@ class KamiLogger(logging.Logger):
         :type message: str
         """
         if self.isEnabledFor(_CustomLogLevel.DONE):
-            self._log(_CustomLogLevel.DONE, message, args, stacklevel=2, **kwargs)
+            self._log(
+                _CustomLogLevel.DONE, message, args, stacklevel=2, **kwargs
+            )
 
     def fail(self, message, *args, **kwargs):
         """
@@ -171,7 +181,9 @@ class KamiLogger(logging.Logger):
         :type message: str
         """
         if self.isEnabledFor(_CustomLogLevel.FAIL):
-            self._log(_CustomLogLevel.FAIL, message, args, stacklevel=2, **kwargs)
+            self._log(
+                _CustomLogLevel.FAIL, message, args, stacklevel=2, **kwargs
+            )
 
 
 logging.setLoggerClass(KamiLogger)
@@ -518,6 +530,8 @@ def getLogger(name=None, *, datefmt=None, relative_to=None):
 
 
 # verbosity helpers  ###########################################################
+
+# TODO add different behavior
 
 
 def add_verbose_arguments(parser):
