@@ -10,6 +10,7 @@ Q.v. https://github.com/kami-lel/kamilog
 import logging
 import sys
 from collections import deque
+from enum import IntEnum
 from logging import Formatter, StreamHandler
 
 __version__ = "1.4.2"
@@ -54,14 +55,32 @@ WARNING = logging.WARNING  # 30
 ERROR = logging.ERROR  # 40
 CRITICAL = logging.CRITICAL  # 50
 
-# customized logging level
+# customized logging level  ====================================================
 
-ENTER = 11
-SKIP = 12
-PASS = 21
-SUCC = 22
-DONE = 25
-FAIL = 45
+
+class _KamiLevel(IntEnum):
+    """custom log level with padded display name."""
+
+    def __new__(cls, value, display):
+        obj = int.__new__(cls, value)
+        obj._value_ = value
+        obj.display = display
+        return obj
+
+    ENTER = (11, "ENTER")
+    SKIP  = (12, "SKIP ")
+    PASS  = (21, "PASS ")
+    SUCC  = (22, "SUCC.")
+    DONE  = (25, "DONE ")
+    FAIL  = (45, "FAIL ")
+
+
+ENTER = _KamiLevel.ENTER
+SKIP  = _KamiLevel.SKIP
+PASS  = _KamiLevel.PASS
+SUCC  = _KamiLevel.SUCC
+DONE  = _KamiLevel.DONE
+FAIL  = _KamiLevel.FAIL
 
 
 # Date Time Format  ============================================================
@@ -72,12 +91,8 @@ DATEFMT_DATETIME_MS = "%Y-%m-%d %H:%M:%S.{ms}"
 
 
 # set up logging  ##############################################################
-logging.addLevelName(ENTER, "ENTER")
-logging.addLevelName(SKIP, "SKIP")
-logging.addLevelName(PASS, "PASS")
-logging.addLevelName(SUCC, "SUCC")
-logging.addLevelName(DONE, "DONE")
-logging.addLevelName(FAIL, "FAIL")
+for _lvl in _KamiLevel:
+    logging.addLevelName(int(_lvl), _lvl.name)
 
 
 # Customized Logging  ##########################################################
@@ -97,12 +112,12 @@ class KamiLogger(logging.Logger):  # ===========================================
     Use :func:`getLogger` to obtain a configured instance.
     """
 
-    ENTER = 11
-    SKIP = 12
-    PASS = 21
-    SUCC = 22
-    DONE = 25
-    FAIL = 45
+    ENTER = _KamiLevel.ENTER
+    SKIP  = _KamiLevel.SKIP
+    PASS  = _KamiLevel.PASS
+    SUCC  = _KamiLevel.SUCC
+    DONE  = _KamiLevel.DONE
+    FAIL  = _KamiLevel.FAIL
 
     def enter(self, message, *args, **kwargs):
         """
@@ -174,17 +189,17 @@ logging.root.__class__ = KamiLogger
 
 
 _PADDED_LEVELNAME_MAP = {
-    logging.DEBUG: "DEBUG",
-    ENTER: "ENTER",
-    SKIP: "SKIP ",
-    logging.INFO: "INFO ",
-    PASS: "PASS ",
-    SUCC: "SUCC.",
-    DONE: "DONE ",
-    logging.WARNING: "WARN.",
-    logging.ERROR: "ERROR",
-    FAIL: "FAIL ",
-    logging.CRITICAL: "CRIT.",
+    logging.DEBUG:        "DEBUG",
+    _KamiLevel.ENTER:     _KamiLevel.ENTER.display,
+    _KamiLevel.SKIP:      _KamiLevel.SKIP.display,
+    logging.INFO:         "INFO ",
+    _KamiLevel.PASS:      _KamiLevel.PASS.display,
+    _KamiLevel.SUCC:      _KamiLevel.SUCC.display,
+    _KamiLevel.DONE:      _KamiLevel.DONE.display,
+    logging.WARNING:      "WARN.",
+    logging.ERROR:        "ERROR",
+    _KamiLevel.FAIL:      _KamiLevel.FAIL.display,
+    logging.CRITICAL:     "CRIT.",
 }
 
 
