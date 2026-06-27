@@ -84,15 +84,15 @@ WARN. myapp: Warning message
 |---|---|---|---|---|---|
 | DEBUG | 10 | `.debug()` | Blue | `\033[34m` | debugging information shown only during development |
 | ENTER | 11 | `.enter()` | Bright Blue | `\033[94m` | marks start of a routine; useful for tracking program logic during development |
-| SKIP | 12 | `.skip()` | Cyan | `\033[36m` | marks skipped portion of routine; useful for tracking program logic during development |
-| INFO | 20 | `.info()` | Bright Cyan | `\033[96m` | general informational message related to program function |
-| PASS | 21 | `.pass_()` | Green | `\033[32m` | test case passed |
-| SUCC | 22 | `.succ()` | Bright Green | `\033[92m` | subroutine or execution succeeded |
-| DONE | 25 | `.done()` | Bright Yellow | `\033[93m` | entire program or major component completed successfully |
-| WARNING | 30 | `.warning()` | Yellow | `\033[33m` | warning condition that should be investigated |
+| SKIP  | 12 | `.skip()` | Cyan | `\033[36m` | marks skipped portion of routine; useful for tracking program logic during development |
+| SUCC. | 15 | `.succ()` | Green | `\033[32m` | subroutine or execution succeeded |
+| INFO  | 20 | `.info()` | Bright Cyan | `\033[96m` | general informational message related to program function |
+| PASS  | 21 | `.pass_()` | Bright Green | `\033[92m` | test case passed |
+| DONE  | 25 | `.done()` | Bright Yellow | `\033[93m` | entire program or major component completed successfully |
+| WARN. | 30 | `.warning()` | Yellow | `\033[33m` | warning condition that should be investigated |
 | ERROR | 40 | `.error()` | Red | `\033[31m` | error condition that prevented operation completion |
-| FAIL | 45 | `.fail()` | Bright Red | `\033[91m` | test case or subroutine/execution failed |
-| CRITICAL | 50 | `.critical()` | Bright Magenta | `\033[95m` | program stopping or crashing immediately |
+| FAIL  | 45 | `.fail()` | Bright Red | `\033[91m` | test case or subroutine/execution failed |
+| CRIT. | 50 | `.critical()` | Bright Magenta | `\033[95m` | program stopping or crashing immediately |
 
 > [!NOTE]
 > `.pass_()` uses a trailing underscore because `pass` is a Python keyword.
@@ -264,6 +264,8 @@ kamilog.set_logging_level_by_verbosity(args, logger_name="myapp")
 log = kamilog.getLogger("myapp")
 kamilog.set_logging_level_by_verbosity(args, logger=log)
 ```
+
+<!-- FIXME add 15 level -->
 
 Verbosity-to-logging-level mapping:
 
