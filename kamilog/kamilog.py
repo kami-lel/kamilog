@@ -20,8 +20,8 @@ __all__ = (
     "getLogger",
     "KamiLogger",
     "add_verbose_arguments",
-    "calc_logging_level_from_verbosity",
-    "calc_logging_level_from_verbosity_namespace",
+    "_calc_logging_level_from_verbosity",
+    "_calc_logging_level_from_verbosity_namespace",
     "set_logging_level_by_verbosity",
     # log levels
     "NOTSET",
@@ -576,10 +576,8 @@ class _DiffOnlyMsgFilter(logging.Filter):  # ===================================
 
 # verbosity helpers  ###########################################################
 
-# HACK make privates
 
-
-def calc_logging_level_from_verbosity(verbosity):
+def _calc_logging_level_from_verbosity(verbosity):
     """
     Map a verbosity integer to a logging level.
 
@@ -612,7 +610,7 @@ def calc_logging_level_from_verbosity(verbosity):
         return logging.CRITICAL
 
 
-def calc_logging_level_from_verbosity_namespace(namespace):
+def _calc_logging_level_from_verbosity_namespace(namespace):
     """
     Extract verbosity from a parsed namespace and return the corresponding
     logging level.
@@ -629,7 +627,7 @@ def calc_logging_level_from_verbosity_namespace(namespace):
         verbosity += namespace.verbose
     if hasattr(namespace, "quiet"):
         verbosity -= namespace.quiet
-    return calc_logging_level_from_verbosity(verbosity)
+    return _calc_logging_level_from_verbosity(verbosity)
 
 
 # Public API  ##################################################################
@@ -728,4 +726,4 @@ def set_logging_level_by_verbosity(namespace, *, logger=None, logger_name=None):
     """
     if logger is None:
         logger = logging.getLogger(logger_name)
-    logger.setLevel(calc_logging_level_from_verbosity_namespace(namespace))
+    logger.setLevel(_calc_logging_level_from_verbosity_namespace(namespace))
