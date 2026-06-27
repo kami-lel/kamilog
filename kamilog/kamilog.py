@@ -44,17 +44,7 @@ __all__ = (
 )
 
 
-# constants  ###################################################################
-
-
-# log levels  ==================================================================
-
-NOTSET = logging.NOTSET  # 0
-DEBUG = logging.DEBUG  # 10
-INFO = logging.INFO  # 20
-WARNING = logging.WARNING  # 30
-ERROR = logging.ERROR  # 40
-CRITICAL = logging.CRITICAL  # 50
+# enum  ########################################################################
 
 
 class _CustomLogLevel(IntEnum):
@@ -74,12 +64,25 @@ class _CustomLogLevel(IntEnum):
     FAIL = (45, "FAIL ")
 
 
-ENTER = _CustomLogLevel.ENTER
-SKIP = _CustomLogLevel.SKIP
-PASS = _CustomLogLevel.PASS
-SUCC = _CustomLogLevel.SUCC
-DONE = _CustomLogLevel.DONE
-FAIL = _CustomLogLevel.FAIL
+# level registration during import
+for _lvl in _CustomLogLevel:
+    logging.addLevelName(int(_lvl), _lvl.name)
+
+
+# constants  ###################################################################
+
+NOTSET = logging.NOTSET  # 0
+DEBUG = logging.DEBUG  # 10
+ENTER = _CustomLogLevel.ENTER  # 11
+SKIP = _CustomLogLevel.SKIP  # 12
+SUCC = _CustomLogLevel.SUCC  # 15
+INFO = logging.INFO  # 20
+PASS = _CustomLogLevel.PASS  # 21
+DONE = _CustomLogLevel.DONE  # 25
+WARNING = logging.WARNING  # 30
+ERROR = logging.ERROR  # 40
+FAIL = _CustomLogLevel.FAIL  # 45
+CRITICAL = logging.CRITICAL  # 50
 
 
 # datetime formats  ============================================================
@@ -87,12 +90,6 @@ DATEFMT_TIME = "%H:%M:%S"
 DATEFMT_TIME_MS = "%H:%M:%S.{ms}"
 DATEFMT_DATETIME = "%Y-%m-%d %H:%M:%S"
 DATEFMT_DATETIME_MS = "%Y-%m-%d %H:%M:%S.{ms}"
-
-
-# registration  ================================================================
-
-for _lvl in _CustomLogLevel:
-    logging.addLevelName(int(_lvl), _lvl.name)
 
 
 # KamiLogger  ##################################################################
@@ -194,8 +191,6 @@ logging.root.__class__ = KamiLogger
 
 # _LogFormatter  ###############################################################
 
-
-# formatting tables  ===========================================================
 
 _PADDED_LEVELNAME_MAP = {
     logging.DEBUG: "DEBUG",
@@ -374,10 +369,7 @@ class _LogFormatter(Formatter):
         return result
 
 
-# _DiffOnlyMsgFilter  ##########################################################
-
-
-class _DiffOnlyMsgFilter(logging.Filter):
+class _DiffOnlyMsgFilter(logging.Filter):  #####################################
     """
     suppress characters shared across the last ``window`` messages, so
     repeated log lines collapse down to only what changed.
@@ -477,63 +469,7 @@ class _DiffOnlyMsgFilter(logging.Filter):
         return True
 
 
-# Public API  ##################################################################
-
-
-# pylint: disable-next=invalid-name
-def getLogger(name=None, *, datefmt=None, relative_to=None):
-    """
-    :param name: logger name
-    :type name: str
-    :param datefmt: strftime format for timestamps; ignored when ``relative_to`` is set;
-            defaults to ``None`` (no timestamp)
-    :type datefmt: str, optional
-    :param relative_to: Unix timestamp to use as epoch for relative time display;
-            mutually exclusive with ``datefmt``
-    :type relative_to: float, optional
-    :return: a logger with the `name`, create if non-existence;
-            root logger if `name` is `None`
-    :rtype: KamiLogger
-    """
-    logger = logging.getLogger(name)
-
-    if not isinstance(logger, KamiLogger):
-        logger.__class__ = KamiLogger
-
-    if not any(isinstance(f, _DiffOnlyMsgFilter) for f in logger.filters):
-        logger.addFilter(_DiffOnlyMsgFilter())
-
-    if not logger.handlers:
-        stdout_handler = StreamHandler(sys.stdout)
-        stdout_handler.setFormatter(
-            _LogFormatter(
-                use_color=sys.stdout.isatty(),
-                datefmt=datefmt,
-                relative_to=relative_to,
-            )
-        )
-        stdout_handler.addFilter(lambda r: r.levelno < logging.WARNING)
-
-        stderr_handler = StreamHandler(sys.stderr)
-        stderr_handler.setFormatter(
-            _LogFormatter(
-                use_color=sys.stderr.isatty(),
-                datefmt=datefmt,
-                relative_to=relative_to,
-            )
-        )
-        stderr_handler.addFilter(lambda r: r.levelno >= logging.WARNING)
-
-        logger.addHandler(stdout_handler)
-        logger.addHandler(stderr_handler)
-
-    return logger
-
-
 # verbosity helpers  ###########################################################
-
-
-# helpers  =====================================================================
 
 
 def calc_logging_level_from_verbosity(verbosity):
@@ -589,7 +525,57 @@ def calc_logging_level_from_verbosity_namespace(namespace):
     return calc_logging_level_from_verbosity(verbosity)
 
 
-# Public API  ==================================================================
+# Public API  ##################################################################
+
+
+# pylint: disable-next=invalid-name
+def getLogger(name=None, *, datefmt=None, relative_to=None):
+    """
+    :param name: logger name
+    :type name: str
+    :param datefmt: strftime format for timestamps; ignored when ``relative_to`` is set;
+            defaults to ``None`` (no timestamp)
+    :type datefmt: str, optional
+    :param relative_to: Unix timestamp to use as epoch for relative time display;
+            mutually exclusive with ``datefmt``
+    :type relative_to: float, optional
+    :return: a logger with the `name`, create if non-existence;
+            root logger if `name` is `None`
+    :rtype: KamiLogger
+    """
+    logger = logging.getLogger(name)
+
+    if not isinstance(logger, KamiLogger):
+        logger.__class__ = KamiLogger
+
+    if not any(isinstance(f, _DiffOnlyMsgFilter) for f in logger.filters):
+        logger.addFilter(_DiffOnlyMsgFilter())
+
+    if not logger.handlers:
+        stdout_handler = StreamHandler(sys.stdout)
+        stdout_handler.setFormatter(
+            _LogFormatter(
+                use_color=sys.stdout.isatty(),
+                datefmt=datefmt,
+                relative_to=relative_to,
+            )
+        )
+        stdout_handler.addFilter(lambda r: r.levelno < logging.WARNING)
+
+        stderr_handler = StreamHandler(sys.stderr)
+        stderr_handler.setFormatter(
+            _LogFormatter(
+                use_color=sys.stderr.isatty(),
+                datefmt=datefmt,
+                relative_to=relative_to,
+            )
+        )
+        stderr_handler.addFilter(lambda r: r.levelno >= logging.WARNING)
+
+        logger.addHandler(stdout_handler)
+        logger.addHandler(stderr_handler)
+
+    return logger
 
 
 def add_verbose_arguments(parser):
