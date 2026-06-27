@@ -40,6 +40,9 @@ __all__ = (
 )
 
 
+# HACK review all CB
+
+
 # metadata  ####################################################################
 __version__ = "1.6.0"
 __author__ = "kamiLeL"
@@ -310,14 +313,6 @@ class _LogFormatEngine:
         self._datefmt = datefmt
         self._relative_to = relative_to
 
-    @property
-    def palette(self):
-        """
-        :return: the ``_AnsiPalette`` used by this engine
-        :rtype: _AnsiPalette
-        """
-        return self._palette
-
     # Public API  ##############################################################
 
     def count_prefix_chars(self, record):
@@ -485,26 +480,10 @@ class _LogFormatter(Formatter):
 
     def __init__(self, stream=None, *, datefmt=None, relative_to=None):
         super().__init__(datefmt=datefmt)
-        self._palette = _AnsiPalette(stream)
-        self._engine = _LogFormatEngine(
-            self._palette, datefmt=datefmt, relative_to=relative_to
+        self.palette = _AnsiPalette(stream)
+        self.engine = _LogFormatEngine(
+            self.palette, datefmt=datefmt, relative_to=relative_to
         )
-
-    @property
-    def palette(self):
-        """
-        :return: the ``_AnsiPalette`` used for formatting
-        :rtype: _AnsiPalette
-        """
-        return self._palette
-
-    @property
-    def engine(self):
-        """
-        :return: the internal ``_LogFormatEngine`` instance
-        :rtype: _LogFormatEngine
-        """
-        return self._engine
 
     def formatTime(self, record, datefmt=None):
         """
@@ -518,7 +497,7 @@ class _LogFormatter(Formatter):
         :return: formatted timestamp, or empty string when disabled
         :rtype: str
         """
-        return self._engine.format_time(record, datefmt)
+        return self.engine.format_time(record, datefmt)
 
     def format(self, record):
         """
@@ -534,7 +513,7 @@ class _LogFormatter(Formatter):
         record = logging.makeLogRecord(record.__dict__)
         if record.exc_info and not record.exc_text:
             record.exc_text = self.formatException(record.exc_info)
-        result = self._engine.build_line(record)
+        result = self.engine.build_line(record)
         if record.exc_text:
             result = "{}\n{}".format(result, record.exc_text)
         if record.stack_info:
@@ -808,17 +787,13 @@ def getLogger(name=None, *, datefmt=None, relative_to=None):
     if not logger.handlers:
         stdout_handler = StreamHandler(sys.stdout)
         stdout_handler.setFormatter(
-            _LogFormatter(
-                sys.stdout, datefmt=datefmt, relative_to=relative_to
-            )
+            _LogFormatter(sys.stdout, datefmt=datefmt, relative_to=relative_to)
         )
         stdout_handler.addFilter(lambda r: r.levelno < logging.WARNING)
 
         stderr_handler = StreamHandler(sys.stderr)
         stderr_handler.setFormatter(
-            _LogFormatter(
-                sys.stderr, datefmt=datefmt, relative_to=relative_to
-            )
+            _LogFormatter(sys.stderr, datefmt=datefmt, relative_to=relative_to)
         )
         stderr_handler.addFilter(lambda r: r.levelno >= logging.WARNING)
 
