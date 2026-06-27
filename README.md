@@ -6,6 +6,9 @@ A lightweight Python logging wrapper with structured output, custom log levels, 
 todo add file handler option for getLogger
 todo install as submodule
 todo comprehensive unit tests
+
+Fixme reorganize values & names with enum
+TODO split agents & context
 -->
 
 ## Features

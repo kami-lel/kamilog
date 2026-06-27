@@ -41,7 +41,6 @@ __all__ = (
     "DATEFMT_DATETIME_MS",
 )
 
-# Fixme reorganize values & names with enum
 
 # constants  ###################################################################
 
