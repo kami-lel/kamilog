@@ -500,6 +500,8 @@ class _DiffOnlyEngine:  # ======================================================
     :type window: int
     """
 
+    # BUG switching logger issue
+
     _COMPRESSION_BLOCK_SIZE = 8
     _PRESERVED_TRAILING_CHARS = 2
     _COMPRESSION_MARKER = "〃\t"
