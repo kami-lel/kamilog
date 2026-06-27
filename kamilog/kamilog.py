@@ -354,26 +354,42 @@ class _LogFormatter(Formatter):
 
 class _DiffOnlyMsgFilter(logging.Filter):  # ===================================
     """
-    Blanks out characters that are unchanged across the last ``history`` messages,
-    so repeated log lines visually collapse down to only what differs.
+    Blanks out characters that are unchanged across the last
+    ``_PATTERN_TRIGGER_CNT`` messages, so repeated log lines visually
+    collapse down to only what differs.
     """
-
-    # TODO smart logging
-
-    def __init__(self):
-        """
-        :param history: number of prior messages to compare against
-        :type history: int
-        """
-        super().__init__()
-        self._history = deque(maxlen=self._PATTERN_TRIGGER_CNT)
 
     _PATTERN_TRIGGER_CNT = 3
 
-    _pattern = ""
-    _pattern_cnt = 0
+    def __init__(self):
+        super().__init__()
+        self._history = deque(maxlen=self._PATTERN_TRIGGER_CNT)
+        # _common[i] = shared char at position i across all history,
+        # or None where messages diverge or lengths differ
+        self._common: list = []
 
-    def filter(self, record):
+    def _update_common(self) -> None:
+        """recompute _common from current _history"""
+        history = list(self._history)
+        if not history:
+            self._common = []
+            return
+        min_len = min(len(s) for s in history)
+        max_len = max(len(s) for s in history)
+        common: list = []
+        for i in range(max_len):
+            if i >= min_len:
+                common.append(None)  # position missing in some messages
+            else:
+                ch = history[0][i]
+                common.append(
+                    ch
+                    if all(s[i] == ch for s in history[1:])
+                    else None
+                )
+        self._common = common
+
+    def filter(self, record) -> bool:
         """
         :param record: log record to mask in place
         :type record: logging.LogRecord
@@ -383,21 +399,22 @@ class _DiffOnlyMsgFilter(logging.Filter):  # ===================================
         message = record.getMessage()
 
         if len(self._history) == self._history.maxlen:
+            common = self._common
+            n = len(common)
             masked = "".join(
-                (
-                    " "
-                    if ch != " "
-                    and all(
-                        ch == prev[i] for prev in self._history if i < len(prev)
-                    )
-                    else ch
-                )
+                " "
+                if i < n
+                and common[i] is not None
+                and common[i] == ch
+                and ch != " "
+                else ch
                 for i, ch in enumerate(message)
             )
         else:
             masked = message
 
         self._history.append(message)
+        self._update_common()
         record.msg = masked
         record.args = ()
         return True
