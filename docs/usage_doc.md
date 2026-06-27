@@ -248,6 +248,20 @@ log.info("later message")   # +00:00:01.234 [INFO ] myapp:    later message
 
 
 
+### Diff-only Output
+
+`getLogger()` automatically attaches a diff-only filter to every logger. Once three messages have been seen, character positions shared across all of them are compressed: each group of 8 identical characters is replaced by one `〃\t` marker. At least 2 original characters are preserved at each end of the compressed block for visual context.
+
+This means repeated log lines — such as a fixed prefix followed by a changing value — collapse down to show only what changed:
+
+```
+INFO  sensor: temperature=21.4 humidity=55% status=OK
+INFO  sensor: te〃\tture=21.6 humidity=55% status=OK
+INFO  sensor: te〃\tture=21.9 humidity=55% status=OK
+```
+
+The filter is invisible during a warmup period (first 3 messages) and resets automatically when the message pattern changes.
+
 ## Verbosity and Logging Level
 
 Set up a parser with `-v`/`--verbose` and `-q`/`--quiet` options:

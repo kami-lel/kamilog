@@ -2,6 +2,7 @@
 
 [^format]
 
+<!-- todo smart time print -->
 
 
 
@@ -31,7 +32,23 @@
 
 ### Security
 
-[unreleased]: https://github.com/kami-lel/kamilog/compare/v1.4.2...dev
+[unreleased]: https://github.com/kami-lel/kamilog/compare/v1.5.0...dev
+
+
+## [1.5.0] - 2026-06-27
+
+### Added
+
+- `_DiffOnlyMsgFilter`: auto-attached to every logger by `getLogger()`; compresses character runs shared across the last 3 messages into `〃\t` markers (one per 8 chars), preserving 2 original chars at each end for visual context.
+- `examples/diff_only_filter.py`: runnable demo of diff-only filtering across three scenarios — sensor polling, batch file processing, and pattern break/recovery.
+- `CONTEXT.md`: descriptive architecture reference covering repository layout, core classes (`_CustomLogLevel`, `KamiLogger`, `_LogFormatter`, `_DiffOnlyMsgFilter`), public API surface, and known limitations.
+
+### Changed
+
+- Custom log levels (`ENTER`, `SKIP`, `PASS`, `SUCC`, `DONE`, `FAIL`) consolidated into `_CustomLogLevel(IntEnum)`; each member carries the numeric level value and a padded 5-char display name (`.display`). Public module-level aliases are unchanged and remain int-compatible.
+- `AGENTS.md` restructured to prescriptive-only content (commands, conventions, constraints); descriptive content moved to `CONTEXT.md`.
+
+[1.5.0]: https://github.com/kami-lel/kamilog/compare/v1.4.2...v1.5.0
 
 
 

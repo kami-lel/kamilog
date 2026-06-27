@@ -3,6 +3,7 @@
       "levelname",
       "LEVELNAMES",
       "levelno",
+      "lookback",
       "msecs"
     ]
 }

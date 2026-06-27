@@ -2,7 +2,7 @@
 
 A lightweight Python logging wrapper with structured output, custom log levels, ANSI 16-color support, and flexible timestamp options.
 
-<!-- 
+<!--
 todo add file handler option for getLogger
 todo install as submodule
 todo comprehensive unit tests
@@ -16,6 +16,7 @@ todo comprehensive unit tests
 - **stdout/stderr split** — `< WARNING` goes to stdout, `>= WARNING` goes to stderr
 - **Optional timestamps** — disable by default; enable with `datefmt=kamilog.DATEFMT_TIME` or `relative_to=`
 - **Level constants** — `kamilog.DEBUG`, `kamilog.WARNING`, etc. — no `import logging` needed
+- **Diff-only output** — repeated log lines compressed to show only what changed; common character runs replaced with `〃\t` markers, auto-applied to every logger
 - **Verbosity helpers** — `-v`/`-q` CLI flags mapped to logging levels
 - **Drop-in compatible** — `kamilog.getLogger()` in place of `logging.getLogger()`
 
