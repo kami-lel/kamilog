@@ -231,7 +231,7 @@ class _LogFormatter(Formatter):
     internal log formatter producing structured, optionally colored output
     """
 
-    # Hack refactorization for better readability
+    # HACK refactorization for better readability
 
     def __init__(self, *, use_color=False, datefmt=None, relative_to=None):
         """
@@ -425,7 +425,7 @@ class _DiffOnlyMsgFilter(logging.Filter):  #####################################
     :type window: int
     """
 
-    # Hack refactorization for better readability
+    # HACK refactorization for better readability
 
     _COMPRESSION_BLOCK_SIZE = 8
     _PRESERVED_TRAILING_CHARS = 2
