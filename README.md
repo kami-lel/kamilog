@@ -3,7 +3,6 @@
 A lightweight Python logging wrapper with structured output, custom log levels, ANSI 16-color support, and flexible timestamp options.
 
 <!--
-BUG diff only printing is inconsistent before 1st tab is not correct
 todo add file handler option for getLogger
 todo install as submodule
 todo comprehensive unit tests
