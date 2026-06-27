@@ -204,11 +204,11 @@ _ANSI_BOLD = "\033[1m"
 _ANSI_DATETIME = "\033[90m"  # bright black (grey)
 _ANSI_SOURCE = "\033[90m"  # bright black (grey)
 _ANSI_LEVEL_COLORS = {
-    logging.DEBUG: "\033[34m",  # blue
-    _CustomLogLevel.ENTER: "\033[94m",  # bright blue
-    _CustomLogLevel.SKIP: "\033[36m",  # cyan
+    logging.DEBUG: "\033[36m",  # cyan
+    _CustomLogLevel.ENTER: "\033[96m",  # bright cyan
+    _CustomLogLevel.SKIP: "\033[34m",  # blue
     _CustomLogLevel.SUCC: "\033[32m",  # green
-    logging.INFO: "\033[96m",  # bright cyan
+    logging.INFO: "\033[94m",  # bright blue
     _CustomLogLevel.PASS: "\033[92m",  # bright green
     _CustomLogLevel.DONE: "\033[93m",  # bright yellow
     logging.WARNING: "\033[33m",  # yellow

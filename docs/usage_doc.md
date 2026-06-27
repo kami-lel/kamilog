@@ -82,11 +82,11 @@ WARN. myapp: Warning message
 
 | Level | Num | Function | Color | ANSI Code | Meaning |
 |---|---|---|---|---|---|
-| DEBUG | 10 | `.debug()` | Blue | `\033[34m` | debugging information shown only during development |
-| ENTER | 11 | `.enter()` | Bright Blue | `\033[94m` | marks start of a routine; useful for tracking program logic during development |
-| SKIP  | 12 | `.skip()` | Cyan | `\033[36m` | marks skipped portion of routine; useful for tracking program logic during development |
+| DEBUG | 10 | `.debug()` | Cyan | `\033[36m` | debugging information shown only during development |
+| ENTER | 11 | `.enter()` | Bright Cyan | `\033[96m` | marks start of a routine; useful for tracking program logic during development |
+| SKIP  | 12 | `.skip()` | Blue | `\033[34m` | marks skipped portion of routine; useful for tracking program logic during development |
 | SUCC. | 15 | `.succ()` | Green | `\033[32m` | subroutine or execution succeeded |
-| INFO  | 20 | `.info()` | Bright Cyan | `\033[96m` | general informational message related to program function |
+| INFO  | 20 | `.info()` | Bright Blue | `\033[94m` | general informational message related to program function |
 | PASS  | 21 | `.pass_()` | Bright Green | `\033[92m` | test case passed |
 | DONE  | 25 | `.done()` | Bright Yellow | `\033[93m` | entire program or major component completed successfully |
 | WARN. | 30 | `.warning()` | Yellow | `\033[33m` | warning condition that should be investigated |
