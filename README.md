@@ -7,7 +7,7 @@ todo add file handler option for getLogger
 todo install as submodule
 todo comprehensive unit tests
 
-Fixme reorganize values & names with enum
+FIXME reorganize values & names with enum
 -->
 
 ## Features
