@@ -190,7 +190,82 @@ logging.setLoggerClass(KamiLogger)
 logging.root.__class__ = KamiLogger
 
 
-# _LogFormatter  ###############################################################
+# color  ########################################################################
+
+
+class _AnsiPalette:
+    """
+    ANSI color palette; detects TTY at construction time and applies
+    color codes through its public methods.
+
+    when ``stream`` is ``None`` or is not a TTY, all coloring methods
+    return their input text unchanged.
+
+
+    :param stream: output stream used for TTY detection; ``None``
+            disables color unconditionally
+    :type stream: IO or None
+    """
+
+    _RESET = "\033[0m"
+    _BOLD = "\033[1m"
+    _GREY = "\033[90m"  # bright black
+    _LEVEL_COLORS = {
+        logging.DEBUG: "\033[36m",  # cyan
+        _CustomLogLevel.ENTER: "\033[96m",  # bright cyan
+        _CustomLogLevel.SKIP: "\033[34m",  # blue
+        _CustomLogLevel.SUCC: "\033[32m",  # green
+        logging.INFO: "\033[94m",  # bright blue
+        _CustomLogLevel.PASS: "\033[92m",  # bright green
+        _CustomLogLevel.DONE: "\033[93m",  # bright yellow
+        logging.WARNING: "\033[33m",  # yellow
+        logging.ERROR: "\033[31m",  # red
+        _CustomLogLevel.FAIL: "\033[91m",  # bright red
+        logging.CRITICAL: "\033[95m",  # bright magenta
+    }
+
+    def __init__(self, stream=None):
+        self._enabled = (
+            stream is not None and hasattr(stream, "isatty") and stream.isatty()
+        )
+
+    # Public API  ==============================================================
+
+    def color_level(self, text, levelno):
+        """
+        apply bold and level-specific ANSI color to ``text``.
+
+
+        :param text: text to colorize
+        :type text: str
+        :param levelno: numeric log level used to select the color
+        :type levelno: int
+        :return: colored text, or ``text`` unchanged when disabled
+        :rtype: str
+        """
+        if not self._enabled:
+            return text
+        color = self._LEVEL_COLORS.get(levelno, "")
+        return "{}{}{}{}".format(self._BOLD, color, text, self._RESET)
+
+    def color_grey(self, text):
+        """
+        apply bright-black (grey) ANSI color to ``text``.
+
+        used for timestamps and source name labels.
+
+
+        :param text: text to colorize
+        :type text: str
+        :return: grey text, or ``text`` unchanged when disabled
+        :rtype: str
+        """
+        if not self._enabled:
+            return text
+        return "{}{}{}".format(self._GREY, text, self._RESET)
+
+
+# log formatting  ##############################################################
 
 
 _PADDED_LEVELNAME_MAP = {
@@ -208,25 +283,6 @@ _PADDED_LEVELNAME_MAP = {
 }
 
 
-_ANSI_RESET = "\033[0m"
-_ANSI_BOLD = "\033[1m"
-_ANSI_DATETIME = "\033[90m"  # bright black (grey)
-_ANSI_SOURCE = "\033[90m"  # bright black (grey)
-_ANSI_LEVEL_COLORS = {
-    logging.DEBUG: "\033[36m",  # cyan
-    _CustomLogLevel.ENTER: "\033[96m",  # bright cyan
-    _CustomLogLevel.SKIP: "\033[34m",  # blue
-    _CustomLogLevel.SUCC: "\033[32m",  # green
-    logging.INFO: "\033[94m",  # bright blue
-    _CustomLogLevel.PASS: "\033[92m",  # bright green
-    _CustomLogLevel.DONE: "\033[93m",  # bright yellow
-    logging.WARNING: "\033[33m",  # yellow
-    logging.ERROR: "\033[31m",  # red
-    _CustomLogLevel.FAIL: "\033[91m",  # bright red
-    logging.CRITICAL: "\033[95m",  # bright magenta
-}
-
-
 class _LogFormatEngine:
     """
     core log-line formatting logic, independent of ``logging.Formatter``.
@@ -238,8 +294,8 @@ class _LogFormatEngine:
     through the adapter.
 
 
-    :param use_color: enable ANSI color codes in the output
-    :type use_color: bool
+    :param palette: color palette controlling ANSI output
+    :type palette: _AnsiPalette
     :param datefmt: strftime format string for wall-clock timestamps;
             ignored when ``relative_to`` is set; ``None`` disables
             timestamps
@@ -249,10 +305,18 @@ class _LogFormatEngine:
     :type relative_to: float or None
     """
 
-    def __init__(self, *, use_color=False, datefmt=None, relative_to=None):
-        self.use_color = use_color
+    def __init__(self, palette, *, datefmt=None, relative_to=None):
+        self._palette = palette
         self._datefmt = datefmt
         self._relative_to = relative_to
+
+    @property
+    def palette(self):
+        """
+        :return: the ``_AnsiPalette`` used by this engine
+        :rtype: _AnsiPalette
+        """
+        return self._palette
 
     # Public API  ##############################################################
 
@@ -351,12 +415,10 @@ class _LogFormatEngine:
         """
         :param asctime: pre-formatted datetime string
         :type asctime: str
-        :return: asctime wrapped in grey ANSI codes, or plain if disabled
+        :return: asctime in grey, or plain if color disabled
         :rtype: str
         """
-        if self.use_color:
-            return "{}{}{}".format(_ANSI_DATETIME, asctime, _ANSI_RESET)
-        return asctime
+        return self._palette.color_grey(asctime)
 
     def _fmt_level(self, levelno):
         """
@@ -366,10 +428,7 @@ class _LogFormatEngine:
         :rtype: str
         """
         padded = _PADDED_LEVELNAME_MAP.get(levelno, str(levelno).ljust(5)[:5])
-        if self.use_color:
-            color = _ANSI_LEVEL_COLORS.get(levelno, "")
-            return "{}{}{}{}".format(_ANSI_BOLD, color, padded, _ANSI_RESET)
-        return padded
+        return self._palette.color_level(padded, levelno)
 
     def _fmt_source(self, name):
         """
@@ -380,15 +439,11 @@ class _LogFormatEngine:
         :rtype: str
         """
         if not name or name == "root":
-            if self.use_color:
-                return "{}:{}".format(_ANSI_DATETIME, _ANSI_RESET)
-            return ":"
-        if self.use_color:
-            # pylint: disable-next=duplicate-string-formatting-argument
-            return "{}{}{}{}:{}".format(
-                _ANSI_SOURCE, name, _ANSI_RESET, _ANSI_DATETIME, _ANSI_RESET
-            )
-        return "{}:".format(name)
+            return self._palette.color_grey(":")
+        return "{}{}".format(
+            self._palette.color_grey(name),
+            self._palette.color_grey(":"),
+        )
 
     def _fmt_relative(self, created):
         """
@@ -412,12 +467,15 @@ class _LogFormatter(Formatter):
 
     delegates all line-building and timestamp logic to an internal
     ``_LogFormatEngine`` instance exposed via the ``engine`` property.
-    exc_info and stack_info appending are handled here because they
-    depend on ``Formatter.formatException`` and ``Formatter.formatStack``.
+    the ``_AnsiPalette`` controlling color output is accessible via
+    ``palette``. exc_info and stack_info appending are handled here
+    because they depend on ``Formatter.formatException`` and
+    ``Formatter.formatStack``.
 
 
-    :param use_color: forwarded to ``_LogFormatEngine``
-    :type use_color: bool
+    :param stream: forwarded to ``_AnsiPalette`` for TTY detection;
+            ``None`` disables color
+    :type stream: IO or None
     :param datefmt: forwarded to ``_LogFormatEngine``; also passed to
             ``Formatter.__init__`` for stdlib compatibility
     :type datefmt: str or None
@@ -425,11 +483,20 @@ class _LogFormatter(Formatter):
     :type relative_to: float or None
     """
 
-    def __init__(self, *, use_color=False, datefmt=None, relative_to=None):
+    def __init__(self, stream=None, *, datefmt=None, relative_to=None):
         super().__init__(datefmt=datefmt)
+        self._palette = _AnsiPalette(stream)
         self._engine = _LogFormatEngine(
-            use_color=use_color, datefmt=datefmt, relative_to=relative_to
+            self._palette, datefmt=datefmt, relative_to=relative_to
         )
+
+    @property
+    def palette(self):
+        """
+        :return: the ``_AnsiPalette`` used for formatting
+        :rtype: _AnsiPalette
+        """
+        return self._palette
 
     @property
     def engine(self):
@@ -499,6 +566,8 @@ class _DiffOnlyEngine:  # ======================================================
             compression activates once this many messages have been seen
     :type window: int
     """
+
+    # TODO use color
 
     _COMPRESSION_BLOCK_SIZE = 8
     _PRESERVED_TRAILING_CHARS = 2
@@ -740,9 +809,7 @@ def getLogger(name=None, *, datefmt=None, relative_to=None):
         stdout_handler = StreamHandler(sys.stdout)
         stdout_handler.setFormatter(
             _LogFormatter(
-                use_color=sys.stdout.isatty(),
-                datefmt=datefmt,
-                relative_to=relative_to,
+                sys.stdout, datefmt=datefmt, relative_to=relative_to
             )
         )
         stdout_handler.addFilter(lambda r: r.levelno < logging.WARNING)
@@ -750,9 +817,7 @@ def getLogger(name=None, *, datefmt=None, relative_to=None):
         stderr_handler = StreamHandler(sys.stderr)
         stderr_handler.setFormatter(
             _LogFormatter(
-                use_color=sys.stderr.isatty(),
-                datefmt=datefmt,
-                relative_to=relative_to,
+                sys.stderr, datefmt=datefmt, relative_to=relative_to
             )
         )
         stderr_handler.addFilter(lambda r: r.levelno >= logging.WARNING)
