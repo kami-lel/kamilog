@@ -13,14 +13,15 @@ log.setLevel(kamilog.DEBUG)
 
 log.debug("Debugging details here")
 log.info("Informational message")
-log.warning("Warning message")
-log.error("Error occurred!")
-log.critical("Critical issue!")
 
 try:
     1 / 0
 except ZeroDivisionError as err:
     log.exception(err)
+
+log.enter("starting operation")
+log.done("operation completed")
+log.warning("Warning message")
 ```
 
 Default output (no timestamp):
@@ -28,78 +29,19 @@ Default output (no timestamp):
 ```
 DEBUG myapp: Debugging details here
 INFO  myapp: Informational message
-WARN. myapp: Warning message
-ERROR myapp: Error occurred!
-CRIT. myapp: Critical issue!
 ERROR myapp: division by zero
 Traceback (most recent call last):
   File "main.py", line 12, in <module>
     1 / 0
     ~~^~~
 ZeroDivisionError: division by zero
-```
-
-Logger name (`myapp:`) is omitted when `name` is `None` or `"root"`.
-
-
-
-
-
-
-
-
-
-
-
-
-
-### Custom Log Levels
-
-<!-- Todo rewrite a single table contains all levels (native & customize), function, level & color -->
-
-`KamiLogger` adds six levels for hook and test-case workflows:
-
-| Method | Constant | Number |
-|---|---|---|
-| `log.enter(msg)` | `kamilog.ENTER` | 11 |
-| `log.skip(msg)` | `kamilog.SKIP` | 12 |
-| `log.pass_(msg)` | `kamilog.PASS` | 21 |
-| `log.succ(msg)` | `kamilog.SUCC` | 22 |
-| `log.done(msg)` | `kamilog.DONE` | 25 |
-| `log.fail(msg)` | `kamilog.FAIL` | 45 |
-
-Example output with custom levels:
-
-```python
-log = kamilog.getLogger("myapp")
-log.setLevel(kamilog.DEBUG)
-
-log.enter("entering setup")      # ENTER myapp: entering setup
-log.info("processing data")      # INFO  myapp: processing data
-log.pass_("validation passed")   # PASS  myapp: validation passed
-log.succ("operation succeeded")  # SUCC. myapp: operation succeeded
-log.done("task completed")       # DONE  myapp: task completed
-log.fail("task failed")          # FAIL  myapp: task failed
+ENTER myapp: starting operation
+DONE  myapp: operation completed
+WARN. myapp: Warning message
 ```
 
 > [!NOTE]
-> `pass_` uses a trailing underscore because `pass` is a Python keyword.
-
-### All Log Levels
-
-| Function | Meaning |
-|---|---|
-| `.debug()` | debugging information shown only during development |
-| `.enter()` | marks start of a routine; useful for tracking program logic during development |
-| `.skip()` | marks skipped portion of routine; useful for tracking program logic during development |
-| `.info()` | general informational message related to program function |
-| `.pass_()` | test case passed |
-| `.succ()` | subroutine or execution succeeded |
-| `.done()` | entire program or major component completed successfully |
-| `.warning()` | warning condition that should be investigated |
-| `.error()` | error condition that prevented operation completion |
-| `.fail()` | test case or subroutine/execution failed |
-| `.critical()` | program stopping or crashing immediately |
+> Logger name (`myapp:`) is omitted when `name` is `None` or `"root"`.
 
 
 
@@ -133,32 +75,50 @@ log.fail("task failed")          # FAIL  myapp: task failed
 
 
 
-## Logger Settings
 
-#### ANSI Color Output
+## Custom Log Levels
+
+`KamiLogger` adds six levels for hook and test-case workflows. All log levels (native and custom) are shown in the table below, ordered by numeric value:
+
+| Level | Num | Function | Color | ANSI Code | Meaning |
+|---|---|---|---|---|---|
+| DEBUG | 10 | `.debug()` | Cyan | `\033[36m` | debugging information shown only during development |
+| ENTER | 11 | `.enter()` | Bright Cyan | `\033[96m` | marks start of a routine; useful for tracking program logic during development |
+| SKIP  | 12 | `.skip()` | Blue | `\033[34m` | marks skipped portion of routine; useful for tracking program logic during development |
+| SUCC. | 15 | `.succ()` | Green | `\033[32m` | subroutine or execution succeeded |
+| INFO  | 20 | `.info()` | Bright Blue | `\033[94m` | general informational message related to program function |
+| PASS  | 21 | `.pass_()` | Bright Green | `\033[92m` | test case passed |
+| DONE  | 25 | `.done()` | Bright Yellow | `\033[93m` | entire program or major component completed successfully |
+| WARN. | 30 | `.warning()` | Yellow | `\033[33m` | warning condition that should be investigated |
+| ERROR | 40 | `.error()` | Red | `\033[31m` | error condition that prevented operation completion |
+| FAIL  | 45 | `.fail()` | Bright Red | `\033[91m` | test case or subroutine/execution failed |
+| CRIT. | 50 | `.critical()` | Bright Magenta | `\033[95m` | program stopping or crashing immediately |
+
+> [!NOTE]
+> `.pass_()` uses a trailing underscore because `pass` is a Python keyword.
+
+
+
+
+
+
+
+
+
+
+
+
+
+### ANSI Color Output
 
 Color is enabled automatically when stdout/stderr is a TTY, and suppressed
 when output is piped or redirected to a file.
 
-Level-to-color mapping (16-color ANSI):
-
-| Level | Color | ANSI Code |
-|---|---|---|
-| DEBUG | Blue | `\033[34m` |
-| ENTER | Bright Blue | `\033[94m` |
-| SKIP  | Cyan | `\033[36m` |
-| INFO  | Bright Cyan | `\033[96m` |
-| PASS  | Green | `\033[32m` |
-| SUCC. | Bright Green | `\033[92m` |
-| DONE  | Bright Yellow | `\033[93m` |
-| WARN. | Yellow | `\033[33m` |
-| ERROR | Red | `\033[31m` |
-| FAIL  | Bright Red | `\033[91m` |
-| CRIT. | Bright Magenta | `\033[95m` |
+See the [Custom Log Levels](#custom-log-levels) table for level-to-color mapping (16-color ANSI).
 
 Formatting:
 - **Timestamp**: bright black (grey)
-- **Level name**: colored (by table) and bold
+- **Level name**: colored (by log level) and bold
 - **Source name**: bright black (grey)
 - **Colon separator** (`:`) : bright black (grey)
 - **Message**: uncolored
@@ -230,26 +190,6 @@ log.info("later message")   # +00:00:01.234 [INFO ] myapp:    later message
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ### Diff-only Output
 
 `getLogger()` automatically attaches a diff-only filter to every logger. Once three messages have been seen, character positions shared across all of them are compressed: each group of 8 identical characters is replaced by one `〃\t` marker. At least 2 original characters are preserved at each end of the compressed block for visual context.
@@ -258,11 +198,44 @@ This means repeated log lines — such as a fixed prefix followed by a changing 
 
 ```
 INFO  sensor: temperature=21.4 humidity=55% status=OK
-INFO  sensor: te〃\tture=21.6 humidity=55% status=OK
-INFO  sensor: te〃\tture=21.9 humidity=55% status=OK
+INFO  sensor: te〃    ture=21.6 humidity=55% status=OK
+INFO  sensor: te〃    ture=21.9 humidity=55% status=OK
 ```
 
 The filter is invisible during a warmup period (first 3 messages) and resets automatically when the message pattern changes.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ## Verbosity and Logging Level
 
@@ -291,6 +264,8 @@ kamilog.set_logging_level_by_verbosity(args, logger_name="myapp")
 log = kamilog.getLogger("myapp")
 kamilog.set_logging_level_by_verbosity(args, logger=log)
 ```
+
+<!-- Fixme add 15 level -->
 
 Verbosity-to-logging-level mapping:
 

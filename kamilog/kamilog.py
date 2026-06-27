@@ -67,8 +67,8 @@ class _CustomLogLevel(IntEnum):
 
     ENTER = (11, "ENTER")
     SKIP = (12, "SKIP ")
+    SUCC = (15, "SUCC.")
     PASS = (21, "PASS ")
-    SUCC = (22, "SUCC.")
     DONE = (25, "DONE ")
     FAIL = (45, "FAIL ")
 
@@ -188,9 +188,9 @@ _PADDED_LEVELNAME_MAP = {
     logging.DEBUG: "DEBUG",
     _CustomLogLevel.ENTER: _CustomLogLevel.ENTER.display,
     _CustomLogLevel.SKIP: _CustomLogLevel.SKIP.display,
+    _CustomLogLevel.SUCC: _CustomLogLevel.SUCC.display,
     logging.INFO: "INFO ",
     _CustomLogLevel.PASS: _CustomLogLevel.PASS.display,
-    _CustomLogLevel.SUCC: _CustomLogLevel.SUCC.display,
     _CustomLogLevel.DONE: _CustomLogLevel.DONE.display,
     logging.WARNING: "WARN.",
     logging.ERROR: "ERROR",
@@ -204,12 +204,12 @@ _ANSI_BOLD = "\033[1m"
 _ANSI_DATETIME = "\033[90m"  # bright black (grey)
 _ANSI_SOURCE = "\033[90m"  # bright black (grey)
 _ANSI_LEVEL_COLORS = {
-    logging.DEBUG: "\033[34m",  # blue
-    _CustomLogLevel.ENTER: "\033[94m",  # bright blue
-    _CustomLogLevel.SKIP: "\033[36m",  # cyan
-    logging.INFO: "\033[96m",  # bright cyan
-    _CustomLogLevel.PASS: "\033[32m",  # green
-    _CustomLogLevel.SUCC: "\033[92m",  # bright green
+    logging.DEBUG: "\033[36m",  # cyan
+    _CustomLogLevel.ENTER: "\033[96m",  # bright cyan
+    _CustomLogLevel.SKIP: "\033[34m",  # blue
+    _CustomLogLevel.SUCC: "\033[32m",  # green
+    logging.INFO: "\033[94m",  # bright blue
+    _CustomLogLevel.PASS: "\033[92m",  # bright green
     _CustomLogLevel.DONE: "\033[93m",  # bright yellow
     logging.WARNING: "\033[33m",  # yellow
     logging.ERROR: "\033[31m",  # red
