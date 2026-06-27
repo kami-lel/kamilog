@@ -17,7 +17,6 @@ stays visible.
 import kamilog
 
 # HACK fix this to better structure
-# TODO more stress test
 
 # Diff-Only Filter Examples  ##################################################
 

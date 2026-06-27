@@ -2,7 +2,9 @@
 tests function related to verbosity & logging level
 
 ie
-add_verbose_arguments, calc_verbosity, set_logging_level_by_verbosity
+add_verbose_arguments, calc_logging_level_from_verbosity,
+calc_logging_level_from_verbosity_namespace,
+set_logging_level_by_verbosity
 """
 
 from argparse import ArgumentParser
@@ -15,8 +17,10 @@ sys.path.insert(
 )
 from kamilog.kamilog import (
     add_verbose_arguments,
-    calc_verbosity,
+    calc_logging_level_from_verbosity,
+    calc_logging_level_from_verbosity_namespace,
     set_logging_level_by_verbosity,
+    SUCC,
     DONE,
 )
 
@@ -89,58 +93,96 @@ class TestAddVerboseArguments:
         assert args.quiet == 2
 
 
-class TestCalcVerbosity:
+class TestCalcLoggingLevel:
     """
-    test ``calc_verbosity``
+    test ``calc_logging_level_from_verbosity`` integer mapping
     """
 
-    def test1(_):
-        ARGS = []
+    def test_zero(_):
+        level = calc_logging_level_from_verbosity(0)
+        print(level)
+        assert level == DONE  # 25
+
+    def test_v1(_):
+        level = calc_logging_level_from_verbosity(1)
+        print(level)
+        assert level == logging.INFO  # 20
+
+    def test_v2(_):
+        level = calc_logging_level_from_verbosity(2)
+        print(level)
+        assert level == SUCC  # 15
+
+    def test_v3(_):
+        level = calc_logging_level_from_verbosity(3)
+        print(level)
+        assert level == logging.DEBUG  # 10
+
+    def test_v_over(_):
+        level = calc_logging_level_from_verbosity(99)
+        print(level)
+        assert level == logging.DEBUG  # 10
+
+    def test_q1(_):
+        level = calc_logging_level_from_verbosity(-1)
+        print(level)
+        assert level == logging.WARNING  # 30
+
+    def test_q2(_):
+        level = calc_logging_level_from_verbosity(-2)
+        print(level)
+        assert level == logging.ERROR  # 40
+
+    def test_q3(_):
+        level = calc_logging_level_from_verbosity(-3)
+        print(level)
+        assert level == logging.CRITICAL  # 50
+
+
+class TestCalcLoggingLevelNamespace:
+    """
+    test ``calc_logging_level_from_verbosity_namespace``
+    """
+
+    def test_no(_):
         parser = ArgumentParser()
-
         add_verbose_arguments(parser)
-        args = parser.parse_args(ARGS)
+        args = parser.parse_args([])
+        level = calc_logging_level_from_verbosity_namespace(args)
+        print(level)
+        assert level == DONE
 
-        verbosity = calc_verbosity(args)
-
-        print(verbosity)
-        assert verbosity == 0
-
-    def test2(_):
-        ARGS = ["-vv"]
+    def test_v1(_):
         parser = ArgumentParser()
-
         add_verbose_arguments(parser)
-        args = parser.parse_args(ARGS)
+        args = parser.parse_args(["-v"])
+        level = calc_logging_level_from_verbosity_namespace(args)
+        print(level)
+        assert level == logging.INFO
 
-        verbosity = calc_verbosity(args)
-
-        print(verbosity)
-        assert verbosity == 2
-
-    def test3(_):
-        ARGS = ["--quiet"]
+    def test_v2(_):
         parser = ArgumentParser()
-
         add_verbose_arguments(parser)
-        args = parser.parse_args(ARGS)
+        args = parser.parse_args(["-vv"])
+        level = calc_logging_level_from_verbosity_namespace(args)
+        print(level)
+        assert level == SUCC
 
-        verbosity = calc_verbosity(args)
-
-        print(verbosity)
-        assert verbosity == -1
-
-    def test4(_):
-        ARGS = ["-vv", "--verbose", "-qq"]
+    def test_vv_mixed(_):
         parser = ArgumentParser()
-
         add_verbose_arguments(parser)
-        args = parser.parse_args(ARGS)
+        args = parser.parse_args(["-vv", "--verbose", "-qq"])  # net=1
+        level = calc_logging_level_from_verbosity_namespace(args)
+        print(level)
+        assert level == logging.INFO
 
-        verbosity = calc_verbosity(args)
-
-        print(verbosity)
-        assert verbosity == 1
+    def test_quiet(_):
+        parser = ArgumentParser()
+        add_verbose_arguments(parser)
+        args = parser.parse_args(["--quiet"])
+        level = calc_logging_level_from_verbosity_namespace(args)
+        print(level)
+        assert level == logging.WARNING
 
 
 class TestSLLBV:
@@ -189,7 +231,7 @@ class TestSLLBV:
         logging_level = logger.level
 
         print(logging_level)
-        assert logging_level == logging.DEBUG
+        assert logging_level == SUCC  # 15, not DEBUG
 
     def test_v3(_):
         ARGS = ["-vvv"]
@@ -245,12 +287,12 @@ add_verbose_arguments(sys_argv_parser)
 if __name__ == "__main__":
     args = sys_argv_parser.parse_args()
 
-    # test calc_verbosity
-    verbosity = calc_verbosity(args)
-    print("verbosity:\t{}".format(verbosity))
+    # test calc_logging_level_from_verbosity_namespace
+    level = calc_logging_level_from_verbosity_namespace(args)
+    print("logging level:\t{}".format(level))
 
     # test set_logging_level_by_verbosity
-    set_logging_level_by_verbosity(args, LOGGER_NAME)
+    set_logging_level_by_verbosity(args, logger_name=LOGGER_NAME)
 
     logger = logging.getLogger(LOGGER_NAME)
-    print("logging level:\t{}".format(logger.level))
+    print("logger level:\t{}".format(logger.level))
