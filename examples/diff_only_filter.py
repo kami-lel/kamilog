@@ -8,6 +8,8 @@ within a run count toward its length but are not replaced themselves.
 
 import kamilog
 
+# HACK better set of examples
+
 # ── training progress ─────────────────────────────────────────────────────────
 # "epoch 0" (7 chars) is one below the 8-char threshold, so it stays
 # visible. " | loss: 0." (11 chars) and " | acc: 6" (9 chars) exceed

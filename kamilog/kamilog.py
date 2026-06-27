@@ -354,18 +354,28 @@ class _LogFormatter(Formatter):
 
 class _DiffOnlyMsgFilter(logging.Filter):  # ===================================
     """
-    Blanks out characters that are unchanged across the last
-    ``_PATTERN_TRIGGER_CNT`` messages, so repeated log lines visually
-    collapse down to only what differs.
+    suppress characters shared across the last ``window`` messages, so
+    repeated log lines collapse down to only what changed.
+
+    compares each incoming message against a sliding window of prior
+    messages; positions that are identical in all of them are candidates
+    for blanking. Only contiguous runs of ``suppress_len`` or more such
+    positions are actually replaced — spaces within a run count toward
+    its length but are never replaced themselves.
+
+
+    :param window: number of prior messages held for comparison;
+            suppression activates once this many messages have been seen
+    :type window: int
+    :param suppress_len: minimum consecutive-position run length required
+            before the run is blanked out
+    :type suppress_len: int
     """
 
-    _PATTERN_TRIGGER_CNT = 3
-    _MIN_REPEAT_LEN = 8  # min consecutive common chars to blank
-
-    def __init__(self):  # TODO take args instead of constant
-        # TODO add tab size
+    def __init__(self, window=3, suppress_len=8):
         super().__init__()
-        self._history = deque(maxlen=self._PATTERN_TRIGGER_CNT)
+        self._min_repeat_len = suppress_len
+        self._history = deque(maxlen=window)
         # _common[i] = shared char at position i across all history,
         # or None where messages diverge or lengths differ
         self._common: list = []
@@ -417,13 +427,13 @@ class _DiffOnlyMsgFilter(logging.Filter):  # ===================================
                         run_start = i
                 else:
                     if run_start is not None:
-                        if i - run_start >= self._MIN_REPEAT_LEN:
+                        if i - run_start >= self._min_repeat_len:
                             for j in range(run_start, i):
                                 if chars[j] != " ":
                                     chars[j] = " "
                         run_start = None
             if run_start is not None:
-                if len(message) - run_start >= self._MIN_REPEAT_LEN:
+                if len(message) - run_start >= self._min_repeat_len:
                     for j in range(run_start, len(message)):
                         if chars[j] != " ":
                             chars[j] = " "
