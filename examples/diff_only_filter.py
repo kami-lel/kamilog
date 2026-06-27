@@ -1,70 +1,91 @@
 """
-Demonstrates diff-only message filtering: characters unchanged across
-the last 3 messages are blanked, highlighting only what changed.
+diff_only_filter.py
 
-Only contiguous runs of 8+ common characters are replaced — spaces
-within a run count toward its length but are not replaced themselves.
+demonstrate _DiffOnlyMsgFilter: characters repeated across the last
+``window`` messages compress into tab characters; only what changed
+stays visible.
+
+  - warmup    first ``window`` (default 3) messages always print in full
+  - compress  runs of ≥10 repeated chars fold into ``\\t`` per 8 chars;
+              ≥2 original chars are kept at each end for context
+  - threshold runs shorter than 10 chars are never compressed — they
+              carry useful identity context
+  - break     one outlier message poisons the window; compression drops
+              until regular lines fill the window again
 """
 
 import kamilog
 
-# HACK better set of examples
+# Diff-Only Filter Examples  ##################################################
 
-# ── training progress ─────────────────────────────────────────────────────────
-# "epoch 0" (7 chars) is one below the 8-char threshold, so it stays
-# visible. " | loss: 0." (11 chars) and " | acc: 6" (9 chars) exceed
-# it and get blanked. The lr suffix also blanks until the rate changes.
+# == periodic sensor read =====================================================
+# same sensor name and unit on every line; only the reading differs.
+# "sensor=cpu  load=" (18 chars) and "  temp=XXC  ok" (13 chars at
+# end) both exceed the 10-char threshold and compress to tabs.
 
-log = kamilog.getLogger()
+log = kamilog.getLogger("sensor")
 log.setLevel(kamilog.DEBUG)
+log.propagate = False
 
-print("# training log — first 3 shown in full (warmup)  #" + "#" * 29)
-log.info("epoch 01 | loss: 0.8231 | acc: 61.2% | lr: 0.0100")
-log.info("epoch 02 | loss: 0.7654 | acc: 63.8% | lr: 0.0100")
-log.info("epoch 03 | loss: 0.7102 | acc: 65.4% | lr: 0.0100")
+print("# sensor polling  " + "#" * 62)
+print("= warmup: first 3 messages printed in full  " + "=" * 36)
+log.info("sensor=cpu  load= 45.2%  temp=61C  ok")
+log.info("sensor=cpu  load= 47.8%  temp=62C  ok")
+log.info("sensor=cpu  load= 44.1%  temp=60C  ok")
 
-print("\n# only changing values remain  #" + "#" * 47)
-log.info("epoch 04 | loss: 0.6587 | acc: 67.1% | lr: 0.0100")
-log.info("epoch 05 | loss: 0.6103 | acc: 68.9% | lr: 0.0095")
-log.info("epoch 06 | loss: 0.5741 | acc: 70.3% | lr: 0.0095")
-log.info("epoch 07 | loss: 0.5318 | acc: 72.0% | lr: 0.0090")
+print("= long prefix + suffix compress; reading stays  " + "=" * 31)
+log.info("sensor=cpu  load= 51.3%  temp=63C  ok")
+log.info("sensor=cpu  load= 49.7%  temp=62C  ok")
+log.info("sensor=cpu  load= 53.0%  temp=64C  ok")
 
-# ── job log: short prefix vs long suffix ──────────────────────────────────────
-# "job N" stays because the common "job " prefix is only 4 chars (<8).
-# ": completed in " (15 chars) and "s  (200 OK)" (11 chars) are blanked.
-# When job 6 fails, the long common suffix changes — less gets blanked
-# until a new steady pattern is re-established.
+# == short vs long common runs ================================================
+# "step N:" prefix (7 chars) is below threshold — never compressed.
+# ": /data/archive/2024/logs/app_2024-01-" (38+ chars) compresses to
+# multiple tabs; the short "err= " label (6 chars) also stays visible.
 
-log2 = kamilog.getLogger("jobs")
+log2 = kamilog.getLogger("batch")
 log2.setLevel(kamilog.DEBUG)
 log2.propagate = False
 
-print("\n# job log — short 'job N' prefix stays visible  #" + "#" * 31)
-log2.info("job 1: completed in 2.3s  (200 OK)")
-log2.info("job 2: completed in 4.1s  (200 OK)")
-log2.info("job 3: completed in 1.7s  (200 OK)")
+print("\n# batch file processing  " + "#" * 55)
+print("= warmup  " + "=" * 69)
+log2.info("step 1: /data/archive/2024/logs/app_2024-01-10.log  err= 0")
+log2.info("step 2: /data/archive/2024/logs/app_2024-01-11.log  err= 0")
+log2.info("step 3: /data/archive/2024/logs/app_2024-01-12.log  err= 3")
 
-print("\n# common boilerplate blanked, only timing changes  #" + "#" * 28)
-log2.info("job 4: completed in 3.0s  (200 OK)")
-log2.info("job 5: completed in 0.9s  (200 OK)")
-log2.info("job 6: failed     in 5.2s  (500 ERR)")  # breaks pattern
-log2.info("job 7: completed in 2.1s  (200 OK)")
+print("= 'step N:' stays; long path compresses to tabs  " + "=" * 29)
+log2.info("step 4: /data/archive/2024/logs/app_2024-01-13.log  err= 0")
+log2.info("step 5: /data/archive/2024/logs/app_2024-01-14.log  err= 0")
+log2.info("step 6: /data/archive/2024/logs/app_2024-01-15.log  err= 7")
 
-# ── pattern break and recovery ────────────────────────────────────────────────
-# A one-off different message poisons the 3-message window, reducing
-# how much can be blanked. Blanking gradually recovers as the steady
-# pattern returns.
+# == pattern break and recovery ===============================================
+# a structurally different message poisons all three window slots.
+# common ground with the regular lines shrinks so less compresses.
+# once the window refills with regular lines, full compression returns.
 
-log3 = kamilog.getLogger("http")
+log3 = kamilog.getLogger("sync")
 log3.setLevel(kamilog.DEBUG)
 log3.propagate = False
 
-print("\n# http log — pattern break then recovery  #" + "#" * 37)
-log3.info("GET /api/v1/users/42/profile     200")
-log3.info("GET /api/v1/users/42/settings    200")
-log3.info("GET /api/v1/users/42/activity    200")
-log3.info("GET /api/v1/users/42/followers   200")
-log3.info("POST /api/v1/users/42/follow     201")  # interrupts pattern
-log3.info("GET /api/v1/users/42/following   200")
-log3.info("GET /api/v1/users/42/profile     200")
-log3.info("GET /api/v1/users/42/settings    200")
+print("\n# sync log — pattern break and recovery  " + "#" * 39)
+print("= warmup  " + "=" * 69)
+log3.info("sync /home/alice/docs/q1_report.pdf  →  remote:backup  ok")
+log3.info("sync /home/alice/docs/q2_report.pdf  →  remote:backup  ok")
+log3.info("sync /home/alice/docs/q3_report.pdf  →  remote:backup  ok")
+
+print("= steady: prefix and suffix compress  " + "=" * 41)
+log3.info("sync /home/alice/docs/q4_report.pdf  →  remote:backup  ok")
+log3.info("sync /home/alice/docs/q5_report.pdf  →  remote:backup  ok")
+
+print("- outlier poisons window  " + "-" * 54)
+log3.info("WARN disk 91% full on remote:backup — sync paused")
+
+# outlier stays in the 3-message window for the next 3 regular lines;
+# only once it ages out does full compression return
+print("- recovery: outlier in window, no compression  " + "-" * 33)
+log3.info("sync /home/alice/docs/q6_report.pdf  →  remote:backup  ok")
+log3.info("sync /home/alice/docs/q7_report.pdf  →  remote:backup  ok")
+log3.info("sync /home/alice/docs/q8_report.pdf  →  remote:backup  ok")
+
+print("- full recovery: outlier aged out of window  " + "-" * 35)
+log3.info("sync /home/alice/docs/q9_report.pdf  →  remote:backup  ok")
