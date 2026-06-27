@@ -1,6 +1,6 @@
 # kamilog CONTEXT
 
-*Last updated: 2026-06-27* (mpl-smart-logging branch)
+*Last updated: 2026-06-28* (fix-diff-only-printing branch)
 
 ## Project Overview
 
@@ -24,7 +24,8 @@ kamilog/
 │   ├── logger_names_and_timestamps.py
 │   ├── timestamp_formats.py # all four DATEFMT constants
 │   ├── relative_time.py     # elapsed time with relative_to
-│   ├── diff_only_filter.py  # _DiffOnlyMsgFilter demo (sensor, batch, sync scenarios)
+│   ├── diff_only.py         # _DiffOnlyMsgFilter basic demo
+│   ├── diff_only_stress.py  # dual-logger stress test (short vs. long compression)
 │   └── verbosity.py         # CLI -v/-q/-qq/-qqq flags
 ├── docs/
 │   ├── usage_doc.md         # public API reference with examples
@@ -86,23 +87,24 @@ Produces `LEVEL  source: message` lines (5-char padded level name, space-separat
 - **Timestamps**: disabled by default. Enable via `datefmt` (strftime format string using `DATEFMT_*` constants) or `relative_to` (Unix timestamp; displays signed elapsed seconds).
 - **Record isolation**: copies the log record before formatting to prevent mutation across handlers.
 
+`count_prefix_chars(record)` returns the number of printable characters before the message text for a given record. It accounts for the optional timestamp (relative: always 13 chars; datefmt: rendered strftime length), the 5-char padded level name, and the source name with colon — ANSI escape codes are excluded from the count.
+
 Level display names: `DEBUG`, `ENTER`, `SKIP.`, `INFO `, `PASS.`, `SUCC.`, `DONE.`, `WARN.`, `ERROR`, `FAIL.`, `CRIT.`
 
 ### `_DiffOnlyMsgFilter`
 
 Automatically attached to every logger by `getLogger()`. Compresses repeated log lines by replacing characters shared across the last `window` (default 3) messages with `〃\t` markers.
 
+Constructor accepts the logger as its first positional argument. The `_LogFormatter` instance used for prefix measurement is resolved lazily on the first `filter()` call by scanning the logger's handlers for the first `_LogFormatter` — this allows the filter to be added before handlers are attached.
+
 Algorithm:
 
 1. **Warmup**: the first `window` messages pass through unchanged (history fills).
 2. **`_common` cache**: after each message, `_update_common()` recomputes a per-position list of characters common to *all* history messages in O(n × window).
 3. **Run detection**: on each incoming message, `filter()` marks positions where the message matches `_common` in O(n).
-4. **Tab compression**: contiguous common runs compress in multiples of 8: each 8-char block → one `〃\t` pair. Constraints:
-   - at least 2 original chars are preserved before the first marker (or from the run start if the run begins at position ≥ 2 in the message)
-   - at least 2 original chars are preserved after the last marker
-   - runs shorter than 10 chars are never compressed
+4. **Tab-aligned compression**: contiguous common runs compress in multiples of `_COMPRESSION_BLOCK_SIZE` (8). Each `〃\t` is placed at the next column that is a multiple of 8 measured from the start of the rendered line (prefix length from `count_prefix_chars` + message offset), so `〃` (2 wide) + `\t` spans exactly 8 visible columns. At least `_PRESERVED_TRAILING_CHARS` (2) original chars are kept at the trailing end of each run.
 
-The original (uncompressed) message is stored in `_history` so compression decisions are always based on the raw text, not a prior compressed output.
+The original (uncompressed) message is stored in `_history` so compression decisions are always based on the raw text, not prior compressed output.
 
 ## Public API Surface
 
@@ -121,6 +123,8 @@ kamilog.DATEFMT_DATETIME_MS   # "YYYY-MM-DD HH:MM:SS.mmm"
 
 # verbosity helpers
 kamilog.add_verbose_arguments(parser)
+kamilog.calc_logging_level_from_verbosity(verbosity: int) -> int
+kamilog.calc_logging_level_from_verbosity_namespace(namespace) -> int
 kamilog.set_logging_level_by_verbosity(namespace, logger=None, logger_name=None)
 ```
 
