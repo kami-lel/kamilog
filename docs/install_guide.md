@@ -2,6 +2,8 @@
 
 ## Installation as Python Package
 
+<!-- Todo make github pip install pattern -->
+
 Install the package into the current environment with `pip`:
 
 ```bash
