@@ -1,16 +1,30 @@
 # kamilog Installation Guide
 
-## Installation as Python Package
+Choose the method that fits your project:
 
-<!-- TODO make github pip install pattern -->
+| method | best for |
+|---|---|
+| [Package Install → From GitHub](#from-github) | using kamilog as a dependency |
+| [Package Install → Local](#local-development) | developing or patching kamilog itself |
+| [Copy Install → As Script](#as-script) | zero-dependency single-file embed |
+| [Copy Install → As Module](#as-module) | embedding the full package into a project |
 
-Install the package into the current environment with `pip`:
 
-```bash
-pip install .
-```
 
-Then import anywhere:
+
+
+
+
+
+
+
+
+
+
+
+## Package Install
+
+Install kamilog as a package via `pip`. After installing, import anywhere:
 
 ```python
 import kamilog
@@ -20,6 +34,27 @@ import kamilog
 
 
 
+### From GitHub
+
+```bash
+pip install git+https://github.com/kami-lel/kamilog.git
+```
+
+
+
+
+
+### Local Development
+
+Clone the repository, then install into the current environment:
+
+```bash
+git clone https://github.com/kami-lel/kamilog.git
+cd kamilog
+pip install -e .
+```
+
+Use `-e` (editable mode) so local edits take effect without reinstalling.
 
 
 
@@ -28,11 +63,22 @@ import kamilog
 
 
 
-## Installation as Script
 
-Copy the single script `./kamilog/kamilog.py` into your project folder.
 
-Example directory structure:
+
+
+
+## Copy Install
+
+Embed kamilog directly into your project with no pip dependency.
+
+
+
+
+
+### As Script
+
+Copy the single file `kamilog/kamilog.py` into your project root:
 
 ```
 your_project/
@@ -40,8 +86,6 @@ your_project/
 └── main.py
 ```
 
-In `main.py`, import the module as follows:
-
 ```python
 import kamilog
 ```
@@ -50,19 +94,9 @@ import kamilog
 
 
 
+### As Module
 
-
-
-
-
-
-
-
-## Installation as Module
-
-Copy the entire `kamilog` folder into your project's source folder.
-
-Example directory structure:
+Copy the entire `kamilog/` folder into your project's source directory:
 
 ```
 your_project/
@@ -71,13 +105,9 @@ your_project/
 │   │   ├── __init__.py
 │   │   └── kamilog.py
 │   ├── module_a/
-│   │   └── some_code.py
 │   └── module_b/
-│       └── other_code.py
-└── setup.py
+└── pyproject.toml
 ```
-
-Then import `kamilog` anywhere within the project:
 
 ```python
 from project_abc import kamilog
