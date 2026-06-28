@@ -1,11 +1,11 @@
 # kamilog Installation Guide
 
-Choose the method that fits your project:
+choose the method that fits your project:
 
 | method | best for |
 |---|---|
 | [Package Install → From GitHub](#from-github) | using kamilog as a dependency |
-| [Package Install → Local](#local-development) | developing or patching kamilog itself |
+| [Package Install → Local Development](#local-development) | developing or patching kamilog itself |
 | [Copy Install → As Script](#as-script) | zero-dependency single-file embed |
 | [Copy Install → As Module](#as-module) | embedding the full package into a project |
 
@@ -21,10 +21,9 @@ Choose the method that fits your project:
 
 
 
-
 ## Package Install
 
-Install kamilog as a package via `pip`. After installing, import anywhere:
+install kamilog via `pip`. After either method below, import with:
 
 ```python
 import kamilog
@@ -46,15 +45,18 @@ pip install git+https://github.com/kami-lel/kamilog.git
 
 ### Local Development
 
-Clone the repository, then install into the current environment:
+clone the repository:
 
 ```bash
 git clone https://github.com/kami-lel/kamilog.git
-cd kamilog
-pip install -e .
 ```
 
-Use `-e` (editable mode) so local edits take effect without reinstalling.
+Install:
+
+```bash
+cd kamilog
+pip install .
+```
 
 
 
@@ -70,7 +72,7 @@ Use `-e` (editable mode) so local edits take effect without reinstalling.
 
 ## Copy Install
 
-Embed kamilog directly into your project with no pip dependency.
+embed kamilog directly into your project — no `pip` required.
 
 
 
@@ -78,13 +80,15 @@ Embed kamilog directly into your project with no pip dependency.
 
 ### As Script
 
-Copy the single file `kamilog/kamilog.py` into your project root:
+copy the single file into your project root:
 
 ```
 your_project/
 ├── kamilog.py
 └── main.py
 ```
+
+import:
 
 ```python
 import kamilog
@@ -96,7 +100,7 @@ import kamilog
 
 ### As Module
 
-Copy the entire `kamilog/` folder into your project's source directory:
+copy the entire folder into your project's source directory:
 
 ```
 your_project/
@@ -108,6 +112,8 @@ your_project/
 │   └── module_b/
 └── pyproject.toml
 ```
+
+import:
 
 ```python
 from project_abc import kamilog
