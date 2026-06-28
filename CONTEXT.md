@@ -1,6 +1,6 @@
 # kamilog CONTEXT
 
-*Last updated: 2026-06-28 (v1.6.1)*
+*Last updated: 2026-06-29 (v1.6.2)*
 
 ## Project Overview
 
@@ -30,8 +30,7 @@ kamilog/
 ├── docs/
 │   ├── usage_doc.md         # public API reference with examples
 │   └── install_guide.md     # installation methods
-├── setup.cfg                # package metadata; reads version + author via attr:
-├── setup.py                 # minimal setuptools stub
+├── pyproject.toml           # PEP 518 build config; package metadata with dynamic version/author
 ├── requirements.txt         # pytest (test-only)
 ├── CHANGELOG.md
 └── README.md

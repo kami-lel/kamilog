@@ -30,7 +30,46 @@
 
 ### Security
 
-[unreleased]: https://github.com/kami-lel/kamilog/compare/v1.6.1...dev
+[unreleased]: https://github.com/kami-lel/kamilog/compare/v1.6.2...dev
+
+
+
+
+
+
+
+
+
+
+
+
+
+## [1.6.2] - 2026-06-29
+
+### Added
+
+- `pyproject.toml`: modern PEP 518 build configuration with dynamic version and author resolution
+
+### Changed
+
+- **docs**: reorganized `install_guide.md` with clearer structure (Package Install vs Copy Install sections), numbered steps, inline path diagrams, and visual improvements for readability
+
+### Removed
+
+- `setup.py`: minimal shim removed in favor of `pyproject.toml`
+- `setup.cfg`: consolidated into `pyproject.toml`
+
+[1.6.2]: https://github.com/kami-lel/kamilog/compare/v1.6.1...v1.6.2
+
+
+
+
+
+
+
+
+
+
 
 
 

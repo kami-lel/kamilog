@@ -4,7 +4,6 @@ A lightweight Python logging wrapper with structured output, custom log levels, 
 
 <!--
 todo add file handler option for getLogger
-todo install as submodule
 todo comprehensive unit tests
 todo allows use -V being equivalent to -vvv (v.v.)
 todo allows to use only -V, dont add -v (v.v.)
