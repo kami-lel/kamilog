@@ -10,7 +10,7 @@ kamilog is a lightweight Python logging utility extending the stdlib `logging` m
 ## Setup Commands
 
 ```bash
-pip install -e .                  # installs kamilog in editable mode
+pip install -e .                  # installs kamilog in editable mode via pyproject.toml
 pip install -r requirements.txt   # installs pytest (test-only dependency)
 ```
 
