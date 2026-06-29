@@ -845,4 +845,20 @@ def set_logging_level_by_verbosity(namespace, *, logger=None, logger_name=None):
 
 # Line Padding  ################################################################
 
+
+# Line Padding Public API  =====================================================
+
+
 # TODO mpl line padding
+
+
+def print_line_padding_centered():
+    pass
+
+
+def print_line_padding_left_just():
+    pass
+
+
+def print_line_padding_right_just():
+    pass
