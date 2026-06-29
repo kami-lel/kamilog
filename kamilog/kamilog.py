@@ -841,3 +841,8 @@ def set_logging_level_by_verbosity(namespace, *, logger=None, logger_name=None):
     if logger is None:
         logger = logging.getLogger(logger_name)
     logger.setLevel(_calc_logging_level_from_verbosity_namespace(namespace))
+
+
+# Line Padding  ################################################################
+
+# TODO mpl line padding
