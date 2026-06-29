@@ -45,7 +45,10 @@ __version__ = "1.6.2"
 __author__ = "kamiLeL"
 
 
-# enum  ########################################################################
+# logger  ######################################################################
+
+
+# enum  ========================================================================
 
 
 class _CustomLogLevel(IntEnum):
@@ -70,7 +73,7 @@ for _lvl in _CustomLogLevel:
     logging.addLevelName(int(_lvl), _lvl.name)
 
 
-# constants  ###################################################################
+# constants  ===================================================================
 
 NOTSET = logging.NOTSET  # 0
 DEBUG = logging.DEBUG  # 10
@@ -93,7 +96,7 @@ DATEFMT_DATETIME = "%Y-%m-%d %H:%M:%S"
 DATEFMT_DATETIME_MS = "%Y-%m-%d %H:%M:%S.{ms}"
 
 
-class KamiLogger(logging.Logger):  #############################################
+class KamiLogger(logging.Logger):  # ===========================================
     """
     Logger subclass extending :class:`logging.Logger` with six additional levels.
 
@@ -187,7 +190,7 @@ logging.setLoggerClass(KamiLogger)
 logging.root.__class__ = KamiLogger
 
 
-class _AnsiPalette:  ###########################################################
+class _AnsiPalette:  # =========================================================
     """
     ANSI color palette; detects TTY at construction time and applies
     color codes through its public methods.
@@ -223,7 +226,7 @@ class _AnsiPalette:  ###########################################################
             stream is not None and hasattr(stream, "isatty") and stream.isatty()
         )
 
-    # Public API  ==============================================================
+    # Public API  **************************************************************
 
     def color_level(self, text, levelno):
         """
@@ -259,7 +262,7 @@ class _AnsiPalette:  ###########################################################
         return "{}{}{}".format(self._GREY, text, self._RESET)
 
 
-# log formatting  ##############################################################
+# log formatting  #=============================================================
 
 
 _PADDED_LEVELNAME_MAP = {
@@ -277,7 +280,7 @@ _PADDED_LEVELNAME_MAP = {
 }
 
 
-class _LogFormatEngine:  # =====================================================
+class _LogFormatEngine:  # *****************************************************
     """
     core log-line formatting logic, independent of ``logging.Formatter``.
 
@@ -304,7 +307,7 @@ class _LogFormatEngine:  # =====================================================
         self._datefmt = datefmt
         self._relative_to = relative_to
 
-    # Public API  **************************************************************
+    # Public API  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     def count_prefix_chars(self, record):
         """
@@ -395,7 +398,7 @@ class _LogFormatEngine:  # =====================================================
             record.getMessage(),
         )
 
-    # helpers  *****************************************************************
+    # helpers  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     def _fmt_asctime(self, asctime):
         """
@@ -447,7 +450,7 @@ class _LogFormatEngine:  # =====================================================
         return "{}{:02d}:{:02d}:{:02d}.{:03d}".format(sign, h, m, s, ms)
 
 
-class _LogFormatter(Formatter):  # =============================================
+class _LogFormatter(Formatter):  # *********************************************
     """
     ``logging.Formatter`` adapter wrapping ``_LogFormatEngine``.
 
@@ -514,10 +517,10 @@ class _LogFormatter(Formatter):  # =============================================
         return result
 
 
-# diff only message   ##########################################################
+# diff only message   ==========================================================
 
 
-class _DiffOnlyEngine:  # ======================================================
+class _DiffOnlyEngine:  # ******************************************************
     """
     engine for diff-only compression of log message text.
 
@@ -650,7 +653,7 @@ class _DiffOnlyEngine:  # ======================================================
         return masked
 
 
-class _DiffOnlyMsgFilter(logging.Filter):  # ===================================
+class _DiffOnlyMsgFilter(logging.Filter):  # ***********************************
     """
     ``logging.Filter`` adapter that applies ``_DiffOnlyEngine`` to records.
 
@@ -686,7 +689,60 @@ class _DiffOnlyMsgFilter(logging.Filter):  # ===================================
         return True
 
 
-# verbosity helpers  ###########################################################
+# logger Public API  ===========================================================
+
+
+# pylint: disable-next=invalid-name
+def getLogger(name=None, *, datefmt=None, relative_to=None):
+    """
+    :param name: logger name
+    :type name: str
+    :param datefmt: strftime format for timestamps; ignored when ``relative_to`` is set;
+            defaults to ``None`` (no timestamp)
+    :type datefmt: str, optional
+    :param relative_to: Unix timestamp to use as epoch for relative time display;
+            mutually exclusive with ``datefmt``
+    :type relative_to: float, optional
+    :return: a logger with the `name`, create if non-existence;
+            root logger if `name` is `None`
+    :rtype: KamiLogger
+    """
+    logger = logging.getLogger(name)
+
+    if not isinstance(logger, KamiLogger):
+        logger.__class__ = KamiLogger
+
+    if not any(isinstance(f, _DiffOnlyMsgFilter) for f in logger.filters):
+        logger.addFilter(
+            _DiffOnlyMsgFilter(
+                _LogFormatter(
+                    sys.stdout, datefmt=datefmt, relative_to=relative_to
+                )
+            )
+        )
+
+    if not logger.handlers:
+        stdout_handler = StreamHandler(sys.stdout)
+        stdout_handler.setFormatter(
+            _LogFormatter(sys.stdout, datefmt=datefmt, relative_to=relative_to)
+        )
+        stdout_handler.addFilter(lambda r: r.levelno < logging.WARNING)
+
+        stderr_handler = StreamHandler(sys.stderr)
+        stderr_handler.setFormatter(
+            _LogFormatter(sys.stderr, datefmt=datefmt, relative_to=relative_to)
+        )
+        stderr_handler.addFilter(lambda r: r.levelno >= logging.WARNING)
+
+        logger.addHandler(stdout_handler)
+        logger.addHandler(stderr_handler)
+
+    return logger
+
+
+# Verbosity  ###################################################################
+
+# verbosity helpers  ===========================================================
 
 
 def _calc_logging_level_from_verbosity(verbosity):
@@ -742,55 +798,7 @@ def _calc_logging_level_from_verbosity_namespace(namespace):
     return _calc_logging_level_from_verbosity(verbosity)
 
 
-# Entry Point  #################################################################
-
-
-# pylint: disable-next=invalid-name
-def getLogger(name=None, *, datefmt=None, relative_to=None):
-    """
-    :param name: logger name
-    :type name: str
-    :param datefmt: strftime format for timestamps; ignored when ``relative_to`` is set;
-            defaults to ``None`` (no timestamp)
-    :type datefmt: str, optional
-    :param relative_to: Unix timestamp to use as epoch for relative time display;
-            mutually exclusive with ``datefmt``
-    :type relative_to: float, optional
-    :return: a logger with the `name`, create if non-existence;
-            root logger if `name` is `None`
-    :rtype: KamiLogger
-    """
-    logger = logging.getLogger(name)
-
-    if not isinstance(logger, KamiLogger):
-        logger.__class__ = KamiLogger
-
-    if not any(isinstance(f, _DiffOnlyMsgFilter) for f in logger.filters):
-        logger.addFilter(
-            _DiffOnlyMsgFilter(
-                _LogFormatter(
-                    sys.stdout, datefmt=datefmt, relative_to=relative_to
-                )
-            )
-        )
-
-    if not logger.handlers:
-        stdout_handler = StreamHandler(sys.stdout)
-        stdout_handler.setFormatter(
-            _LogFormatter(sys.stdout, datefmt=datefmt, relative_to=relative_to)
-        )
-        stdout_handler.addFilter(lambda r: r.levelno < logging.WARNING)
-
-        stderr_handler = StreamHandler(sys.stderr)
-        stderr_handler.setFormatter(
-            _LogFormatter(sys.stderr, datefmt=datefmt, relative_to=relative_to)
-        )
-        stderr_handler.addFilter(lambda r: r.levelno >= logging.WARNING)
-
-        logger.addHandler(stdout_handler)
-        logger.addHandler(stderr_handler)
-
-    return logger
+# Verbosity Public API  ========================================================
 
 
 def add_verbose_arguments(parser):
