@@ -849,16 +849,21 @@ def set_logging_level_by_verbosity(namespace, *, logger=None, logger_name=None):
 # Line Padding Public API  =====================================================
 
 
-# TODO mpl line padding
+def _print_line_padding_generic(
+    mode, content, *, end="\n", file=sys.stdout, flush=False
+):
+    padded_content = content  # TODO mpl line padding
+
+    print(padded_content, end=end, file=file, flush=flush)
 
 
-def print_line_padding_centered():
-    pass
+def print_line_padding_centered(*args, **kwargs):
+    _print_line_padding_generic(0, *args, **kwargs)
 
 
-def print_line_padding_left_just():
-    pass
+def print_line_padding_left_just(*args, **kwargs):
+    _print_line_padding_generic(1, *args, **kwargs)
 
 
-def print_line_padding_right_just():
-    pass
+def print_line_padding_right_just(*args, **kwargs):
+    _print_line_padding_generic(2, *args, **kwargs)
