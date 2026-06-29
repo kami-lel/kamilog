@@ -850,8 +850,12 @@ def set_logging_level_by_verbosity(namespace, *, logger=None, logger_name=None):
 
 
 def _print_line_padding_generic(
-    mode, content, *, end="\n", file=sys.stdout, flush=False
+    mode, content, *, line_width=80, end="\n", file=sys.stdout, flush=False
 ):
+    if "\n" in content or len(content) >= line_width:
+        print(content, end=end, file=file, flush=flush)
+        return
+
     padded_content = content  # TODO mpl line padding
 
     print(padded_content, end=end, file=file, flush=flush)
