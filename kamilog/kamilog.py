@@ -925,18 +925,26 @@ def _print_line_padding_generic(
 
     remaining = line_width - len(content) - len(_CONTENT_SPACING) * 2
     if mode == 1:  # left justified
-        padded_content = content + _CONTENT_SPACING + padding * remaining
+        padded_content = (
+            content
+            + _CONTENT_SPACING
+            + renderer.color_grey(padding * remaining)
+        )
     elif mode == 2:  # right justified
-        padded_content = padding * remaining + _CONTENT_SPACING + content
+        padded_content = (
+            renderer.color_grey(padding * remaining)
+            + _CONTENT_SPACING
+            + content
+        )
     else:  # centered
         left = remaining // 2
         right = remaining - left
         padded_content = (
-            padding * left
+            renderer.color_grey(padding * left)
             + _CONTENT_SPACING
             + content
             + _CONTENT_SPACING
-            + padding * right
+            + renderer.color_grey(padding * right)
         )
 
     print(padded_content, end=end, file=file, flush=flush)
