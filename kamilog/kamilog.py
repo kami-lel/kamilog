@@ -889,12 +889,63 @@ def _print_line_padding_generic(
 
 
 def print_line_padding_centered(*args, **kwargs):
+    """
+    print ``content`` centered, filling both sides with ``padding`` to
+    reach ``line_width``.
+
+    when the remaining width is odd, the extra character goes to the right.
+    odd remainder example with ``line_width=11``:
+    ``====hi=====``
+
+
+    :param content: text to print; must be a single, non-empty line no
+            longer than ``line_width``
+    :type content: str
+    :param padding: single printable non-space fill character
+    :type padding: str
+    :param line_width: total output width; defaults to ``80``
+    :type line_width: int
+    :param end: appended after output; defaults to ``"\\n"``
+    :type end: str
+    :param file: output stream; defaults to ``sys.stdout``
+    :type file: IO
+    :param flush: forcibly flush the stream; defaults to ``False``
+    :type flush: bool
+    :raises ValueError: if ``content`` contains ``"\\n"`` or exceeds
+            ``line_width``; if ``padding`` is not exactly one printable
+            non-space character
+    :example:
+    >>> print_line_padding_centered("hi", "=", line_width=20)
+    =========hi=========
+    """
     _print_line_padding_generic(0, *args, **kwargs)
 
 
 def print_line_padding_left_just(*args, **kwargs):
+    """
+    print ``content`` left-justified, filling the right with ``padding``.
+
+    see :func:`print_line_padding_centered` for parameter and error
+    details.
+
+
+    :example:
+    >>> print_line_padding_left_just("hi", "=", line_width=20)
+    hi==================
+    """
     _print_line_padding_generic(1, *args, **kwargs)
 
 
 def print_line_padding_right_just(*args, **kwargs):
+    """
+    print ``content`` right-justified, filling the left with ``padding``.
+
+    see :func:`print_line_padding_centered` for parameter and error
+    details.
+
+
+    :example:
+    >>> print_line_padding_right_just("hi", "=", line_width=20)
+    ==================hi
+    """
     _print_line_padding_generic(2, *args, **kwargs)
