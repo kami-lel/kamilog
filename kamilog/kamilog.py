@@ -134,6 +134,34 @@ class AnsiPalette:  # ==========================================================
 
     # Public API  **************************************************************
 
+    def color(self, text, color, *, use_bold=False):
+        """
+        apply ANSI color code to text, optionally with bold.
+
+        returns the colored text if color is enabled; otherwise
+        returns text unchanged.
+
+
+        :param text: text to colorize
+        :type text: str
+        :param color: ANSI color to apply
+        :type color: _AnsiColor
+        :param use_bold: whether to apply bold formatting; defaults to
+                ``False``
+        :type use_bold: bool
+        :return: colored text, or ``text`` unchanged when disabled
+        :rtype: str
+        """
+        if not self._enabled:
+            return text
+        parts = []
+        if use_bold:
+            parts.append(_AnsiColor.BOLD.value)
+        parts.append(color.value)
+        parts.append(text)
+        parts.append(_AnsiColor.RESET.value)
+        return "".join(parts)
+
     def color_level(self, text, levelno):
         """
         apply bold and level-specific ANSI color to ``text``.
@@ -146,33 +174,14 @@ class AnsiPalette:  # ==========================================================
         :return: colored text, or ``text`` unchanged when disabled
         :rtype: str
         """
-        if not self._enabled:
-            return text
         color = self._LEVEL_COLORS.get(levelno)
-        return "{}{}{}{}".format(
-            _AnsiColor.BOLD.value,
-            color.value if color else "",
-            text,
-            _AnsiColor.RESET.value,
-        )
+        if color is None:
+            return text
+        return self.color(text, color, use_bold=True)
 
     def color_grey(self, text):
-        """
-        apply bright-black (grey) ANSI color to ``text``.
-
-        used for timestamps and source name labels.
-
-
-        :param text: text to colorize
-        :type text: str
-        :return: grey text, or ``text`` unchanged when disabled
-        :rtype: str
-        """
-        if not self._enabled:
-            return text
-        return "{}{}{}".format(
-            _AnsiColor.GREY.value, text, _AnsiColor.RESET.value
-        )
+        """apply bright-black (grey) ANSI color to ``text``."""
+        return self.color(text, _AnsiColor.GREY)
 
 
 # logger  ######################################################################
