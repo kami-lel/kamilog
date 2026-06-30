@@ -1,5 +1,7 @@
 """
-all levels with descriptions
+logger-all_levels.py
+
+demonstrate all eleven log levels with a brief description of each
 """
 
 import kamilog

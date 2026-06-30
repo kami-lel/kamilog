@@ -1,12 +1,15 @@
-"""Demonstrates CLI verbosity flags driving the root logger level.
+"""
+timestamps-verbosity.py
 
-Usage:
-    python verbosity.py          # DONE and above (default)
-    python verbosity.py -v       # INFO and above
-    python verbosity.py -vv      # DEBUG and above
-    python verbosity.py -q       # WARNING and above
-    python verbosity.py -qq      # ERROR and above
-    python verbosity.py -qqq     # CRITICAL and above
+demonstrate CLI ``-v``/``-q`` flags driving the root logger level
+
+usage:
+    python timestamps-verbosity.py          # DONE and above (default)
+    python timestamps-verbosity.py -v       # INFO and above
+    python timestamps-verbosity.py -vv      # DEBUG and above
+    python timestamps-verbosity.py -q       # WARNING and above
+    python timestamps-verbosity.py -qq      # ERROR and above
+    python timestamps-verbosity.py -qqq     # CRITICAL and above
 """
 
 from argparse import ArgumentParser

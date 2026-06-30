@@ -1,4 +1,8 @@
-"""Demonstrates elapsed time display with relative_to, including negative values."""
+"""
+logger-timestamps-relative.py
+
+demonstrate elapsed time display via ``relative_to``, including negative values
+"""
 
 import time
 import kamilog

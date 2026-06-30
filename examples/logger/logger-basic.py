@@ -1,5 +1,7 @@
 """
-Demonstrates standard levels, custom levels, and all levels with descriptions.
+logger-basic.py
+
+demonstrate standard stdlib levels and kamilog custom levels side by side
 """
 
 import kamilog

@@ -1,4 +1,8 @@
-"""Demonstrates all timestamp format options."""
+"""
+logger-timestamps-format.py
+
+demonstrate all four ``DATEFMT_*`` timestamp format constants
+"""
 
 import kamilog
 

@@ -1,4 +1,8 @@
-"""Demonstrates loggers with various names and timestamp options."""
+"""
+logger-timestamps.py
+
+demonstrate named loggers with various ``datefmt`` and timestamp options
+"""
 
 import kamilog
 
