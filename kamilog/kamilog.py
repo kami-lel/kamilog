@@ -78,10 +78,10 @@ for _lvl in _CustomLogLevel:
 
 
 class _AnsiColor(Enum):  # =====================================================
-    """ANSI escape code values keyed by color name."""
+    """
+    ANSI escape code values keyed by color name.
+    """
 
-    RESET = "\033[0m"
-    BOLD = "\033[1m"
     GREY = "\033[90m"
     CYAN = "\033[36m"
     BRIGHT_CYAN = "\033[96m"
@@ -94,6 +94,9 @@ class _AnsiColor(Enum):  # =====================================================
     RED = "\033[31m"
     BRIGHT_RED = "\033[91m"
     BRIGHT_MAGENTA = "\033[95m"
+
+    RESET = "\033[0m"
+    BOLD = "\033[1m"
 
 
 class AnsiPalette:  # ==========================================================
