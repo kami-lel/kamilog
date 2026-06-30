@@ -2,48 +2,5 @@
 kamilog: Customized Logging Output Module
 """
 
-from .kamilog import (
-    KamiLogger,
-    NOTSET,
-    DEBUG,
-    ENTER,
-    SKIP,
-    INFO,
-    PASS,
-    SUCC,
-    DONE,
-    WARNING,
-    ERROR,
-    FAIL,
-    CRITICAL,
-    DATEFMT_TIME,
-    DATEFMT_TIME_MS,
-    DATEFMT_DATETIME,
-    DATEFMT_DATETIME_MS,
-    getLogger,
-    add_verbose_arguments,
-    set_logging_level_by_verbosity,
-)
-
-__all__ = (
-    "KamiLogger",
-    "NOTSET",
-    "DEBUG",
-    "ENTER",
-    "SKIP",
-    "INFO",
-    "PASS",
-    "SUCC",
-    "DONE",
-    "WARNING",
-    "ERROR",
-    "FAIL",
-    "CRITICAL",
-    "DATEFMT_TIME",
-    "DATEFMT_TIME_MS",
-    "DATEFMT_DATETIME",
-    "DATEFMT_DATETIME_MS",
-    "getLogger",
-    "add_verbose_arguments",
-    "set_logging_level_by_verbosity",
-)
+from .kamilog import *
+from .kamilog import __all__ as __all__

@@ -29,18 +29,11 @@ pytest tests/
 Run a single test file or test:
 
 ```bash
-pytest tests/verbosity_test.py
-pytest tests/verbosity_test.py::TestCalcLoggingLevel::test_v2
+pytest tests/v/v-calc_logging_level_test.py
+pytest tests/v/v-calc_logging_level_test.py::TestCalcLoggingLevel::test_v2
 ```
 
-The verbosity test doubles as a manual smoke-test:
-
-```bash
-python tests/verbosity_test.py -vvv   # verbosity 3, level DEBUG
-python tests/verbosity_test.py -q     # verbosity -1, level WARNING
-```
-
-Scope tests to the changed module before pushing — `tests/verbosity_test.py` for verbosity helpers, `tests/source_quality_test.py` for banned-marker scan.
+Scope tests to the changed module before pushing — `tests/v/` for verbosity helpers, `tests/lp/` for line-padding functions, `tests/source_quality_test.py` for banned-marker scan.
 
 ## Code Style
 
@@ -48,7 +41,7 @@ Scope tests to the changed module before pushing — `tests/verbosity_test.py` f
 - **Docstrings**: Sphinx/reStructuredText style (`:param:`, `:type:`, `:return:`, `:rtype:`) on all public classes and functions; single-line docstrings on private helpers; `__init__` carries no docstring — documented by the class docstring
 - **String formatting**: `"".format()` only — not f-strings or `%`
 - **Naming**: `snake_case` functions, `_PrefixedPrivate` classes, `UPPER_CASE` constants; 4-space indentation, PEP 8 throughout
-- **`__all__`**: both `kamilog/kamilog.py` and `kamilog/__init__.py` maintain explicit `__all__` tuples — update both when adding public symbols
+- **`__all__`**: `kamilog/kamilog.py` maintains an explicit `__all__` tuple; `kamilog/__init__.py` re-exports it dynamically via `from .kamilog import *` and `from .kamilog import __all__ as __all__` — update only `kamilog.py` when adding public symbols
 - **Dependencies**: no external runtime dependencies; stdlib only (`logging`, `sys`, `collections`, `argparse`) — do not introduce new ones without explicit approval
 
 ## Testing Instructions
@@ -57,10 +50,10 @@ Tests live in `tests/` and use `pytest` class-based style (`class TestFoo`).
 
 Before merging:
 
-1. `pytest tests/` — all 25 tests must pass with zero failures.
+1. `pytest tests/` — all 77 tests must pass with zero failures.
 2. `tests/source_quality_test.py` scans `kamilog/kamilog.py` and `kamilog/__init__.py` for `todo`, `bug`, `fixme`, `hack` (case-insensitive) — leave none behind.
 
-When adding new public functions, add corresponding tests to an appropriate `tests/<feature>_test.py` file.
+When adding new public functions, add corresponding tests under the relevant subdirectory — `tests/v/` for verbosity helpers (named `v-<feature>_test.py`), `tests/lp/` for line-padding functions (named `lp-<feature>_test.py`).
 
 ## PR & Commit Instructions
 

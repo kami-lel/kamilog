@@ -11,7 +11,7 @@ import logging
 import sys
 import time
 from collections import deque
-from enum import IntEnum
+from enum import Enum, IntEnum
 from logging import Formatter, StreamHandler
 
 __all__ = (
@@ -19,6 +19,9 @@ __all__ = (
     "KamiLogger",
     "add_verbose_arguments",
     "set_logging_level_by_verbosity",
+    # ANSI color
+    "AnsiColor",
+    "AnsiRenderer",
     # log levels
     "NOTSET",
     "DEBUG",
@@ -37,11 +40,15 @@ __all__ = (
     "DATEFMT_TIME_MS",
     "DATEFMT_DATETIME",
     "DATEFMT_DATETIME_MS",
+    # line padding
+    "print_line_padding_centered",
+    "print_line_padding_left_just",
+    "print_line_padding_right_just",
 )
 
 
 # metadata  ####################################################################
-__version__ = "1.6.2"
+__version__ = "1.7.0"
 __author__ = "kamiLeL"
 
 
@@ -70,7 +77,121 @@ for _lvl in _CustomLogLevel:
     logging.addLevelName(int(_lvl), _lvl.name)
 
 
-# constants  ###################################################################
+# ANSI Color   #################################################################
+
+
+class AnsiColor(Enum):  # =====================================================
+    """
+    ANSI escape code values keyed by color name.
+    """
+
+    GREY = "\033[90m"
+    CYAN = "\033[36m"
+    BRIGHT_CYAN = "\033[96m"
+    BLUE = "\033[34m"
+    GREEN = "\033[32m"
+    BRIGHT_BLUE = "\033[94m"
+    BRIGHT_GREEN = "\033[92m"
+    BRIGHT_YELLOW = "\033[93m"
+    YELLOW = "\033[33m"
+    RED = "\033[31m"
+    BRIGHT_RED = "\033[91m"
+    BRIGHT_MAGENTA = "\033[95m"
+
+    RESET = "\033[0m"
+    BOLD = "\033[1m"
+
+
+class AnsiRenderer:  # =========================================================
+    """
+    ANSI color renderer; detects TTY at construction time and applies
+    color codes through its public methods.
+
+    when ``stream`` is ``None`` or is not a TTY, all coloring methods
+    return their input text unchanged.
+
+
+    :param stream: output stream used for TTY detection; ``None``
+            disables color unconditionally
+    :type stream: IO or None
+    """
+
+    _LEVEL_COLORS = {
+        logging.DEBUG: AnsiColor.CYAN,
+        _CustomLogLevel.ENTER: AnsiColor.BRIGHT_CYAN,
+        _CustomLogLevel.SKIP: AnsiColor.BLUE,
+        _CustomLogLevel.SUCC: AnsiColor.GREEN,
+        logging.INFO: AnsiColor.BRIGHT_BLUE,
+        _CustomLogLevel.PASS: AnsiColor.BRIGHT_GREEN,
+        _CustomLogLevel.DONE: AnsiColor.BRIGHT_YELLOW,
+        logging.WARNING: AnsiColor.YELLOW,
+        logging.ERROR: AnsiColor.RED,
+        _CustomLogLevel.FAIL: AnsiColor.BRIGHT_RED,
+        logging.CRITICAL: AnsiColor.BRIGHT_MAGENTA,
+    }
+
+    def __init__(self, stream=None):
+        self._enabled = (
+            stream is not None and hasattr(stream, "isatty") and stream.isatty()
+        )
+
+    # Public API  **************************************************************
+
+    def color(self, text, color, *, use_bold=False):
+        """
+        apply ANSI color code to text, optionally with bold.
+
+        returns the colored text if color is enabled; otherwise
+        returns text unchanged.
+
+
+        :param text: text to colorize
+        :type text: str
+        :param color: ANSI color to apply
+        :type color: AnsiColor
+        :param use_bold: whether to apply bold formatting; defaults to
+                ``False``
+        :type use_bold: bool
+        :return: colored text, or ``text`` unchanged when disabled
+        :rtype: str
+        """
+        if not self._enabled:
+            return text
+
+        parts = []
+        if use_bold:
+            parts.append(AnsiColor.BOLD.value)
+        parts.append(color.value)
+        parts.append(text)
+        parts.append(AnsiColor.RESET.value)
+        return "".join(parts)
+
+    def color_level(self, text, levelno):
+        """
+        apply bold and level-specific ANSI color to ``text``.
+
+
+        :param text: text to colorize
+        :type text: str
+        :param levelno: numeric log level used to select the color
+        :type levelno: int
+        :return: colored text, or ``text`` unchanged when disabled
+        :rtype: str
+        """
+        color = self._LEVEL_COLORS.get(levelno)
+        if color is None:
+            return text
+        return self.color(text, color, use_bold=True)
+
+    def color_grey(self, text):
+        """apply bright-black (grey) ANSI color to ``text``."""
+        return self.color(text, AnsiColor.GREY)
+
+
+# logger  ######################################################################
+
+
+# constants  ===================================================================
 
 NOTSET = logging.NOTSET  # 0
 DEBUG = logging.DEBUG  # 10
@@ -93,7 +214,7 @@ DATEFMT_DATETIME = "%Y-%m-%d %H:%M:%S"
 DATEFMT_DATETIME_MS = "%Y-%m-%d %H:%M:%S.{ms}"
 
 
-class KamiLogger(logging.Logger):  #############################################
+class KamiLogger(logging.Logger):  # ===========================================
     """
     Logger subclass extending :class:`logging.Logger` with six additional levels.
 
@@ -187,79 +308,7 @@ logging.setLoggerClass(KamiLogger)
 logging.root.__class__ = KamiLogger
 
 
-class _AnsiPalette:  ###########################################################
-    """
-    ANSI color palette; detects TTY at construction time and applies
-    color codes through its public methods.
-
-    when ``stream`` is ``None`` or is not a TTY, all coloring methods
-    return their input text unchanged.
-
-
-    :param stream: output stream used for TTY detection; ``None``
-            disables color unconditionally
-    :type stream: IO or None
-    """
-
-    _RESET = "\033[0m"
-    _BOLD = "\033[1m"
-    _GREY = "\033[90m"  # bright black
-    _LEVEL_COLORS = {
-        logging.DEBUG: "\033[36m",  # cyan
-        _CustomLogLevel.ENTER: "\033[96m",  # bright cyan
-        _CustomLogLevel.SKIP: "\033[34m",  # blue
-        _CustomLogLevel.SUCC: "\033[32m",  # green
-        logging.INFO: "\033[94m",  # bright blue
-        _CustomLogLevel.PASS: "\033[92m",  # bright green
-        _CustomLogLevel.DONE: "\033[93m",  # bright yellow
-        logging.WARNING: "\033[33m",  # yellow
-        logging.ERROR: "\033[31m",  # red
-        _CustomLogLevel.FAIL: "\033[91m",  # bright red
-        logging.CRITICAL: "\033[95m",  # bright magenta
-    }
-
-    def __init__(self, stream=None):
-        self._enabled = (
-            stream is not None and hasattr(stream, "isatty") and stream.isatty()
-        )
-
-    # Public API  ==============================================================
-
-    def color_level(self, text, levelno):
-        """
-        apply bold and level-specific ANSI color to ``text``.
-
-
-        :param text: text to colorize
-        :type text: str
-        :param levelno: numeric log level used to select the color
-        :type levelno: int
-        :return: colored text, or ``text`` unchanged when disabled
-        :rtype: str
-        """
-        if not self._enabled:
-            return text
-        color = self._LEVEL_COLORS.get(levelno, "")
-        return "{}{}{}{}".format(self._BOLD, color, text, self._RESET)
-
-    def color_grey(self, text):
-        """
-        apply bright-black (grey) ANSI color to ``text``.
-
-        used for timestamps and source name labels.
-
-
-        :param text: text to colorize
-        :type text: str
-        :return: grey text, or ``text`` unchanged when disabled
-        :rtype: str
-        """
-        if not self._enabled:
-            return text
-        return "{}{}{}".format(self._GREY, text, self._RESET)
-
-
-# log formatting  ##############################################################
+# log formatting  #=============================================================
 
 
 _PADDED_LEVELNAME_MAP = {
@@ -277,7 +326,7 @@ _PADDED_LEVELNAME_MAP = {
 }
 
 
-class _LogFormatEngine:  # =====================================================
+class _LogFormatEngine:  # *****************************************************
     """
     core log-line formatting logic, independent of ``logging.Formatter``.
 
@@ -289,7 +338,7 @@ class _LogFormatEngine:  # =====================================================
 
 
     :param palette: color palette controlling ANSI output
-    :type palette: _AnsiPalette
+    :type palette: _AnsiRenderer
     :param datefmt: strftime format string for wall-clock timestamps;
             ignored when ``relative_to`` is set; ``None`` disables
             timestamps
@@ -304,7 +353,7 @@ class _LogFormatEngine:  # =====================================================
         self._datefmt = datefmt
         self._relative_to = relative_to
 
-    # Public API  **************************************************************
+    # Public API  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     def count_prefix_chars(self, record):
         """
@@ -395,7 +444,7 @@ class _LogFormatEngine:  # =====================================================
             record.getMessage(),
         )
 
-    # helpers  *****************************************************************
+    # helpers  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     def _fmt_asctime(self, asctime):
         """
@@ -447,19 +496,19 @@ class _LogFormatEngine:  # =====================================================
         return "{}{:02d}:{:02d}:{:02d}.{:03d}".format(sign, h, m, s, ms)
 
 
-class _LogFormatter(Formatter):  # =============================================
+class _LogFormatter(Formatter):  # *********************************************
     """
     ``logging.Formatter`` adapter wrapping ``_LogFormatEngine``.
 
     delegates all line-building and timestamp logic to an internal
     ``_LogFormatEngine`` instance exposed via the ``engine`` property.
-    the ``_AnsiPalette`` controlling color output is accessible via
+    the ``_AnsiRenderer`` controlling color output is accessible via
     ``palette``. exc_info and stack_info appending are handled here
     because they depend on ``Formatter.formatException`` and
     ``Formatter.formatStack``.
 
 
-    :param stream: forwarded to ``_AnsiPalette`` for TTY detection;
+    :param stream: forwarded to ``_AnsiRenderer`` for TTY detection;
             ``None`` disables color
     :type stream: IO or None
     :param datefmt: forwarded to ``_LogFormatEngine``; also passed to
@@ -471,7 +520,7 @@ class _LogFormatter(Formatter):  # =============================================
 
     def __init__(self, stream=None, *, datefmt=None, relative_to=None):
         super().__init__(datefmt=datefmt)
-        self.palette = _AnsiPalette(stream)
+        self.palette = AnsiRenderer(stream)
         self.engine = _LogFormatEngine(
             self.palette, datefmt=datefmt, relative_to=relative_to
         )
@@ -514,10 +563,10 @@ class _LogFormatter(Formatter):  # =============================================
         return result
 
 
-# diff only message   ##########################################################
+# diff only message   ==========================================================
 
 
-class _DiffOnlyEngine:  # ======================================================
+class _DiffOnlyEngine:  # ******************************************************
     """
     engine for diff-only compression of log message text.
 
@@ -650,7 +699,7 @@ class _DiffOnlyEngine:  # ======================================================
         return masked
 
 
-class _DiffOnlyMsgFilter(logging.Filter):  # ===================================
+class _DiffOnlyMsgFilter(logging.Filter):  # ***********************************
     """
     ``logging.Filter`` adapter that applies ``_DiffOnlyEngine`` to records.
 
@@ -686,7 +735,60 @@ class _DiffOnlyMsgFilter(logging.Filter):  # ===================================
         return True
 
 
-# verbosity helpers  ###########################################################
+# logger Public API  ===========================================================
+
+
+# pylint: disable-next=invalid-name
+def getLogger(name=None, *, datefmt=None, relative_to=None):
+    """
+    :param name: logger name
+    :type name: str
+    :param datefmt: strftime format for timestamps; ignored when ``relative_to`` is set;
+            defaults to ``None`` (no timestamp)
+    :type datefmt: str, optional
+    :param relative_to: Unix timestamp to use as epoch for relative time display;
+            mutually exclusive with ``datefmt``
+    :type relative_to: float, optional
+    :return: a logger with the `name`, create if non-existence;
+            root logger if `name` is `None`
+    :rtype: KamiLogger
+    """
+    logger = logging.getLogger(name)
+
+    if not isinstance(logger, KamiLogger):
+        logger.__class__ = KamiLogger
+
+    if not any(isinstance(f, _DiffOnlyMsgFilter) for f in logger.filters):
+        logger.addFilter(
+            _DiffOnlyMsgFilter(
+                _LogFormatter(
+                    sys.stdout, datefmt=datefmt, relative_to=relative_to
+                )
+            )
+        )
+
+    if not logger.handlers:
+        stdout_handler = StreamHandler(sys.stdout)
+        stdout_handler.setFormatter(
+            _LogFormatter(sys.stdout, datefmt=datefmt, relative_to=relative_to)
+        )
+        stdout_handler.addFilter(lambda r: r.levelno < logging.WARNING)
+
+        stderr_handler = StreamHandler(sys.stderr)
+        stderr_handler.setFormatter(
+            _LogFormatter(sys.stderr, datefmt=datefmt, relative_to=relative_to)
+        )
+        stderr_handler.addFilter(lambda r: r.levelno >= logging.WARNING)
+
+        logger.addHandler(stdout_handler)
+        logger.addHandler(stderr_handler)
+
+    return logger
+
+
+# Verbosity  ###################################################################
+
+# verbosity helpers  ===========================================================
 
 
 def _calc_logging_level_from_verbosity(verbosity):
@@ -742,55 +844,7 @@ def _calc_logging_level_from_verbosity_namespace(namespace):
     return _calc_logging_level_from_verbosity(verbosity)
 
 
-# Entry Point  #################################################################
-
-
-# pylint: disable-next=invalid-name
-def getLogger(name=None, *, datefmt=None, relative_to=None):
-    """
-    :param name: logger name
-    :type name: str
-    :param datefmt: strftime format for timestamps; ignored when ``relative_to`` is set;
-            defaults to ``None`` (no timestamp)
-    :type datefmt: str, optional
-    :param relative_to: Unix timestamp to use as epoch for relative time display;
-            mutually exclusive with ``datefmt``
-    :type relative_to: float, optional
-    :return: a logger with the `name`, create if non-existence;
-            root logger if `name` is `None`
-    :rtype: KamiLogger
-    """
-    logger = logging.getLogger(name)
-
-    if not isinstance(logger, KamiLogger):
-        logger.__class__ = KamiLogger
-
-    if not any(isinstance(f, _DiffOnlyMsgFilter) for f in logger.filters):
-        logger.addFilter(
-            _DiffOnlyMsgFilter(
-                _LogFormatter(
-                    sys.stdout, datefmt=datefmt, relative_to=relative_to
-                )
-            )
-        )
-
-    if not logger.handlers:
-        stdout_handler = StreamHandler(sys.stdout)
-        stdout_handler.setFormatter(
-            _LogFormatter(sys.stdout, datefmt=datefmt, relative_to=relative_to)
-        )
-        stdout_handler.addFilter(lambda r: r.levelno < logging.WARNING)
-
-        stderr_handler = StreamHandler(sys.stderr)
-        stderr_handler.setFormatter(
-            _LogFormatter(sys.stderr, datefmt=datefmt, relative_to=relative_to)
-        )
-        stderr_handler.addFilter(lambda r: r.levelno >= logging.WARNING)
-
-        logger.addHandler(stdout_handler)
-        logger.addHandler(stderr_handler)
-
-    return logger
+# Verbosity Public API  ========================================================
 
 
 def add_verbose_arguments(parser):
@@ -833,3 +887,137 @@ def set_logging_level_by_verbosity(namespace, *, logger=None, logger_name=None):
     if logger is None:
         logger = logging.getLogger(logger_name)
     logger.setLevel(_calc_logging_level_from_verbosity_namespace(namespace))
+
+
+# Line Padding  ################################################################
+
+
+_CONTENT_SPACING = "  "
+
+
+def _print_line_padding_generic(
+    mode,
+    content,
+    padding,
+    *,
+    line_width=80,
+    end="\n",
+    file=sys.stdout,
+    flush=False,
+    renderer=None,
+):
+    if "\n" in content:
+        raise ValueError("param content must be a single line")
+    if len(content) > line_width:
+        raise ValueError(
+            "param content length {} exceeds line_width {}".format(
+                len(content), line_width
+            )
+        )
+    if len(padding) != 1:
+        raise ValueError("param padding must be a single character")
+    if not padding.isprintable() or padding == " ":
+        raise ValueError("param padding must be a normal printable character")
+
+    if renderer is None:
+        renderer = AnsiRenderer(file)
+
+    if mode == 1:  # left justified
+        remaining = line_width - len(content) - len(_CONTENT_SPACING)
+        padded_content = (
+            content
+            + _CONTENT_SPACING
+            + renderer.color_grey(padding * remaining)
+        )
+    elif mode == 2:  # right justified
+        remaining = line_width - len(content) - len(_CONTENT_SPACING)
+        padded_content = (
+            renderer.color_grey(padding * remaining)
+            + _CONTENT_SPACING
+            + content
+        )
+    else:  # centered
+        remaining = line_width - len(content) - len(_CONTENT_SPACING) * 2
+        left = remaining // 2
+        right = remaining - left
+        padded_content = (
+            renderer.color_grey(padding * left)
+            + _CONTENT_SPACING
+            + content
+            + _CONTENT_SPACING
+            + renderer.color_grey(padding * right)
+        )
+
+    print(padded_content, end=end, file=file, flush=flush)
+    return renderer
+
+
+# Line Padding Public API  =====================================================
+
+
+def print_line_padding_centered(*args, **kwargs):
+    """
+    print ``content`` centered, filling both sides with ``padding`` to
+    reach ``line_width``.
+
+    when the remaining width is odd, the extra character goes to the right.
+    odd remainder example with ``line_width=11``:
+    ``==  hi  ===``
+
+
+    :param content: text to print; must be a single, non-empty line no
+            longer than ``line_width``
+    :type content: str
+    :param padding: single printable non-space fill character
+    :type padding: str
+    :param line_width: total output width; defaults to ``80``
+    :type line_width: int
+    :param end: appended after output; defaults to ``"\\n"``
+    :type end: str
+    :param file: output stream; defaults to ``sys.stdout``
+    :type file: IO
+    :param flush: forcibly flush the stream; defaults to ``False``
+    :type flush: bool
+    :param renderer: ANSI color renderer;
+            if ``None``, created from ``file`` argument
+    :type renderer: AnsiRenderer or None
+    :return: ANSI color renderer instance
+    :rtype: AnsiRenderer
+    :raises ValueError: if ``content`` contains ``"\\n"`` or exceeds
+            ``line_width``; if ``padding`` is not exactly one printable
+            non-space character
+    :example:
+    >>> print_line_padding_centered("hi", "=", line_width=20)
+    =======  hi  =======
+    """
+    return _print_line_padding_generic(0, *args, **kwargs)
+
+
+def print_line_padding_left_just(*args, **kwargs):
+    """
+    print ``content`` left-justified, filling the right with ``padding``.
+
+    see :func:`print_line_padding_centered` for parameter and error
+    details.
+
+
+    :example:
+    >>> print_line_padding_left_just("hi", "=", line_width=20)
+    hi  ================
+    """
+    return _print_line_padding_generic(1, *args, **kwargs)
+
+
+def print_line_padding_right_just(*args, **kwargs):
+    """
+    print ``content`` right-justified, filling the left with ``padding``.
+
+    see :func:`print_line_padding_centered` for parameter and error
+    details.
+
+
+    :example:
+    >>> print_line_padding_right_just("hi", "=", line_width=20)
+    ================  hi
+    """
+    return _print_line_padding_generic(2, *args, **kwargs)

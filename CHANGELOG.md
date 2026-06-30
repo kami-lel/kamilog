@@ -30,7 +30,42 @@
 
 ### Security
 
-[unreleased]: https://github.com/kami-lel/kamilog/compare/v1.6.2...dev
+[unreleased]: https://github.com/kami-lel/kamilog/compare/v1.7.0...dev
+
+
+
+
+
+
+
+
+
+
+
+
+
+## [1.7.0] - 2026-07-01
+
+### Added
+
+- `AnsiColor` — public `Enum` of ANSI escape code constants keyed by color name
+- `AnsiRenderer` — public TTY-aware color renderer promoted from `_AnsiPalette`; exposes `color(text, color, *, use_bold=False)`, `color_level(text, levelno)`, and `color_grey(text)`
+- `print_line_padding_centered`, `print_line_padding_left_just`, `print_line_padding_right_just` — fixed-width line-padding functions; all accept a `renderer` kwarg, return the `AnsiRenderer` used, and color the padding fill grey on TTY output; raise `ValueError` on invalid `content` or `padding`
+
+### Changed
+
+- `kamilog/__init__.py` — simplified to wildcard re-export (`from .kamilog import *`); `__all__` is now dynamic, matching `kamilog.py` exactly
+- `examples/` — reorganized into `examples/logger/` subdirectory; all scripts renamed to `*_demo.py`; timestamp demos consolidated into `logger-timestamps_demo.py`; `verbosity_demo.py` and `line_padding_demo.py` added
+
+### Removed
+
+- `_AnsiPalette` — replaced by public `AnsiRenderer`
+
+### Fixed
+
+- `print_line_padding_left_just` and `print_line_padding_right_just` — output was two characters short of `line_width`; fill calculation incorrectly subtracted both separators instead of one
+
+[1.7.0]: https://github.com/kami-lel/kamilog/compare/v1.6.2...v1.7.0
 
 
 
