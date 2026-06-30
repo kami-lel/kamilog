@@ -848,6 +848,9 @@ def set_logging_level_by_verbosity(namespace, *, logger=None, logger_name=None):
 
 # Line Padding Public API  =====================================================
 
+# TODO add color support
+# TODO unit test for padding
+
 
 def _print_line_padding_generic(
     mode,
