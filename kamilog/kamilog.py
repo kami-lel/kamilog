@@ -892,9 +892,8 @@ def set_logging_level_by_verbosity(namespace, *, logger=None, logger_name=None):
 # Line Padding  ################################################################
 
 
-# TODO add color support
-
 _CONTENT_SPACING = "  "
+# TODO add color support
 
 
 def _print_line_padding_generic(
@@ -906,6 +905,7 @@ def _print_line_padding_generic(
     end="\n",
     file=sys.stdout,
     flush=False,
+    renderer=None,
 ):
     if "\n" in content:
         raise ValueError("param content must be a single line")
@@ -919,6 +919,9 @@ def _print_line_padding_generic(
         raise ValueError("param padding must be a single character")
     if not padding.isprintable() or padding == " ":
         raise ValueError("param padding must be a normal printable character")
+
+    if renderer is None:
+        renderer = AnsiRenderer(file)
 
     remaining = line_width - len(content) - len(_CONTENT_SPACING) * 2
     if mode == 1:  # left justified
@@ -937,19 +940,20 @@ def _print_line_padding_generic(
         )
 
     print(padded_content, end=end, file=file, flush=flush)
+    return renderer
 
 
 # Line Padding Public API  =====================================================
 
 
-def print_line_padding_centered(*args, **kwargs):
+def print_line_padding_centered(*args, renderer=None, **kwargs):
     """
     print ``content`` centered, filling both sides with ``padding`` to
     reach ``line_width``.
 
     when the remaining width is odd, the extra character goes to the right.
     odd remainder example with ``line_width=11``:
-    ``====hi=====``
+    ``==  hi  ===``
 
 
     :param content: text to print; must be a single, non-empty line no
@@ -965,6 +969,11 @@ def print_line_padding_centered(*args, **kwargs):
     :type file: IO
     :param flush: forcibly flush the stream; defaults to ``False``
     :type flush: bool
+    :param renderer: ANSI color renderer;
+            if ``None``, created from ``file`` argument
+    :type renderer: AnsiRenderer or None
+    :return: ANSI color renderer instance
+    :rtype: AnsiRenderer
     :raises ValueError: if ``content`` contains ``"\\n"`` or exceeds
             ``line_width``; if ``padding`` is not exactly one printable
             non-space character
@@ -972,10 +981,10 @@ def print_line_padding_centered(*args, **kwargs):
     >>> print_line_padding_centered("hi", "=", line_width=20)
     =======  hi  =======
     """
-    _print_line_padding_generic(0, *args, **kwargs)
+    return _print_line_padding_generic(0, *args, renderer=renderer, **kwargs)
 
 
-def print_line_padding_left_just(*args, **kwargs):
+def print_line_padding_left_just(*args, renderer=None, **kwargs):
     """
     print ``content`` left-justified, filling the right with ``padding``.
 
@@ -987,10 +996,10 @@ def print_line_padding_left_just(*args, **kwargs):
     >>> print_line_padding_left_just("hi", "=", line_width=20)
     hi  ================
     """
-    _print_line_padding_generic(1, *args, **kwargs)
+    return _print_line_padding_generic(1, *args, renderer=renderer, **kwargs)
 
 
-def print_line_padding_right_just(*args, **kwargs):
+def print_line_padding_right_just(*args, renderer=None, **kwargs):
     """
     print ``content`` right-justified, filling the left with ``padding``.
 
@@ -1002,4 +1011,4 @@ def print_line_padding_right_just(*args, **kwargs):
     >>> print_line_padding_right_just("hi", "=", line_width=20)
     ================  hi
     """
-    _print_line_padding_generic(2, *args, **kwargs)
+    return _print_line_padding_generic(2, *args, renderer=renderer, **kwargs)
