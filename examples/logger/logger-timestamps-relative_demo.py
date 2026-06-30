@@ -4,6 +4,8 @@ logger-timestamps-relative_demo.py
 demonstrate elapsed time display via ``relative_to``, including negative values
 """
 
+# FIXME rewrite demos
+
 import time
 import kamilog
 

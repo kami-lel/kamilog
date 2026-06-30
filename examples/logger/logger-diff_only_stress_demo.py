@@ -4,6 +4,9 @@ logger-diff_only_stress_demo.py
 contrast long and short message compression under _DiffOnlyMsgFilter.
 """
 
+# FIXME rewrite demos
+
+
 import kamilog
 
 # ============================================================================

@@ -4,6 +4,9 @@ logger-timestamps_demo.py
 demonstrate named loggers with various ``datefmt`` and timestamp options
 """
 
+# FIXME rewrite demos
+
+
 import kamilog
 
 log = kamilog.getLogger()
@@ -41,7 +44,9 @@ log_ms.propagate = False
 log_ms.warning("first message")
 log_ms.debug("second message")
 
-log_full_ms = kamilog.getLogger("hooks_runner", datefmt=kamilog.DATEFMT_DATETIME_MS)
+log_full_ms = kamilog.getLogger(
+    "hooks_runner", datefmt=kamilog.DATEFMT_DATETIME_MS
+)
 log_full_ms.setLevel(kamilog.DEBUG)
 log_full_ms.propagate = False
 log_full_ms.enter("entering hook")

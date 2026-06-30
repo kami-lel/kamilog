@@ -4,6 +4,9 @@ logger-timestamps-format_demo.py
 demonstrate all four ``DATEFMT_*`` timestamp format constants
 """
 
+# FIXME rewrite demos
+
+
 import kamilog
 
 print("# default: no timestamp  #" + "#" * 48)
