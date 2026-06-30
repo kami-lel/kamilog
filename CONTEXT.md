@@ -153,7 +153,9 @@ The original (uncompressed) message is stored in `_history` so compression decis
 
 ### Line Padding Utilities
 
-Three public functions that print a fixed-width line by padding `content` with a repeated character to fill `line_width` (default 80). All share the same signature via a private dispatcher `_print_line_padding_generic(mode, content, padding, *, line_width, end, file, flush)`.
+Three public functions that print a fixed-width line by padding `content` with a repeated character to fill `line_width` (default 80). All share the same signature via a private dispatcher `_print_line_padding_generic(mode, content, padding, *, line_width, end, file, flush, renderer=None)`.
+
+Each function accepts an optional `renderer` kwarg (`AnsiRenderer or None`). When `None`, a renderer is created from `file` automatically. All three functions return the `AnsiRenderer` instance used. When color is enabled, the padding fill and two-space separators are colored grey; `content` is always printed uncolored.
 
 A two-space separator (`_CONTENT_SPACING = "  "`) is always inserted between `content` and the padding fill. For centered mode it is placed on both sides; for left/right modes on one side only.
 
@@ -164,9 +166,9 @@ Input validation (raises `ValueError`):
 
 | function | mode | layout |
 | --- | --- | --- |
-| `print_line_padding_centered` | 0 | `padding * left + "  " + content + "  " + padding * right` (remainder split evenly; odd char goes right) |
-| `print_line_padding_left_just` | 1 | `content + "  " + padding * remaining` |
-| `print_line_padding_right_just` | 2 | `padding * remaining + "  " + content` |
+| `print_line_padding_centered` | 0 | `grey(padding * left) + grey("  ") + content + grey("  ") + grey(padding * right)` (remainder split evenly; odd char goes right) |
+| `print_line_padding_left_just` | 1 | `content + grey("  ") + grey(padding * remaining)` |
+| `print_line_padding_right_just` | 2 | `grey(padding * remaining) + grey("  ") + content` |
 
 ## Public API Surface
 
@@ -180,9 +182,9 @@ kamilog.AnsiColor                               # Enum of ANSI escape codes
 kamilog.AnsiRenderer                            # TTY-detecting color applier
 
 # line padding
-kamilog.print_line_padding_centered(content, padding, *, line_width=80, end, file, flush)
-kamilog.print_line_padding_left_just(content, padding, *, line_width=80, end, file, flush)
-kamilog.print_line_padding_right_just(content, padding, *, line_width=80, end, file, flush)
+kamilog.print_line_padding_centered(content, padding, *, line_width=80, end, file, flush, renderer=None) -> AnsiRenderer
+kamilog.print_line_padding_left_just(content, padding, *, line_width=80, end, file, flush, renderer=None) -> AnsiRenderer
+kamilog.print_line_padding_right_just(content, padding, *, line_width=80, end, file, flush, renderer=None) -> AnsiRenderer
 
 # log level constants
 kamilog.NOTSET, DEBUG, ENTER, SKIP, INFO, PASS, SUCC, DONE,
