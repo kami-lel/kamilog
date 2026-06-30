@@ -859,12 +859,18 @@ def _print_line_padding_generic(
     file=sys.stdout,
     flush=False,
 ):
-    # BUG make this raise error
-    if "\n" in content or len(content) >= line_width:
-        print(content, end=end, file=file, flush=flush)
-        return
-
-    # BUG check padding legitimate
+    if "\n" in content:
+        raise ValueError("param content must be a single line")
+    if len(content) > line_width:
+        raise ValueError(
+            "param content length {} exceeds line_width {}".format(
+                len(content), line_width
+            )
+        )
+    if len(padding) != 1:
+        raise ValueError("param padding must be a single character")
+    if not padding.isprintable() or padding == " ":
+        raise ValueError("param padding must be a normal printable character")
 
     padded_content = content  # TODO mpl line padding
 
