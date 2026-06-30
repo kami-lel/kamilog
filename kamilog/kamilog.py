@@ -11,7 +11,7 @@ import logging
 import sys
 import time
 from collections import deque
-from enum import IntEnum
+from enum import Enum, IntEnum
 from logging import Formatter, StreamHandler
 
 __all__ = (
@@ -49,10 +49,7 @@ __version__ = "1.6.2"
 __author__ = "kamiLeL"
 
 
-# logger  ######################################################################
-
-
-# enum  ========================================================================
+# enum  ########################################################################
 
 
 class _CustomLogLevel(IntEnum):
@@ -75,6 +72,107 @@ class _CustomLogLevel(IntEnum):
 # level registration during import
 for _lvl in _CustomLogLevel:
     logging.addLevelName(int(_lvl), _lvl.name)
+
+
+# ANSI Color   #################################################################
+
+
+class _AnsiColor(Enum):  # =====================================================
+    """ANSI escape code values keyed by color name."""
+
+    RESET = "\033[0m"
+    BOLD = "\033[1m"
+    GREY = "\033[90m"
+    CYAN = "\033[36m"
+    BRIGHT_CYAN = "\033[96m"
+    BLUE = "\033[34m"
+    GREEN = "\033[32m"
+    BRIGHT_BLUE = "\033[94m"
+    BRIGHT_GREEN = "\033[92m"
+    BRIGHT_YELLOW = "\033[93m"
+    YELLOW = "\033[33m"
+    RED = "\033[31m"
+    BRIGHT_RED = "\033[91m"
+    BRIGHT_MAGENTA = "\033[95m"
+
+
+class AnsiPalette:  # ==========================================================
+    """
+    ANSI color palette; detects TTY at construction time and applies
+    color codes through its public methods.
+
+    when ``stream`` is ``None`` or is not a TTY, all coloring methods
+    return their input text unchanged.
+
+
+    :param stream: output stream used for TTY detection; ``None``
+            disables color unconditionally
+    :type stream: IO or None
+    """
+
+    _LEVEL_COLORS = {
+        logging.DEBUG: _AnsiColor.CYAN,
+        _CustomLogLevel.ENTER: _AnsiColor.BRIGHT_CYAN,
+        _CustomLogLevel.SKIP: _AnsiColor.BLUE,
+        _CustomLogLevel.SUCC: _AnsiColor.GREEN,
+        logging.INFO: _AnsiColor.BRIGHT_BLUE,
+        _CustomLogLevel.PASS: _AnsiColor.BRIGHT_GREEN,
+        _CustomLogLevel.DONE: _AnsiColor.BRIGHT_YELLOW,
+        logging.WARNING: _AnsiColor.YELLOW,
+        logging.ERROR: _AnsiColor.RED,
+        _CustomLogLevel.FAIL: _AnsiColor.BRIGHT_RED,
+        logging.CRITICAL: _AnsiColor.BRIGHT_MAGENTA,
+    }
+
+    def __init__(self, stream=None):
+        self._enabled = (
+            stream is not None and hasattr(stream, "isatty") and stream.isatty()
+        )
+
+    # Public API  **************************************************************
+
+    def color_level(self, text, levelno):
+        """
+        apply bold and level-specific ANSI color to ``text``.
+
+
+        :param text: text to colorize
+        :type text: str
+        :param levelno: numeric log level used to select the color
+        :type levelno: int
+        :return: colored text, or ``text`` unchanged when disabled
+        :rtype: str
+        """
+        if not self._enabled:
+            return text
+        color = self._LEVEL_COLORS.get(levelno)
+        return "{}{}{}{}".format(
+            _AnsiColor.BOLD.value,
+            color.value if color else "",
+            text,
+            _AnsiColor.RESET.value,
+        )
+
+    def color_grey(self, text):
+        """
+        apply bright-black (grey) ANSI color to ``text``.
+
+        used for timestamps and source name labels.
+
+
+        :param text: text to colorize
+        :type text: str
+        :return: grey text, or ``text`` unchanged when disabled
+        :rtype: str
+        """
+        if not self._enabled:
+            return text
+        return "{}{}{}".format(
+            _AnsiColor.GREY.value, text, _AnsiColor.RESET.value
+        )
+
+
+# logger  ######################################################################
 
 
 # constants  ===================================================================
@@ -192,81 +290,6 @@ class KamiLogger(logging.Logger):  # ===========================================
 logging.setLoggerClass(KamiLogger)
 # root logger exists before setLoggerClass — patch its class directly
 logging.root.__class__ = KamiLogger
-
-
-# FIXME color as unique module
-
-
-class _AnsiPalette:  # =========================================================
-    """
-    ANSI color palette; detects TTY at construction time and applies
-    color codes through its public methods.
-
-    when ``stream`` is ``None`` or is not a TTY, all coloring methods
-    return their input text unchanged.
-
-
-    :param stream: output stream used for TTY detection; ``None``
-            disables color unconditionally
-    :type stream: IO or None
-    """
-
-    _RESET = "\033[0m"
-    _BOLD = "\033[1m"
-    _GREY = "\033[90m"  # bright black
-    _LEVEL_COLORS = {
-        logging.DEBUG: "\033[36m",  # cyan
-        _CustomLogLevel.ENTER: "\033[96m",  # bright cyan
-        _CustomLogLevel.SKIP: "\033[34m",  # blue
-        _CustomLogLevel.SUCC: "\033[32m",  # green
-        logging.INFO: "\033[94m",  # bright blue
-        _CustomLogLevel.PASS: "\033[92m",  # bright green
-        _CustomLogLevel.DONE: "\033[93m",  # bright yellow
-        logging.WARNING: "\033[33m",  # yellow
-        logging.ERROR: "\033[31m",  # red
-        _CustomLogLevel.FAIL: "\033[91m",  # bright red
-        logging.CRITICAL: "\033[95m",  # bright magenta
-    }
-
-    def __init__(self, stream=None):
-        self._enabled = (
-            stream is not None and hasattr(stream, "isatty") and stream.isatty()
-        )
-
-    # Public API  **************************************************************
-
-    def color_level(self, text, levelno):
-        """
-        apply bold and level-specific ANSI color to ``text``.
-
-
-        :param text: text to colorize
-        :type text: str
-        :param levelno: numeric log level used to select the color
-        :type levelno: int
-        :return: colored text, or ``text`` unchanged when disabled
-        :rtype: str
-        """
-        if not self._enabled:
-            return text
-        color = self._LEVEL_COLORS.get(levelno, "")
-        return "{}{}{}{}".format(self._BOLD, color, text, self._RESET)
-
-    def color_grey(self, text):
-        """
-        apply bright-black (grey) ANSI color to ``text``.
-
-        used for timestamps and source name labels.
-
-
-        :param text: text to colorize
-        :type text: str
-        :return: grey text, or ``text`` unchanged when disabled
-        :rtype: str
-        """
-        if not self._enabled:
-            return text
-        return "{}{}{}".format(self._GREY, text, self._RESET)
 
 
 # log formatting  #=============================================================
@@ -481,7 +504,7 @@ class _LogFormatter(Formatter):  # *********************************************
 
     def __init__(self, stream=None, *, datefmt=None, relative_to=None):
         super().__init__(datefmt=datefmt)
-        self.palette = _AnsiPalette(stream)
+        self.palette = AnsiPalette(stream)
         self.engine = _LogFormatEngine(
             self.palette, datefmt=datefmt, relative_to=relative_to
         )
