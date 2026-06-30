@@ -28,14 +28,16 @@ kamilog/
 │   │   └── v-set_logging_level_by_verbosity_test.py
 │   └── source_quality_test.py       # banned-marker scan (no TODO/FIXME/HACK/BUG)
 ├── examples/
-│   ├── all_levels.py        # all log levels with descriptions
-│   ├── basic_logging.py     # standard + custom levels
-│   ├── logger_names_and_timestamps.py
-│   ├── timestamp_formats.py # all four DATEFMT constants
-│   ├── relative_time.py     # elapsed time with relative_to
-│   ├── diff_only.py         # _DiffOnlyMsgFilter basic demo
-│   ├── diff_only_stress.py  # dual-logger stress test (short vs. long compression)
-│   └── verbosity.py         # CLI -v/-q/-qq/-qqq flags
+│   ├── examples_note                        # open Fixme/Todo items for examples
+│   └── logger/
+│       ├── logger-all_levels.py             # all eleven log levels with descriptions
+│       ├── logger-basic.py                  # standard and custom levels side by side
+│       ├── logger-timestamps.py             # named loggers with various datefmt options
+│       ├── logger-timestamps-format.py      # all four DATEFMT_* constants in sequence
+│       ├── logger-timestamps-relative.py    # relative_to with positive/negative elapsed time
+│       ├── logger-diff_only.py              # _DiffOnlyMsgFilter scenarios
+│       ├── logger-diff_only_stress.py       # short vs. long message compression contrast
+│       └── timestamps-verbosity.py          # CLI -v/-q flags driving root logger level
 ├── docs/
 │   ├── usage_doc.md         # public API reference with examples
 │   └── install_guide.md     # installation methods
