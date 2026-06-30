@@ -875,6 +875,8 @@ def _print_line_padding_generic(
     if not padding.isprintable() or padding == " ":
         raise ValueError("param padding must be a normal printable character")
 
+    # BUG add spacing
+
     remaining = line_width - len(content)
     if mode == 1:  # left justified
         padded_content = content + padding * remaining
