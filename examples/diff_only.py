@@ -8,7 +8,7 @@ stays visible.
 
 import kamilog
 
-# fixme rewrite to better demonstrate diff only function
+# Fixme rewrite to better demonstrate diff only function
 
 # Diff-Only Filter Examples  ##################################################
 
