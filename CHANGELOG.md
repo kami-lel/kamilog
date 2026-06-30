@@ -20,15 +20,22 @@
 
 ### Added
 
-- `print_line_padding_centered(content, padding, *, line_width=80, end, file, flush)` — prints `content` centered between `padding` characters filling `line_width`; two spaces are inserted on each side of `content` as a fixed separator
-- `print_line_padding_left_just(content, padding, *, line_width=80, end, file, flush)` — prints `content` left-justified with a two-space separator before the right-side `padding` fill
-- `print_line_padding_right_just(content, padding, *, line_width=80, end, file, flush)` — prints `content` right-justified with a two-space separator after the left-side `padding` fill; all three raise `ValueError` when `content` is multi-line or exceeds `line_width`, or when `padding` is not a single printable non-space character
+- `AnsiColor` enum — public ANSI escape code constants keyed by color name; replaces module-level constants with a reusable interface
+- `AnsiRenderer` class — public ANSI color renderer (renamed from `_AnsiPalette`); detects TTY at construction and applies color codes; exposes `color(text, color, *, use_bold=False)`, `color_level(text, levelno)`, and `color_grey(text)` methods
+- `AnsiRenderer.color(text, color, *, use_bold=False)` — generic color application method; core API used by `color_level` and `color_grey`
+- `print_line_padding_centered(content, padding, *, line_width=80, end, file, flush, renderer=None)` — prints `content` centered between `padding` characters filling `line_width`; two spaces are inserted on each side of `content` as a fixed separator; returns an `AnsiRenderer`
+- `print_line_padding_left_just(content, padding, *, line_width=80, end, file, flush, renderer=None)` — prints `content` left-justified with a two-space separator before the right-side `padding` fill; returns an `AnsiRenderer`
+- `print_line_padding_right_just(content, padding, *, line_width=80, end, file, flush, renderer=None)` — prints `content` right-justified with a two-space separator after the left-side `padding` fill; all three raise `ValueError` when `content` is multi-line or exceeds `line_width`, or when `padding` is not a single printable non-space character; returns an `AnsiRenderer`; padding fill and separators are rendered grey when color is enabled
 
 ### Changed
+
+- `kamilog/__init__.py` — simplified to use wildcard imports (`from .kamilog import *`) with dynamic `__all__` re-export, eliminating manual symbol enumeration
 
 ### Deprecated
 
 ### Removed
+
+- `_AnsiPalette` — internal class renamed and promoted to public `AnsiRenderer`
 
 ### Fixed
 

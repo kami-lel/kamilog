@@ -1,6 +1,6 @@
 # kamilog CONTEXT
 
-*Last updated: 2026-06-30 (v1.6.2)*
+*Last updated: 2026-06-30 (post-v1.6.2)*
 
 ## Project Overview
 
@@ -64,15 +64,30 @@ Private `IntEnum` subclass that consolidates every custom log level in one place
 
 Module-level aliases (`ENTER = _CustomLogLevel.ENTER`, etc.) keep the public API unchanged. `_PADDED_LEVELNAME_MAP` and `KamiLogger`'s log methods all reference `_CustomLogLevel` directly.
 
-### `_AnsiPalette`
+### `AnsiColor`
 
-Internal class that centralizes ANSI color detection and application. Instantiated by `_LogFormatter` and exposed via its `palette` attribute; also reachable from `_DiffOnlyEngine` as `formatter.palette`.
+Public `Enum` of ANSI escape code constants keyed by descriptive color names. Each member's `.value` is the escape sequence string.
+
+| member | escape sequence | usage |
+| --- | --- | --- |
+| `RESET` | `\033[0m` | terminator for all color codes |
+| `BOLD` | `\033[1m` | intensity modifier (applies to foreground) |
+| `GREY` | `\033[90m` | bright black; used for timestamps, source labels, markers |
+| `CYAN`, `BRIGHT_CYAN` | `\033[36m`, `\033[96m` | `DEBUG`, `ENTER` levels |
+| `BLUE`, `BRIGHT_BLUE` | `\033[34m`, `\033[94m` | `SKIP`, `INFO` levels |
+| `GREEN`, `BRIGHT_GREEN` | `\033[32m`, `\033[92m` | `SUCC`, `PASS` levels |
+| `YELLOW`, `BRIGHT_YELLOW` | `\033[33m`, `\033[93m` | `WARNING`, `DONE` levels |
+| `RED`, `BRIGHT_RED` | `\033[31m`, `\033[91m` | `ERROR`, `FAIL` levels |
+| `BRIGHT_MAGENTA` | `\033[95m` | `CRITICAL` level |
+
+### `AnsiRenderer`
+
+Public class that centralizes ANSI color detection and application. Instantiated by `_LogFormatter` and exposed via its `palette` attribute; also reachable from `_DiffOnlyEngine` as `formatter.palette`.
 
 - Detects TTY status once at construction via `stream.isatty()`; when `stream` is `None` or not a TTY, all methods return their input unchanged.
-- `color_level(text, levelno)` — wraps `text` in bold + per-level ANSI color codes.
-- `color_grey(text)` — wraps `text` in bright-black (grey) codes; used for timestamps, source labels, and compression markers.
-
-ANSI level color map: `DEBUG` cyan; `ENTER` bright cyan; `SKIP`/`INFO` blue/bright blue; `SUCC` green; `PASS` bright green; `DONE` bright yellow; `WARN.` yellow; `ERROR` red; `FAIL` bright red; `CRIT.` bright magenta.
+- `color(text, color, *, use_bold=False)` — generic color applier; wraps `text` in the given `AnsiColor` code, optionally with bold.
+- `color_level(text, levelno)` — wraps `text` in bold + per-level ANSI color codes via the internal `_LEVEL_COLORS` map.
+- `color_grey(text)` — wraps `text` in grey codes; used for timestamps, source labels, and compression markers.
 
 ### `getLogger(name, *, datefmt, relative_to)`
 
@@ -99,7 +114,7 @@ The full level progression: `DEBUG`(10) → `ENTER`(11) → `SKIP`(12) → `SUCC
 
 ### `_LogFormatEngine`
 
-Holds all core formatting logic, independent of `logging.Formatter`. Instantiated by `_LogFormatter` and exposed via its `engine` attribute. Takes a `_AnsiPalette` instance at construction; all color output is routed through the palette.
+Holds all core formatting logic, independent of `logging.Formatter`. Instantiated by `_LogFormatter` and exposed via its `engine` attribute. Takes an `AnsiRenderer` instance at construction; all color output is routed through the palette.
 
 Responsibilities:
 
@@ -112,9 +127,9 @@ Level display names: `DEBUG`, `ENTER`, `SKIP `, `INFO `, `PASS `, `SUCC.`, `DONE
 
 ### `_LogFormatter`
 
-Thin `logging.Formatter` adapter wrapping `_LogFormatEngine`. Accepts a `stream` positional argument forwarded to `_AnsiPalette` for TTY detection. Exposes two public attributes:
+Thin `logging.Formatter` adapter wrapping `_LogFormatEngine`. Accepts a `stream` positional argument forwarded to `AnsiRenderer` for TTY detection. Exposes two public attributes:
 
-- `palette` — the `_AnsiPalette` instance; used directly by `_DiffOnlyEngine` for marker coloring.
+- `palette` — the `AnsiRenderer` instance; used directly by `_DiffOnlyEngine` for marker coloring.
 - `engine` — the `_LogFormatEngine` instance; used by `_DiffOnlyEngine` for `count_prefix_chars`.
 
 Methods:
@@ -138,7 +153,9 @@ The original (uncompressed) message is stored in `_history` so compression decis
 
 ### Line Padding Utilities
 
-Three public functions that print a fixed-width line by padding `content` with a repeated character to fill `line_width` (default 80). All share the same signature via a private dispatcher `_print_line_padding_generic(mode, content, padding, *, line_width, end, file, flush)`.
+Three public functions that print a fixed-width line by padding `content` with a repeated character to fill `line_width` (default 80). All share the same signature via a private dispatcher `_print_line_padding_generic(mode, content, padding, *, line_width, end, file, flush, renderer=None)`.
+
+Each function accepts an optional `renderer` kwarg (`AnsiRenderer or None`). When `None`, a renderer is created from `file` automatically. All three functions return the `AnsiRenderer` instance used. When color is enabled, the padding fill and two-space separators are colored grey; `content` is always printed uncolored.
 
 A two-space separator (`_CONTENT_SPACING = "  "`) is always inserted between `content` and the padding fill. For centered mode it is placed on both sides; for left/right modes on one side only.
 
@@ -149,19 +166,25 @@ Input validation (raises `ValueError`):
 
 | function | mode | layout |
 | --- | --- | --- |
-| `print_line_padding_centered` | 0 | `padding * left + "  " + content + "  " + padding * right` (remainder split evenly; odd char goes right) |
-| `print_line_padding_left_just` | 1 | `content + "  " + padding * remaining` |
-| `print_line_padding_right_just` | 2 | `padding * remaining + "  " + content` |
+| `print_line_padding_centered` | 0 | `grey(padding * left) + grey("  ") + content + grey("  ") + grey(padding * right)` (remainder split evenly; odd char goes right) |
+| `print_line_padding_left_just` | 1 | `content + grey("  ") + grey(padding * remaining)` |
+| `print_line_padding_right_just` | 2 | `grey(padding * remaining) + grey("  ") + content` |
 
 ## Public API Surface
 
 ```python
+# logger factory
 kamilog.getLogger(name=None, *, datefmt=None, relative_to=None) -> KamiLogger
+kamilog.KamiLogger                              # logger class (subclass of logging.Logger)
+
+# ANSI color
+kamilog.AnsiColor                               # Enum of ANSI escape codes
+kamilog.AnsiRenderer                            # TTY-detecting color applier
 
 # line padding
-kamilog.print_line_padding_centered(content, padding, *, line_width=80, end, file, flush)
-kamilog.print_line_padding_left_just(content, padding, *, line_width=80, end, file, flush)
-kamilog.print_line_padding_right_just(content, padding, *, line_width=80, end, file, flush)
+kamilog.print_line_padding_centered(content, padding, *, line_width=80, end, file, flush, renderer=None) -> AnsiRenderer
+kamilog.print_line_padding_left_just(content, padding, *, line_width=80, end, file, flush, renderer=None) -> AnsiRenderer
+kamilog.print_line_padding_right_just(content, padding, *, line_width=80, end, file, flush, renderer=None) -> AnsiRenderer
 
 # log level constants
 kamilog.NOTSET, DEBUG, ENTER, SKIP, INFO, PASS, SUCC, DONE,

@@ -41,7 +41,7 @@ Scope tests to the changed module before pushing — `tests/v/` for verbosity he
 - **Docstrings**: Sphinx/reStructuredText style (`:param:`, `:type:`, `:return:`, `:rtype:`) on all public classes and functions; single-line docstrings on private helpers; `__init__` carries no docstring — documented by the class docstring
 - **String formatting**: `"".format()` only — not f-strings or `%`
 - **Naming**: `snake_case` functions, `_PrefixedPrivate` classes, `UPPER_CASE` constants; 4-space indentation, PEP 8 throughout
-- **`__all__`**: both `kamilog/kamilog.py` and `kamilog/__init__.py` maintain explicit `__all__` tuples — update both when adding public symbols
+- **`__all__`**: `kamilog/kamilog.py` maintains an explicit `__all__` tuple; `kamilog/__init__.py` re-exports it dynamically via `from .kamilog import *` and `from .kamilog import __all__ as __all__` — update only `kamilog.py` when adding public symbols
 - **Dependencies**: no external runtime dependencies; stdlib only (`logging`, `sys`, `collections`, `argparse`) — do not introduce new ones without explicit approval
 
 ## Testing Instructions
