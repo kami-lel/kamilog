@@ -1,6 +1,6 @@
 # kamilog CONTEXT
 
-*Last updated: 2026-06-29 (v1.6.2)*
+*Last updated: 2026-06-30 (v1.6.2)*
 
 ## Project Overview
 
@@ -127,10 +127,32 @@ Algorithm (`_DiffOnlyEngine`):
 
 The original (uncompressed) message is stored in `_history` so compression decisions are always based on the raw text, not prior compressed output.
 
+### Line Padding Utilities
+
+Three public functions that print a fixed-width line by padding `content` with a repeated character to fill `line_width` (default 80). All share the same signature via a private dispatcher `_print_line_padding_generic(mode, content, padding, *, line_width, end, file, flush)`.
+
+Input validation (raises `ValueError`):
+- `content` must be a single line (no `\n`)
+- `len(content)` must not exceed `line_width`
+- `padding` must be exactly one printable, non-space character
+
+| function | mode | layout |
+| --- | --- | --- |
+| `print_line_padding_centered` | 0 | `padding * left + content + padding * right` (remainder split evenly; odd char goes right) |
+| `print_line_padding_left_just` | 1 | `content + padding * remaining` |
+| `print_line_padding_right_just` | 2 | `padding * remaining + content` |
+
+> **Note**: these functions are not yet exported via `__all__` in `kamilog.py` or `__init__.py`.
+
 ## Public API Surface
 
 ```python
 kamilog.getLogger(name=None, *, datefmt=None, relative_to=None) -> KamiLogger
+
+# line padding (not yet in __all__)
+kamilog.print_line_padding_centered(content, padding, *, line_width=80, end, file, flush)
+kamilog.print_line_padding_left_just(content, padding, *, line_width=80, end, file, flush)
+kamilog.print_line_padding_right_just(content, padding, *, line_width=80, end, file, flush)
 
 # log level constants
 kamilog.NOTSET, DEBUG, ENTER, SKIP, INFO, PASS, SUCC, DONE,
