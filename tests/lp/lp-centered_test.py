@@ -8,7 +8,7 @@ import io
 from kamilog import print_line_padding_centered
 
 
-class TestLinePaddingCentered:
+class TestLinePaddingCentered:  # BUG total line count wrong
     def test_even_remaining(_):
         out = io.StringIO()
         print_line_padding_centered("hi", "=", line_width=14, file=out)
@@ -54,6 +54,7 @@ class TestLinePaddingCentered:
 
     def test_flush_param(_):
         out = io.StringIO()
-        print_line_padding_centered("x", ".", line_width=5, file=out,
-                                    flush=True)
+        print_line_padding_centered(
+            "x", ".", line_width=5, file=out, flush=True
+        )
         assert out.getvalue() == "  x  \n"
