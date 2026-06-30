@@ -30,6 +30,7 @@
 ### Changed
 
 - `kamilog/__init__.py` — simplified to use wildcard imports (`from .kamilog import *`) with dynamic `__all__` re-export, eliminating manual symbol enumeration
+- `examples/` — reorganized into `examples/logger/` subdirectory; all scripts renamed to `*_demo.py`; three timestamp scripts merged into `logger-timestamps_demo.py`; `verbosity_demo.py` and `line_padding_demo.py` added
 
 ### Deprecated
 
@@ -38,6 +39,8 @@
 - `_AnsiPalette` — internal class renamed and promoted to public `AnsiRenderer`
 
 ### Fixed
+
+- `print_line_padding_left_just` and `print_line_padding_right_just` — output was two characters short of `line_width`; the fill calculation incorrectly subtracted both separators (4 chars) instead of one (2 chars)
 
 ### Security
 

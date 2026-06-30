@@ -33,9 +33,8 @@ kamilog/
 │   ├── verbosity_demo.py                    # CLI -v/-q flags with custom levels
 │   └── logger/
 │       ├── logger-all_levels_demo.py        # all eleven log levels with descriptions
-│       ├── logger-basic_demo.py             # standard and custom levels side by side
 │       ├── logger-timestamps_demo.py        # all four DATEFMT_* formats and relative_to
-│       ├── logger-diff_only_demo.py         # _DiffOnlyMsgFilter scenarios
+│       ├── logger-diff_only_demo.py         # _DiffOnlyMsgFilter compression walkthrough
 │       └── logger-diff_only_stress_demo.py  # short vs. long message compression contrast
 ├── docs/
 │   ├── usage_doc.md         # public API reference with examples
@@ -156,7 +155,7 @@ The original (uncompressed) message is stored in `_history` so compression decis
 
 Three public functions that print a fixed-width line by padding `content` with a repeated character to fill `line_width` (default 80). All share the same signature via a private dispatcher `_print_line_padding_generic(mode, content, padding, *, line_width, end, file, flush, renderer=None)`.
 
-Each function accepts an optional `renderer` kwarg (`AnsiRenderer or None`). When `None`, a renderer is created from `file` automatically. All three functions return the `AnsiRenderer` instance used. When color is enabled, the padding fill and two-space separators are colored grey; `content` is always printed uncolored.
+Each function accepts an optional `renderer` kwarg (`AnsiRenderer or None`). When `None`, a renderer is created from `file` automatically. All three functions return the `AnsiRenderer` instance used. When color is enabled, the padding fill is colored grey; `content` and the two-space separators are always printed uncolored.
 
 A two-space separator (`_CONTENT_SPACING = "  "`) is always inserted between `content` and the padding fill. For centered mode it is placed on both sides; for left/right modes on one side only.
 
@@ -167,9 +166,9 @@ Input validation (raises `ValueError`):
 
 | function | mode | layout |
 | --- | --- | --- |
-| `print_line_padding_centered` | 0 | `grey(padding * left) + grey("  ") + content + grey("  ") + grey(padding * right)` (remainder split evenly; odd char goes right) |
-| `print_line_padding_left_just` | 1 | `content + grey("  ") + grey(padding * remaining)` |
-| `print_line_padding_right_just` | 2 | `grey(padding * remaining) + grey("  ") + content` |
+| `print_line_padding_centered` | 0 | `grey(padding * left) + "  " + content + "  " + grey(padding * right)` (remainder split evenly; odd char goes right) |
+| `print_line_padding_left_just` | 1 | `content + "  " + grey(padding * remaining)` |
+| `print_line_padding_right_just` | 2 | `grey(padding * remaining) + "  " + content` |
 
 ## Public API Surface
 
