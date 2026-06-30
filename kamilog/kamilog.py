@@ -190,6 +190,9 @@ logging.setLoggerClass(KamiLogger)
 logging.root.__class__ = KamiLogger
 
 
+# Fixme color as unique module
+
+
 class _AnsiPalette:  # =========================================================
     """
     ANSI color palette; detects TTY at construction time and applies
@@ -848,7 +851,7 @@ def set_logging_level_by_verbosity(namespace, *, logger=None, logger_name=None):
 
 # Line Padding Public API  =====================================================
 
-# TODO add color support
+# Todo add color support
 # TODO unit test for padding
 
 
