@@ -2,6 +2,9 @@
 kamilog: Customized Logging Output Module
 """
 
+# HACK better auto import
+
+
 from .kamilog import (
     KamiLogger,
     NOTSET,

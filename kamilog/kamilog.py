@@ -19,6 +19,9 @@ __all__ = (
     "KamiLogger",
     "add_verbose_arguments",
     "set_logging_level_by_verbosity",
+    # ANSI color
+    "AnsiColor",
+    "AnsiRenderer",
     # log levels
     "NOTSET",
     "DEBUG",
@@ -77,7 +80,7 @@ for _lvl in _CustomLogLevel:
 # ANSI Color   #################################################################
 
 
-class _AnsiColor(Enum):  # =====================================================
+class AnsiColor(Enum):  # =====================================================
     """
     ANSI escape code values keyed by color name.
     """
@@ -99,9 +102,9 @@ class _AnsiColor(Enum):  # =====================================================
     BOLD = "\033[1m"
 
 
-class AnsiPalette:  # ==========================================================
+class AnsiRenderer:  # =========================================================
     """
-    ANSI color palette; detects TTY at construction time and applies
+    ANSI color renderer; detects TTY at construction time and applies
     color codes through its public methods.
 
     when ``stream`` is ``None`` or is not a TTY, all coloring methods
@@ -114,17 +117,17 @@ class AnsiPalette:  # ==========================================================
     """
 
     _LEVEL_COLORS = {
-        logging.DEBUG: _AnsiColor.CYAN,
-        _CustomLogLevel.ENTER: _AnsiColor.BRIGHT_CYAN,
-        _CustomLogLevel.SKIP: _AnsiColor.BLUE,
-        _CustomLogLevel.SUCC: _AnsiColor.GREEN,
-        logging.INFO: _AnsiColor.BRIGHT_BLUE,
-        _CustomLogLevel.PASS: _AnsiColor.BRIGHT_GREEN,
-        _CustomLogLevel.DONE: _AnsiColor.BRIGHT_YELLOW,
-        logging.WARNING: _AnsiColor.YELLOW,
-        logging.ERROR: _AnsiColor.RED,
-        _CustomLogLevel.FAIL: _AnsiColor.BRIGHT_RED,
-        logging.CRITICAL: _AnsiColor.BRIGHT_MAGENTA,
+        logging.DEBUG: AnsiColor.CYAN,
+        _CustomLogLevel.ENTER: AnsiColor.BRIGHT_CYAN,
+        _CustomLogLevel.SKIP: AnsiColor.BLUE,
+        _CustomLogLevel.SUCC: AnsiColor.GREEN,
+        logging.INFO: AnsiColor.BRIGHT_BLUE,
+        _CustomLogLevel.PASS: AnsiColor.BRIGHT_GREEN,
+        _CustomLogLevel.DONE: AnsiColor.BRIGHT_YELLOW,
+        logging.WARNING: AnsiColor.YELLOW,
+        logging.ERROR: AnsiColor.RED,
+        _CustomLogLevel.FAIL: AnsiColor.BRIGHT_RED,
+        logging.CRITICAL: AnsiColor.BRIGHT_MAGENTA,
     }
 
     def __init__(self, stream=None):
@@ -145,7 +148,7 @@ class AnsiPalette:  # ==========================================================
         :param text: text to colorize
         :type text: str
         :param color: ANSI color to apply
-        :type color: _AnsiColor
+        :type color: AnsiColor
         :param use_bold: whether to apply bold formatting; defaults to
                 ``False``
         :type use_bold: bool
@@ -154,12 +157,13 @@ class AnsiPalette:  # ==========================================================
         """
         if not self._enabled:
             return text
+
         parts = []
         if use_bold:
-            parts.append(_AnsiColor.BOLD.value)
+            parts.append(AnsiColor.BOLD.value)
         parts.append(color.value)
         parts.append(text)
-        parts.append(_AnsiColor.RESET.value)
+        parts.append(AnsiColor.RESET.value)
         return "".join(parts)
 
     def color_level(self, text, levelno):
@@ -181,7 +185,7 @@ class AnsiPalette:  # ==========================================================
 
     def color_grey(self, text):
         """apply bright-black (grey) ANSI color to ``text``."""
-        return self.color(text, _AnsiColor.GREY)
+        return self.color(text, AnsiColor.GREY)
 
 
 # logger  ######################################################################
@@ -334,7 +338,7 @@ class _LogFormatEngine:  # *****************************************************
 
 
     :param palette: color palette controlling ANSI output
-    :type palette: _AnsiPalette
+    :type palette: _AnsiRenderer
     :param datefmt: strftime format string for wall-clock timestamps;
             ignored when ``relative_to`` is set; ``None`` disables
             timestamps
@@ -498,13 +502,13 @@ class _LogFormatter(Formatter):  # *********************************************
 
     delegates all line-building and timestamp logic to an internal
     ``_LogFormatEngine`` instance exposed via the ``engine`` property.
-    the ``_AnsiPalette`` controlling color output is accessible via
+    the ``_AnsiRenderer`` controlling color output is accessible via
     ``palette``. exc_info and stack_info appending are handled here
     because they depend on ``Formatter.formatException`` and
     ``Formatter.formatStack``.
 
 
-    :param stream: forwarded to ``_AnsiPalette`` for TTY detection;
+    :param stream: forwarded to ``_AnsiRenderer`` for TTY detection;
             ``None`` disables color
     :type stream: IO or None
     :param datefmt: forwarded to ``_LogFormatEngine``; also passed to
@@ -516,7 +520,7 @@ class _LogFormatter(Formatter):  # *********************************************
 
     def __init__(self, stream=None, *, datefmt=None, relative_to=None):
         super().__init__(datefmt=datefmt)
-        self.palette = AnsiPalette(stream)
+        self.palette = AnsiRenderer(stream)
         self.engine = _LogFormatEngine(
             self.palette, datefmt=datefmt, relative_to=relative_to
         )
