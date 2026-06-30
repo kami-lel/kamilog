@@ -237,6 +237,95 @@ The filter is invisible during a warmup period (first 3 messages) and resets aut
 
 
 
+## ANSI Color API
+
+`AnsiColor` and `AnsiRenderer` are public utilities for TTY-aware color application, independent of the logger.
+
+```python
+import sys
+import kamilog
+
+renderer = kamilog.AnsiRenderer(sys.stdout)
+
+# apply a named color
+print(renderer.color("hello", kamilog.AnsiColor.CYAN))
+
+# apply a color with bold
+print(renderer.color("hello", kamilog.AnsiColor.GREEN, use_bold=True))
+
+# apply grey (used internally for timestamps and source labels)
+print(renderer.color_grey("muted text"))
+```
+
+`AnsiRenderer` detects TTY status once at construction. When `stream` is not a TTY (e.g. piped output), all methods return their input unchanged — no escape codes are emitted.
+
+`AnsiColor` members: `GREY`, `CYAN`, `BRIGHT_CYAN`, `BLUE`, `BRIGHT_BLUE`, `GREEN`, `BRIGHT_GREEN`, `YELLOW`, `BRIGHT_YELLOW`, `RED`, `BRIGHT_RED`, `BRIGHT_MAGENTA`, `RESET`, `BOLD`.
+
+
+## Line Padding
+
+Three functions print a fixed-width line by filling `line_width` (default 80) with a repeated `padding` character around `content`. A two-space separator is always placed between `content` and the fill.
+
+```python
+import kamilog
+
+kamilog.print_line_padding_centered("hello", "=")
+kamilog.print_line_padding_left_just("hello", "=")
+kamilog.print_line_padding_right_just("hello", "=")
+```
+
+All three functions accept the same keyword arguments as `print()` (`end`, `file`, `flush`) plus an optional `renderer` kwarg:
+
+```python
+import sys
+import kamilog
+
+# reuse a renderer across calls for consistent color state
+renderer = kamilog.print_line_padding_centered("section", "#")
+kamilog.print_line_padding_centered("subsection", "-", renderer=renderer)
+
+# custom width
+kamilog.print_line_padding_centered("title", "*", line_width=40)
+```
+
+All three raise `ValueError` when:
+- `content` contains a newline
+- `len(content)` exceeds `line_width`
+- `padding` is not exactly one printable non-space character
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## Verbosity and Logging Level
 
 Set up a parser with `-v`/`--verbose` and `-q`/`--quiet` options:
