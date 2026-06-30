@@ -893,7 +893,6 @@ def set_logging_level_by_verbosity(namespace, *, logger=None, logger_name=None):
 
 
 _CONTENT_SPACING = "  "
-# TODO add color support
 
 
 def _print_line_padding_generic(
