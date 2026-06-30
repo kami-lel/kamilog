@@ -872,7 +872,15 @@ def _print_line_padding_generic(
     if not padding.isprintable() or padding == " ":
         raise ValueError("param padding must be a normal printable character")
 
-    padded_content = content  # TODO mpl line padding
+    remaining = line_width - len(content)
+    if mode == 1:  # left justified
+        padded_content = content + padding * remaining
+    elif mode == 2:  # right justified
+        padded_content = padding * remaining + content
+    else:  # centered
+        left = remaining // 2
+        right = remaining - left
+        padded_content = padding * left + content + padding * right
 
     print(padded_content, end=end, file=file, flush=flush)
 
