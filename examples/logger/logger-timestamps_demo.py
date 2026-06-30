@@ -1,53 +1,60 @@
 """
 logger-timestamps_demo.py
 
-demonstrate named loggers with various ``datefmt`` and timestamp options
+demonstrate all four ``DATEFMT_*`` timestamp formats and ``relative_to``
+elapsed-time display
 """
 
-# FIXME rewrite demos
-
-
+import time
 import kamilog
+from kamilog.kamilog import print_line_padding_centered
 
-log = kamilog.getLogger()
+
+renderer = print_line_padding_centered("datefmt formats", "#")
+
+log = kamilog.getLogger("app")
 log.setLevel(kamilog.DEBUG)
-log.info("info message")
-log.warning("warning message")
+log.propagate = False
+log.info("no timestamp (default)")
 
-log_a = kamilog.getLogger("a")
-log_a.setLevel(kamilog.DEBUG)
-log_a.propagate = False
-log_a.debug("first message")
-log_a.error("second message")
+log_t = kamilog.getLogger("app.time", datefmt=kamilog.DATEFMT_TIME)
+log_t.setLevel(kamilog.DEBUG)
+log_t.propagate = False
+log_t.info("HH:MM:SS")
 
-log_db = kamilog.getLogger("database")
-log_db.setLevel(kamilog.DEBUG)
-log_db.propagate = False
-log_db.warning("first message")
-log_db.info("second message")
-
-log_time = kamilog.getLogger("srv", datefmt=kamilog.DATEFMT_TIME)
-log_time.setLevel(kamilog.DEBUG)
-log_time.propagate = False
-log_time.debug("first message")
-log_time.info("second message")
-
-log_full = kamilog.getLogger("worker_pool", datefmt=kamilog.DATEFMT_DATETIME)
-log_full.setLevel(kamilog.DEBUG)
-log_full.propagate = False
-log_full.error("first message")
-log_full.critical("second message")
-
-log_ms = kamilog.getLogger("api", datefmt=kamilog.DATEFMT_TIME_MS)
-log_ms.setLevel(kamilog.DEBUG)
-log_ms.propagate = False
-log_ms.warning("first message")
-log_ms.debug("second message")
-
-log_full_ms = kamilog.getLogger(
-    "hooks_runner", datefmt=kamilog.DATEFMT_DATETIME_MS
+log_tms = kamilog.getLogger(
+    "app.time_ms", datefmt=kamilog.DATEFMT_TIME_MS
 )
-log_full_ms.setLevel(kamilog.DEBUG)
-log_full_ms.propagate = False
-log_full_ms.enter("entering hook")
-log_full_ms.pass_("hook passed")
+log_tms.setLevel(kamilog.DEBUG)
+log_tms.propagate = False
+log_tms.info("HH:MM:SS.mmm")
+
+log_dt = kamilog.getLogger(
+    "app.datetime", datefmt=kamilog.DATEFMT_DATETIME
+)
+log_dt.setLevel(kamilog.DEBUG)
+log_dt.propagate = False
+log_dt.info("YYYY-MM-DD HH:MM:SS")
+
+log_dt_ms = kamilog.getLogger(
+    "app.datetime_ms", datefmt=kamilog.DATEFMT_DATETIME_MS
+)
+log_dt_ms.setLevel(kamilog.DEBUG)
+log_dt_ms.propagate = False
+log_dt_ms.info("YYYY-MM-DD HH:MM:SS.mmm")
+
+
+print_line_padding_centered(
+    "relative_to elapsed time", "#", renderer=renderer
+)
+
+start = time.time()
+log_rel = kamilog.getLogger("task", relative_to=start)
+log_rel.setLevel(kamilog.DEBUG)
+log_rel.propagate = False
+
+log_rel.info("task started")
+time.sleep(0.5)
+log_rel.debug("0.5s elapsed")
+time.sleep(1.0)
+log_rel.done("1.5s elapsed — task complete")

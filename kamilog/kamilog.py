@@ -955,7 +955,7 @@ def _print_line_padding_generic(
 # Line Padding Public API  =====================================================
 
 
-def print_line_padding_centered(*args, renderer=None, **kwargs):
+def print_line_padding_centered(*args, **kwargs):
     """
     print ``content`` centered, filling both sides with ``padding`` to
     reach ``line_width``.
@@ -990,10 +990,10 @@ def print_line_padding_centered(*args, renderer=None, **kwargs):
     >>> print_line_padding_centered("hi", "=", line_width=20)
     =======  hi  =======
     """
-    return _print_line_padding_generic(0, *args, renderer=renderer, **kwargs)
+    return _print_line_padding_generic(0, *args, **kwargs)
 
 
-def print_line_padding_left_just(*args, renderer=None, **kwargs):
+def print_line_padding_left_just(*args, **kwargs):
     """
     print ``content`` left-justified, filling the right with ``padding``.
 
@@ -1005,10 +1005,10 @@ def print_line_padding_left_just(*args, renderer=None, **kwargs):
     >>> print_line_padding_left_just("hi", "=", line_width=20)
     hi  ================
     """
-    return _print_line_padding_generic(1, *args, renderer=renderer, **kwargs)
+    return _print_line_padding_generic(1, *args, **kwargs)
 
 
-def print_line_padding_right_just(*args, renderer=None, **kwargs):
+def print_line_padding_right_just(*args, **kwargs):
     """
     print ``content`` right-justified, filling the left with ``padding``.
 
@@ -1020,4 +1020,4 @@ def print_line_padding_right_just(*args, renderer=None, **kwargs):
     >>> print_line_padding_right_just("hi", "=", line_width=20)
     ================  hi
     """
-    return _print_line_padding_generic(2, *args, renderer=renderer, **kwargs)
+    return _print_line_padding_generic(2, *args, **kwargs)

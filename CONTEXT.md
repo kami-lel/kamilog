@@ -34,9 +34,7 @@ kamilog/
 │   └── logger/
 │       ├── logger-all_levels_demo.py        # all eleven log levels with descriptions
 │       ├── logger-basic_demo.py             # standard and custom levels side by side
-│       ├── logger-timestamps_demo.py        # named loggers with various datefmt options
-│       ├── logger-timestamps-format_demo.py # all four DATEFMT_* constants in sequence
-│       ├── logger-timestamps-relative_demo.py # relative_to with positive/negative elapsed time
+│       ├── logger-timestamps_demo.py        # all four DATEFMT_* formats and relative_to
 │       ├── logger-diff_only_demo.py         # _DiffOnlyMsgFilter scenarios
 │       └── logger-diff_only_stress_demo.py  # short vs. long message compression contrast
 ├── docs/
