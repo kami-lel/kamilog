@@ -30,6 +30,7 @@ kamilog/
 ├── examples/
 │   ├── examples_note                        # open Fixme/Todo items for examples
 │   ├── line_padding_demo.py                 # all three line-padding functions
+│   ├── verbosity_demo.py                    # CLI -v/-q flags with custom levels
 │   └── logger/
 │       ├── logger-all_levels_demo.py        # all eleven log levels with descriptions
 │       ├── logger-basic_demo.py             # standard and custom levels side by side
@@ -37,8 +38,7 @@ kamilog/
 │       ├── logger-timestamps-format_demo.py # all four DATEFMT_* constants in sequence
 │       ├── logger-timestamps-relative_demo.py # relative_to with positive/negative elapsed time
 │       ├── logger-diff_only_demo.py         # _DiffOnlyMsgFilter scenarios
-│       ├── logger-diff_only_stress_demo.py  # short vs. long message compression contrast
-│       └── timestamps-verbosity_demo.py     # CLI -v/-q flags driving root logger level
+│       └── logger-diff_only_stress_demo.py  # short vs. long message compression contrast
 ├── docs/
 │   ├── usage_doc.md         # public API reference with examples
 │   └── install_guide.md     # installation methods
