@@ -37,6 +37,10 @@ __all__ = (
     "DATEFMT_TIME_MS",
     "DATEFMT_DATETIME",
     "DATEFMT_DATETIME_MS",
+    # line padding
+    "print_line_padding_centered",
+    "print_line_padding_left_just",
+    "print_line_padding_right_just",
 )
 
 
@@ -852,7 +856,6 @@ def set_logging_level_by_verbosity(namespace, *, logger=None, logger_name=None):
 # Line Padding Public API  =====================================================
 
 # Todo add color support
-# TODO unit test for padding
 
 
 def _print_line_padding_generic(
