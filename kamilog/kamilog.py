@@ -194,7 +194,7 @@ logging.setLoggerClass(KamiLogger)
 logging.root.__class__ = KamiLogger
 
 
-# Fixme color as unique module
+# FIXME color as unique module
 
 
 class _AnsiPalette:  # =========================================================
@@ -853,7 +853,7 @@ def set_logging_level_by_verbosity(namespace, *, logger=None, logger_name=None):
 # Line Padding  ################################################################
 
 
-# Todo add color support
+# TODO add color support
 
 _CONTENT_SPACING = "  "
 
