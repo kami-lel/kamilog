@@ -29,15 +29,16 @@ kamilog/
 │   └── source_quality_test.py       # banned-marker scan (no TODO/FIXME/HACK/BUG)
 ├── examples/
 │   ├── examples_note                        # open Fixme/Todo items for examples
+│   ├── line_padding_demo.py                 # all three line-padding functions
 │   └── logger/
-│       ├── logger-all_levels.py             # all eleven log levels with descriptions
-│       ├── logger-basic.py                  # standard and custom levels side by side
-│       ├── logger-timestamps.py             # named loggers with various datefmt options
-│       ├── logger-timestamps-format.py      # all four DATEFMT_* constants in sequence
-│       ├── logger-timestamps-relative.py    # relative_to with positive/negative elapsed time
-│       ├── logger-diff_only.py              # _DiffOnlyMsgFilter scenarios
-│       ├── logger-diff_only_stress.py       # short vs. long message compression contrast
-│       └── timestamps-verbosity.py          # CLI -v/-q flags driving root logger level
+│       ├── logger-all_levels_demo.py        # all eleven log levels with descriptions
+│       ├── logger-basic_demo.py             # standard and custom levels side by side
+│       ├── logger-timestamps_demo.py        # named loggers with various datefmt options
+│       ├── logger-timestamps-format_demo.py # all four DATEFMT_* constants in sequence
+│       ├── logger-timestamps-relative_demo.py # relative_to with positive/negative elapsed time
+│       ├── logger-diff_only_demo.py         # _DiffOnlyMsgFilter scenarios
+│       ├── logger-diff_only_stress_demo.py  # short vs. long message compression contrast
+│       └── timestamps-verbosity_demo.py     # CLI -v/-q flags driving root logger level
 ├── docs/
 │   ├── usage_doc.md         # public API reference with examples
 │   └── install_guide.md     # installation methods

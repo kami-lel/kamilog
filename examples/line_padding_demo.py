@@ -1,5 +1,5 @@
 """
-line_padding_example.py
+line_padding_demo.py
 
 demonstrate all three line-padding functions printed to stdout
 """

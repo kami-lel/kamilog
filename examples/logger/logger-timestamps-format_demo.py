@@ -1,5 +1,5 @@
 """
-logger-timestamps-format.py
+logger-timestamps-format_demo.py
 
 demonstrate all four ``DATEFMT_*`` timestamp format constants
 """

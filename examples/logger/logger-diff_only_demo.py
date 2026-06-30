@@ -1,5 +1,5 @@
 """
-diff_only.py
+logger-diff_only_demo.py
 
 demonstrate _DiffOnlyMsgFilter: characters repeated across the last
 ``window`` messages compress into 〃\\t markers; only what changed

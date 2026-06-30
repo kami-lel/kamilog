@@ -1,5 +1,5 @@
 """
-diff_only_stress.py
+logger-diff_only_stress_demo.py
 
 contrast long and short message compression under _DiffOnlyMsgFilter.
 """

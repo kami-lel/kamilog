@@ -1,5 +1,5 @@
 """
-logger-timestamps.py
+logger-timestamps_demo.py
 
 demonstrate named loggers with various ``datefmt`` and timestamp options
 """

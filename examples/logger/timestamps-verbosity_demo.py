@@ -1,15 +1,15 @@
 """
-timestamps-verbosity.py
+timestamps-verbosity_demo.py
 
 demonstrate CLI ``-v``/``-q`` flags driving the root logger level
 
 usage:
-    python timestamps-verbosity.py          # DONE and above (default)
-    python timestamps-verbosity.py -v       # INFO and above
-    python timestamps-verbosity.py -vv      # DEBUG and above
-    python timestamps-verbosity.py -q       # WARNING and above
-    python timestamps-verbosity.py -qq      # ERROR and above
-    python timestamps-verbosity.py -qqq     # CRITICAL and above
+    python timestamps-verbosity_demo.py          # DONE and above (default)
+    python timestamps-verbosity_demo.py -v       # INFO and above
+    python timestamps-verbosity_demo.py -vv      # DEBUG and above
+    python timestamps-verbosity_demo.py -q       # WARNING and above
+    python timestamps-verbosity_demo.py -qq      # ERROR and above
+    python timestamps-verbosity_demo.py -qqq     # CRITICAL and above
 """
 
 from argparse import ArgumentParser
