@@ -40,7 +40,7 @@ python tests/verbosity_test.py -vvv   # verbosity 3, level DEBUG
 python tests/verbosity_test.py -q     # verbosity -1, level WARNING
 ```
 
-Scope tests to the changed module before pushing — `tests/verbosity_test.py` for verbosity helpers, `tests/source_quality_test.py` for banned-marker scan.
+Scope tests to the changed module before pushing — `tests/verbosity_test.py` for verbosity helpers, `tests/lp/` for line-padding functions, `tests/source_quality_test.py` for banned-marker scan.
 
 ## Code Style
 
@@ -57,10 +57,10 @@ Tests live in `tests/` and use `pytest` class-based style (`class TestFoo`).
 
 Before merging:
 
-1. `pytest tests/` — all 25 tests must pass with zero failures.
+1. `pytest tests/` — all 77 tests must pass with zero failures.
 2. `tests/source_quality_test.py` scans `kamilog/kamilog.py` and `kamilog/__init__.py` for `todo`, `bug`, `fixme`, `hack` (case-insensitive) — leave none behind.
 
-When adding new public functions, add corresponding tests to an appropriate `tests/<feature>_test.py` file.
+When adding new public functions, add corresponding tests to an appropriate `tests/<feature>_test.py` file. Line-padding tests live under `tests/lp/` and follow the naming pattern `lp-<feature>_test.py`.
 
 ## PR & Commit Instructions
 
