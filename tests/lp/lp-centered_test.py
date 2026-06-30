@@ -11,23 +11,23 @@ from kamilog import print_line_padding_centered
 class TestLinePaddingCentered:
     def test_even_remaining(_):
         out = io.StringIO()
-        print_line_padding_centered("hi", "=", line_width=10, file=out)
-        assert out.getvalue() == "====hi====\n"
+        print_line_padding_centered("hi", "=", line_width=14, file=out)
+        assert out.getvalue() == "====  hi  ====\n"
 
     def test_odd_remaining_extra_right(_):
         out = io.StringIO()
         print_line_padding_centered("hi", "=", line_width=11, file=out)
-        assert out.getvalue() == "====hi=====\n"
+        assert out.getvalue() == "==  hi  ===\n"
 
     def test_empty_content(_):
         out = io.StringIO()
         print_line_padding_centered("", "=", line_width=6, file=out)
-        assert out.getvalue() == "======\n"
+        assert out.getvalue() == "=    =\n"
 
-    def test_content_fills_exactly(_):
+    def test_content_fills_with_no_padding(_):
         out = io.StringIO()
-        print_line_padding_centered("hi", "=", line_width=2, file=out)
-        assert out.getvalue() == "hi\n"
+        print_line_padding_centered("hi", "=", line_width=6, file=out)
+        assert out.getvalue() == "  hi  \n"
 
     def test_output_length_equals_line_width(_):
         out = io.StringIO()
@@ -43,12 +43,12 @@ class TestLinePaddingCentered:
 
     def test_custom_end(_):
         out = io.StringIO()
-        print_line_padding_centered("hi", "=", line_width=10, end="", file=out)
-        assert out.getvalue() == "====hi===="
+        print_line_padding_centered("hi", "=", line_width=14, end="", file=out)
+        assert out.getvalue() == "====  hi  ===="
 
     def test_custom_file(_):
         out = io.StringIO()
-        print_line_padding_centered("test", "#", line_width=12, file=out)
+        print_line_padding_centered("test", "#", line_width=16, file=out)
         assert "#" in out.getvalue()
         assert "test" in out.getvalue()
 
@@ -56,4 +56,4 @@ class TestLinePaddingCentered:
         out = io.StringIO()
         print_line_padding_centered("x", ".", line_width=5, file=out,
                                     flush=True)
-        assert out.getvalue() == "..x..\n"
+        assert out.getvalue() == "  x  \n"
