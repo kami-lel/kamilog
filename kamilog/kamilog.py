@@ -853,9 +853,9 @@ def set_logging_level_by_verbosity(namespace, *, logger=None, logger_name=None):
 # Line Padding  ################################################################
 
 
-# Line Padding Public API  =====================================================
-
 # Todo add color support
+
+_CONTENT_SPACING = "  "
 
 
 def _print_line_padding_generic(
@@ -881,19 +881,26 @@ def _print_line_padding_generic(
     if not padding.isprintable() or padding == " ":
         raise ValueError("param padding must be a normal printable character")
 
-    # BUG add spacing
-
-    remaining = line_width - len(content)
+    remaining = line_width - len(content) - len(_CONTENT_SPACING) * 2
     if mode == 1:  # left justified
-        padded_content = content + padding * remaining
+        padded_content = content + _CONTENT_SPACING + padding * remaining
     elif mode == 2:  # right justified
-        padded_content = padding * remaining + content
+        padded_content = padding * remaining + _CONTENT_SPACING + content
     else:  # centered
         left = remaining // 2
         right = remaining - left
-        padded_content = padding * left + content + padding * right
+        padded_content = (
+            padding * left
+            + _CONTENT_SPACING
+            + content
+            + _CONTENT_SPACING
+            + padding * right
+        )
 
     print(padded_content, end=end, file=file, flush=flush)
+
+
+# Line Padding Public API  =====================================================
 
 
 def print_line_padding_centered(*args, **kwargs):
@@ -924,7 +931,7 @@ def print_line_padding_centered(*args, **kwargs):
             non-space character
     :example:
     >>> print_line_padding_centered("hi", "=", line_width=20)
-    =========hi=========
+    =======  hi  =======
     """
     _print_line_padding_generic(0, *args, **kwargs)
 
@@ -939,7 +946,7 @@ def print_line_padding_left_just(*args, **kwargs):
 
     :example:
     >>> print_line_padding_left_just("hi", "=", line_width=20)
-    hi==================
+    hi  ================
     """
     _print_line_padding_generic(1, *args, **kwargs)
 
@@ -954,6 +961,6 @@ def print_line_padding_right_just(*args, **kwargs):
 
     :example:
     >>> print_line_padding_right_just("hi", "=", line_width=20)
-    ==================hi
+    ================  hi
     """
     _print_line_padding_generic(2, *args, **kwargs)
