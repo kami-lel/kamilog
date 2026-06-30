@@ -29,18 +29,11 @@ pytest tests/
 Run a single test file or test:
 
 ```bash
-pytest tests/verbosity_test.py
-pytest tests/verbosity_test.py::TestCalcLoggingLevel::test_v2
+pytest tests/v/v-calc_logging_level_test.py
+pytest tests/v/v-calc_logging_level_test.py::TestCalcLoggingLevel::test_v2
 ```
 
-The verbosity test doubles as a manual smoke-test:
-
-```bash
-python tests/verbosity_test.py -vvv   # verbosity 3, level DEBUG
-python tests/verbosity_test.py -q     # verbosity -1, level WARNING
-```
-
-Scope tests to the changed module before pushing — `tests/verbosity_test.py` for verbosity helpers, `tests/lp/` for line-padding functions, `tests/source_quality_test.py` for banned-marker scan.
+Scope tests to the changed module before pushing — `tests/v/` for verbosity helpers, `tests/lp/` for line-padding functions, `tests/source_quality_test.py` for banned-marker scan.
 
 ## Code Style
 
@@ -57,10 +50,10 @@ Tests live in `tests/` and use `pytest` class-based style (`class TestFoo`).
 
 Before merging:
 
-1. `pytest tests/` — all 77 tests must pass with zero failures.
+1. `pytest tests/` — all 76 tests must pass with zero failures.
 2. `tests/source_quality_test.py` scans `kamilog/kamilog.py` and `kamilog/__init__.py` for `todo`, `bug`, `fixme`, `hack` (case-insensitive) — leave none behind.
 
-When adding new public functions, add corresponding tests to an appropriate `tests/<feature>_test.py` file. Line-padding tests live under `tests/lp/` and follow the naming pattern `lp-<feature>_test.py`.
+When adding new public functions, add corresponding tests under the relevant subdirectory — `tests/v/` for verbosity helpers (named `v-<feature>_test.py`), `tests/lp/` for line-padding functions (named `lp-<feature>_test.py`).
 
 ## PR & Commit Instructions
 

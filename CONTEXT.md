@@ -16,13 +16,17 @@ kamilog/
 │   ├── __init__.py          # re-exports all public symbols from kamilog.py
 │   └── kamilog.py           # entire implementation (~970 lines)
 ├── tests/
-│   ├── lp/                      # line-padding test suite
+│   ├── lp/                          # line-padding test suite
 │   │   ├── lp-centered_test.py
 │   │   ├── lp-left_just_test.py
 │   │   ├── lp-right_just_test.py
 │   │   └── lp-validation_test.py
-│   ├── verbosity_test.py        # pytest suite for verbosity helpers
-│   └── source_quality_test.py  # banned-marker scan (no TODO/FIXME/HACK/BUG)
+│   ├── v/                           # verbosity helper test suite
+│   │   ├── v-add_verbose_arguments_test.py
+│   │   ├── v-calc_logging_level_test.py
+│   │   ├── v-calc_logging_level_namespace_test.py
+│   │   └── v-set_logging_level_by_verbosity_test.py
+│   └── source_quality_test.py       # banned-marker scan (no TODO/FIXME/HACK/BUG)
 ├── examples/
 │   ├── all_levels.py        # all log levels with descriptions
 │   ├── basic_logging.py     # standard + custom levels
