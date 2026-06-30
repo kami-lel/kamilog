@@ -1,6 +1,6 @@
 # kamilog CONTEXT
 
-*Last updated: 2026-06-29 (v1.6.2)*
+*Last updated: 2026-06-30 (v1.6.2)*
 
 ## Project Overview
 
@@ -14,9 +14,14 @@ Repository: <https://github.com/kami-lel/kamilog>
 kamilog/
 ├── kamilog/
 │   ├── __init__.py          # re-exports all public symbols from kamilog.py
-│   └── kamilog.py           # entire implementation (~600 lines)
+│   └── kamilog.py           # entire implementation (~970 lines)
 ├── tests/
-│   ├── verbosity_test.py    # pytest suite for verbosity helpers
+│   ├── lp/                      # line-padding test suite
+│   │   ├── lp-centered_test.py
+│   │   ├── lp-left_just_test.py
+│   │   ├── lp-right_just_test.py
+│   │   └── lp-validation_test.py
+│   ├── verbosity_test.py        # pytest suite for verbosity helpers
 │   └── source_quality_test.py  # banned-marker scan (no TODO/FIXME/HACK/BUG)
 ├── examples/
 │   ├── all_levels.py        # all log levels with descriptions
@@ -127,10 +132,32 @@ Algorithm (`_DiffOnlyEngine`):
 
 The original (uncompressed) message is stored in `_history` so compression decisions are always based on the raw text, not prior compressed output.
 
+### Line Padding Utilities
+
+Three public functions that print a fixed-width line by padding `content` with a repeated character to fill `line_width` (default 80). All share the same signature via a private dispatcher `_print_line_padding_generic(mode, content, padding, *, line_width, end, file, flush)`.
+
+A two-space separator (`_CONTENT_SPACING = "  "`) is always inserted between `content` and the padding fill. For centered mode it is placed on both sides; for left/right modes on one side only.
+
+Input validation (raises `ValueError`):
+- `content` must be a single line (no `\n`)
+- `len(content)` must not exceed `line_width`
+- `padding` must be exactly one printable, non-space character
+
+| function | mode | layout |
+| --- | --- | --- |
+| `print_line_padding_centered` | 0 | `padding * left + "  " + content + "  " + padding * right` (remainder split evenly; odd char goes right) |
+| `print_line_padding_left_just` | 1 | `content + "  " + padding * remaining` |
+| `print_line_padding_right_just` | 2 | `padding * remaining + "  " + content` |
+
 ## Public API Surface
 
 ```python
 kamilog.getLogger(name=None, *, datefmt=None, relative_to=None) -> KamiLogger
+
+# line padding
+kamilog.print_line_padding_centered(content, padding, *, line_width=80, end, file, flush)
+kamilog.print_line_padding_left_just(content, padding, *, line_width=80, end, file, flush)
+kamilog.print_line_padding_right_just(content, padding, *, line_width=80, end, file, flush)
 
 # log level constants
 kamilog.NOTSET, DEBUG, ENTER, SKIP, INFO, PASS, SUCC, DONE,
@@ -162,4 +189,4 @@ Verbosity mapping (default level is `DONE` = 25):
 ## Known Limitations and Future Work
 
 - No file handler option on `getLogger()` — stdout/stderr only.
-- Test coverage is limited to verbosity helpers and a banned-marker scan; no unit tests for `_LogFormatter` or `_DiffOnlyMsgFilter`.
+- Test coverage spans verbosity helpers and line-padding functions; no unit tests for `_LogFormatter` or `_DiffOnlyMsgFilter`.

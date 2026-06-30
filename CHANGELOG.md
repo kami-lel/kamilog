@@ -20,6 +20,10 @@
 
 ### Added
 
+- `print_line_padding_centered(content, padding, *, line_width=80, end, file, flush)` — prints `content` centered between `padding` characters filling `line_width`; two spaces are inserted on each side of `content` as a fixed separator
+- `print_line_padding_left_just(content, padding, *, line_width=80, end, file, flush)` — prints `content` left-justified with a two-space separator before the right-side `padding` fill
+- `print_line_padding_right_just(content, padding, *, line_width=80, end, file, flush)` — prints `content` right-justified with a two-space separator after the left-side `padding` fill; all three raise `ValueError` when `content` is multi-line or exceeds `line_width`, or when `padding` is not a single printable non-space character
+
 ### Changed
 
 ### Deprecated

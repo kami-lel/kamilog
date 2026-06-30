@@ -3,7 +3,6 @@
 A lightweight Python logging wrapper with structured output, custom log levels, ANSI 16-color support, and flexible timestamp options.
 
 <!--
-Todo implement padded print
 todo add file handler option for getLogger
 todo comprehensive unit tests
 todo allows use -V being equivalent to -vvv (v.v.)

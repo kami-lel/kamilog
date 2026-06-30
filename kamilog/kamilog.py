@@ -37,6 +37,10 @@ __all__ = (
     "DATEFMT_TIME_MS",
     "DATEFMT_DATETIME",
     "DATEFMT_DATETIME_MS",
+    # line padding
+    "print_line_padding_centered",
+    "print_line_padding_left_just",
+    "print_line_padding_right_just",
 )
 
 
@@ -188,6 +192,9 @@ class KamiLogger(logging.Logger):  # ===========================================
 logging.setLoggerClass(KamiLogger)
 # root logger exists before setLoggerClass — patch its class directly
 logging.root.__class__ = KamiLogger
+
+
+# Fixme color as unique module
 
 
 class _AnsiPalette:  # =========================================================
@@ -841,3 +848,119 @@ def set_logging_level_by_verbosity(namespace, *, logger=None, logger_name=None):
     if logger is None:
         logger = logging.getLogger(logger_name)
     logger.setLevel(_calc_logging_level_from_verbosity_namespace(namespace))
+
+
+# Line Padding  ################################################################
+
+
+# Todo add color support
+
+_CONTENT_SPACING = "  "
+
+
+def _print_line_padding_generic(
+    mode,
+    content,
+    padding,
+    *,
+    line_width=80,
+    end="\n",
+    file=sys.stdout,
+    flush=False,
+):
+    if "\n" in content:
+        raise ValueError("param content must be a single line")
+    if len(content) > line_width:
+        raise ValueError(
+            "param content length {} exceeds line_width {}".format(
+                len(content), line_width
+            )
+        )
+    if len(padding) != 1:
+        raise ValueError("param padding must be a single character")
+    if not padding.isprintable() or padding == " ":
+        raise ValueError("param padding must be a normal printable character")
+
+    remaining = line_width - len(content) - len(_CONTENT_SPACING) * 2
+    if mode == 1:  # left justified
+        padded_content = content + _CONTENT_SPACING + padding * remaining
+    elif mode == 2:  # right justified
+        padded_content = padding * remaining + _CONTENT_SPACING + content
+    else:  # centered
+        left = remaining // 2
+        right = remaining - left
+        padded_content = (
+            padding * left
+            + _CONTENT_SPACING
+            + content
+            + _CONTENT_SPACING
+            + padding * right
+        )
+
+    print(padded_content, end=end, file=file, flush=flush)
+
+
+# Line Padding Public API  =====================================================
+
+
+def print_line_padding_centered(*args, **kwargs):
+    """
+    print ``content`` centered, filling both sides with ``padding`` to
+    reach ``line_width``.
+
+    when the remaining width is odd, the extra character goes to the right.
+    odd remainder example with ``line_width=11``:
+    ``====hi=====``
+
+
+    :param content: text to print; must be a single, non-empty line no
+            longer than ``line_width``
+    :type content: str
+    :param padding: single printable non-space fill character
+    :type padding: str
+    :param line_width: total output width; defaults to ``80``
+    :type line_width: int
+    :param end: appended after output; defaults to ``"\\n"``
+    :type end: str
+    :param file: output stream; defaults to ``sys.stdout``
+    :type file: IO
+    :param flush: forcibly flush the stream; defaults to ``False``
+    :type flush: bool
+    :raises ValueError: if ``content`` contains ``"\\n"`` or exceeds
+            ``line_width``; if ``padding`` is not exactly one printable
+            non-space character
+    :example:
+    >>> print_line_padding_centered("hi", "=", line_width=20)
+    =======  hi  =======
+    """
+    _print_line_padding_generic(0, *args, **kwargs)
+
+
+def print_line_padding_left_just(*args, **kwargs):
+    """
+    print ``content`` left-justified, filling the right with ``padding``.
+
+    see :func:`print_line_padding_centered` for parameter and error
+    details.
+
+
+    :example:
+    >>> print_line_padding_left_just("hi", "=", line_width=20)
+    hi  ================
+    """
+    _print_line_padding_generic(1, *args, **kwargs)
+
+
+def print_line_padding_right_just(*args, **kwargs):
+    """
+    print ``content`` right-justified, filling the left with ``padding``.
+
+    see :func:`print_line_padding_centered` for parameter and error
+    details.
+
+
+    :example:
+    >>> print_line_padding_right_just("hi", "=", line_width=20)
+    ================  hi
+    """
+    _print_line_padding_generic(2, *args, **kwargs)
