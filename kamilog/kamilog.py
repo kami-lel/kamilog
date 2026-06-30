@@ -922,20 +922,22 @@ def _print_line_padding_generic(
     if renderer is None:
         renderer = AnsiRenderer(file)
 
-    remaining = line_width - len(content) - len(_CONTENT_SPACING) * 2
     if mode == 1:  # left justified
+        remaining = line_width - len(content) - len(_CONTENT_SPACING)
         padded_content = (
             content
             + _CONTENT_SPACING
             + renderer.color_grey(padding * remaining)
         )
     elif mode == 2:  # right justified
+        remaining = line_width - len(content) - len(_CONTENT_SPACING)
         padded_content = (
             renderer.color_grey(padding * remaining)
             + _CONTENT_SPACING
             + content
         )
     else:  # centered
+        remaining = line_width - len(content) - len(_CONTENT_SPACING) * 2
         left = remaining // 2
         right = remaining - left
         padded_content = (
