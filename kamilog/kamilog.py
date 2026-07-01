@@ -1,8 +1,9 @@
 """
-kamilog: Customized Logging Output Module
+kamilog.py
 
-Provides Python loggers with structured output, custom log levels,
-ANSI 16-color support, and flexible timestamp options.
+Customized Logging Output Module. Provides Python loggers with
+structured output, custom log levels, ANSI 16-color support, and
+flexible timestamp options.
 
 Q.v. https://github.com/kami-lel/kamilog
 """
@@ -184,7 +185,15 @@ class AnsiRenderer:  # =========================================================
         return self.color(text, color, use_bold=True)
 
     def color_grey(self, text):
-        """apply bright-black (grey) ANSI color to ``text``."""
+        """
+        apply bright-black (grey) ANSI color to ``text``.
+
+
+        :param text: text to colorize
+        :type text: str
+        :return: colored text, or ``text`` unchanged when disabled
+        :rtype: str
+        """
         return self.color(text, AnsiColor.GREY)
 
 
@@ -448,6 +457,9 @@ class _LogFormatEngine:  # *****************************************************
 
     def _fmt_asctime(self, asctime):
         """
+        color ``asctime`` grey.
+
+
         :param asctime: pre-formatted datetime string
         :type asctime: str
         :return: asctime in grey, or plain if color disabled
@@ -457,6 +469,9 @@ class _LogFormatEngine:  # *****************************************************
 
     def _fmt_level(self, levelno):
         """
+        build the padded, colored level-name segment.
+
+
         :param levelno: numeric logging level
         :type levelno: int
         :return: 5-char padded level name, colored and bold if enabled
