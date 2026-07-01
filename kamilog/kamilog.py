@@ -1,14 +1,12 @@
 """
 kamilog.py
 
-customized Logging Output Module. Provides Python loggers with
-structured output, custom log levels, ANSI 16-color support, and
-flexible timestamp options.
+Lightweight Python logging wrapper with custom log levels, structured output,
+ANSI colored logging, verbosity control, line-padding utilities, and CLI.
 
-Q.v. https://github.com/kami-lel/kamilog
+Q.v. https://github.com/kami-lel/kamilog for Project Main Page
+Q.v. https://github.com/kami-lel/kamilog/tree/main/docs for Documentation
 """
-
-# TODO better all docstring
 
 from argparse import ArgumentParser
 import logging
@@ -57,10 +55,16 @@ __author__ = "kamiLeL"
 
 
 # enum  ########################################################################
-
-
 class _CustomLogLevel(IntEnum):
-    """custom log level with padded display name."""
+    """
+    custom log level IntEnum with padded 5-char display name.
+
+
+    :param value: numeric log level (used as the enum's int value)
+    :type value: int
+    :param display: padded 5-character display string for formatter output
+    :type display: str
+    """
 
     def __new__(cls, value, display):
         obj = int.__new__(cls, value)
@@ -82,6 +86,8 @@ for _lvl in _CustomLogLevel:
 
 
 # ANSI Color   #################################################################
+
+# TODO better all docstring
 
 
 class AnsiColor(Enum):  # =====================================================
