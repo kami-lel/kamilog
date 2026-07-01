@@ -8,6 +8,8 @@ flexible timestamp options.
 Q.v. https://github.com/kami-lel/kamilog
 """
 
+# TODO better all docstring
+
 from argparse import ArgumentParser
 import logging
 import sys

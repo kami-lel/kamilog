@@ -80,7 +80,7 @@ WARN. myapp: Warning message
 
 `KamiLogger` extends the standard library logger with six custom levels for test and hook workflows. Full level reference:
 
-<!-- Fixme better description of usage, and pairs -->
+<!-- FIXME better description of usage, and pairs -->
 
 | Level | Num | Function | Color | ANSI Code | Meaning |
 |---|---|---|---|---|---|
