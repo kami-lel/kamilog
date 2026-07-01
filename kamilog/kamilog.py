@@ -8,6 +8,7 @@ flexible timestamp options.
 Q.v. https://github.com/kami-lel/kamilog
 """
 
+from argparse import ArgumentParser
 import logging
 import sys
 import time
@@ -945,30 +946,9 @@ def _print_line_padding_generic(
     centered/left/right public wrappers.
 
 
-    :param mode: padding style; ``0`` centered, ``1`` left-justified,
-            ``2`` right-justified
-    :type mode: int
-    :param content: text to print; must be a single, non-empty line no
-            longer than ``line_width``
-    :type content: str
-    :param padding: single printable non-space fill character
-    :type padding: str
-    :param line_width: total output width; defaults to ``80``
-    :type line_width: int
-    :param end: appended after output; defaults to ``"\\n"``
-    :type end: str
-    :param file: output stream; defaults to ``sys.stdout``
-    :type file: IO
-    :param flush: forcibly flush the stream; defaults to ``False``
-    :type flush: bool
-    :param renderer: ANSI color renderer;
-            if ``None``, created from ``file`` argument
-    :type renderer: AnsiRenderer or None
-    :raises ValueError: if ``content`` contains ``"\\n"`` or exceeds
-            ``line_width``; if ``padding`` is not exactly one printable
-            non-space character
-    :return: ANSI color renderer instance
-    :rtype: AnsiRenderer
+    :param mode: padding style; ``"c"`` centered, ``"l"`` left-justified,
+            ``"r"`` right-justified
+    :type mode: str
     """
     if "\n" in content:
         raise ValueError("param content must be a single line")
@@ -986,21 +966,21 @@ def _print_line_padding_generic(
     if renderer is None:
         renderer = AnsiRenderer(file)
 
-    if mode == 1:  # left justified
+    if mode == "l":  # left justified
         remaining = line_width - len(content) - len(_CONTENT_SPACING)
         padded_content = (
             content
             + _CONTENT_SPACING
             + renderer.color_grey(padding * remaining)
         )
-    elif mode == 2:  # right justified
+    elif mode == "r":  # right justified
         remaining = line_width - len(content) - len(_CONTENT_SPACING)
         padded_content = (
             renderer.color_grey(padding * remaining)
             + _CONTENT_SPACING
             + content
         )
-    else:  # centered
+    else:  # centered (mode == "c")
         remaining = line_width - len(content) - len(_CONTENT_SPACING) * 2
         left = remaining // 2
         right = remaining - left
@@ -1054,7 +1034,7 @@ def print_line_padding_centered(*args, **kwargs):
     >>> print_line_padding_centered("hi", "=", line_width=20)
     =======  hi  =======
     """
-    return _print_line_padding_generic(0, *args, **kwargs)
+    return _print_line_padding_generic("c", *args, **kwargs)
 
 
 def print_line_padding_left_just(*args, **kwargs):
@@ -1069,7 +1049,7 @@ def print_line_padding_left_just(*args, **kwargs):
     >>> print_line_padding_left_just("hi", "=", line_width=20)
     hi  ================
     """
-    return _print_line_padding_generic(1, *args, **kwargs)
+    return _print_line_padding_generic("l", *args, **kwargs)
 
 
 def print_line_padding_right_just(*args, **kwargs):
@@ -1084,4 +1064,70 @@ def print_line_padding_right_just(*args, **kwargs):
     >>> print_line_padding_right_just("hi", "=", line_width=20)
     ================  hi
     """
-    return _print_line_padding_generic(2, *args, **kwargs)
+    return _print_line_padding_generic("r", *args, **kwargs)
+
+
+# CLI  #########################################################################
+
+# main parser  =================================================================
+
+cli_parser = ArgumentParser(prog=__package__, description="")
+# TODO write description
+cli_parser.set_defaults(func=lambda _: cli_parser.print_help())
+cli_subparser = cli_parser.add_subparsers(title="subcommands")
+
+# line padding parser  =========================================================
+
+
+def _line_padding_parser_main(args):
+    """
+    execute the line-padding subcommand.
+
+
+    :param args: parsed arguments containing mode, content, padding,
+            line_width, and stderr flag
+    :type args: argparse.Namespace
+    """
+    file = sys.stderr if args.stderr else sys.stdout
+    _print_line_padding_generic(
+        args.mode,
+        args.content,
+        args.padding,
+        line_width=args.line_width,
+        file=file,
+    )
+
+
+line_padding_parser = cli_subparser.add_parser(
+    "line_padding",
+    help="print content padded to line width",
+    description="print content padded to line width with padding character",
+    aliases=["lp"],
+)
+
+line_padding_parser.add_argument(
+    "mode",
+    choices=["c", "l", "r"],
+    help="padding mode: c=centered, l=left-justified, r=right-justified",
+)
+line_padding_parser.add_argument(
+    "content",
+    help="text to print; must be a single line no longer than line-width",
+)
+line_padding_parser.add_argument(
+    "padding",
+    help="single printable non-space fill character",
+)
+line_padding_parser.add_argument(
+    "--line-width",
+    type=int,
+    default=80,
+    help="total output width (default: 80)",
+)
+line_padding_parser.add_argument(
+    "--stderr",
+    action="store_true",
+    help="print to stderr instead of stdout",
+)
+
+line_padding_parser.set_defaults(func=_line_padding_parser_main)
