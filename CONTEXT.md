@@ -28,7 +28,6 @@ kamilog/
 │   │   └── v-set_logging_level_by_verbosity_test.py
 │   └── source_quality_test.py       # banned-marker scan (no TODO/FIXME/HACK/BUG)
 ├── examples/
-│   ├── examples_note                        # open Fixme/Todo items for examples
 │   ├── line_padding_demo.py                 # all three line-padding functions
 │   ├── verbosity_demo.py                    # CLI -v/-q flags with custom levels
 │   └── logger/
@@ -172,7 +171,9 @@ Input validation (raises `ValueError`):
 
 ### Command-Line Interface
 
-The module provides a CLI entry point via `python -m kamilog` with an argparse-based subcommand structure. The `line_padding` subcommand (alias: `lp`) wraps the line-padding functions with string-based mode selection.
+The module provides a CLI entry point via direct script execution (`python kamilog/kamilog.py`) with an argparse-based subcommand structure. The `line_padding` subcommand (alias: `lp`) wraps the line-padding functions with string-based mode selection.
+
+Note: `python -m kamilog` does not work — the package has no `kamilog/__main__.py`. Use direct script execution (`python kamilog/kamilog.py`) instead.
 
 **CLI module organization**:
 - `cli_parser` — root ArgumentParser with `cli_subparser` for subcommands

@@ -20,25 +20,50 @@
 
 ### Added
 
-- CLI interface via `python -m kamilog` or direct module execution with `if __name__ == "__main__"` pattern
-- `line_padding` subcommand (alias: `lp`) for command-line access to line padding utilities
-- Mode argument supporting both short (`c`, `l`, `r`) and long (`center`, `left`, `right`) forms for text alignment
-- `-w, --line-width LINE_WIDTH` option to customize output line width; defaults to 80 characters
-- `-e, --stderr` flag to direct output to stderr instead of stdout
-
 ### Changed
 
-- Updated docstrings across logger, formatting, and padding functions to Sphinx/reStructuredText style with proper field ordering and spacing
-- Simplified class and method docstrings: removed behavior details from classes, removed multi-line descriptions from public methods, reduced private methods to single-line summaries
-- `_print_line_padding_generic()` now accepts string modes (`"c"`, `"l"`, `"r"`) instead of integers for clarity; added comprehensive parameter documentation
-- README.md reorganized into 5 feature categories with emoji: 🎯 Custom Logging Experience, 🎨 ANSI Colored Output, ⚡ Verbosity Control, 📐 Line Padding Utilities, 💻 Command-Line Interface
-- docs/usage_doc.md restructured with updated Custom Log Levels table: refined level meanings, added 5 best-practice tips for usage patterns
+### Deprecated
+
+### Removed
 
 ### Fixed
 
-- Mode comparison in `_print_line_padding_generic()` was checking string modes when receiving integer arguments; corrected to use string mode values
+### Security
 
-[unreleased]: https://github.com/kami-lel/kamilog/compare/v1.7.0...dev
+[unreleased]: https://github.com/kami-lel/kamilog/compare/v1.8.0...dev
+
+
+
+
+
+
+
+
+
+
+
+
+
+## [1.8.0] - 2026-07-02
+
+### Added
+
+- CLI (`python kamilog/kamilog.py`) with a `line_padding` subcommand (alias: `lp`)
+- Mode argument accepts short (`c`, `l`, `r`) or long (`center`, `left`, `right`) forms
+- `-w, --line-width` option (default 80) and `-e, --stderr` flag for the CLI
+
+### Changed
+
+- Docstrings condensed to Sphinx/reStructuredText style throughout the module
+- `_print_line_padding_generic()` now takes string modes (`"c"`, `"l"`, `"r"`) instead of integers
+- README reorganized into emoji-labeled feature sections
+- docs/usage_doc.md: refined Custom Log Levels table, added usage tips
+
+### Fixed
+
+- `_print_line_padding_generic()` mode comparison corrected to match its string-based modes
+
+[1.8.0]: https://github.com/kami-lel/kamilog/compare/v1.7.0...v1.8.0
 
 
 

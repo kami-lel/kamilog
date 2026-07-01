@@ -553,5 +553,5 @@ Verbosity-to-logging-level mapping:
 The line-padding utilities are accessible via CLI:
 
 ```bash
-python kamilog.py line_padding -h
+python kamilog/kamilog.py line_padding -h
 ```

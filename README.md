@@ -39,7 +39,7 @@ bug using different logger to print & diff only can produce confusing result
 
 #### 💻 Command-Line Interface
 
-- Built-in CLI for line padding via `python -m kamilog lp`
+- Built-in CLI for line padding via `python kamilog/kamilog.py lp`
 - Support for short and long mode aliases
 - Customizable output width and destination (stdout/stderr)
 
