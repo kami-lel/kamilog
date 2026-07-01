@@ -243,6 +243,7 @@ class KamiLogger(logging.Logger):  # ===========================================
         """
         Log at ``ENTER`` level (11): entering a hook or test case.
 
+
         :param message: log message
         :type message: str
         """
@@ -254,6 +255,7 @@ class KamiLogger(logging.Logger):  # ===========================================
     def skip(self, message, *args, **kwargs):
         """
         Log at ``SKIP`` level (12): skipping a hook or test case.
+
 
         :param message: log message
         :type message: str
@@ -267,6 +269,7 @@ class KamiLogger(logging.Logger):  # ===========================================
         """
         Log at ``PASS`` level (21): hook or test case passed.
 
+
         :param message: log message
         :type message: str
         """
@@ -278,6 +281,7 @@ class KamiLogger(logging.Logger):  # ===========================================
     def succ(self, message, *args, **kwargs):
         """
         Log at ``SUCC`` level (22): task or operation succeeded.
+
 
         :param message: log message
         :type message: str
@@ -291,6 +295,7 @@ class KamiLogger(logging.Logger):  # ===========================================
         """
         Log at ``DONE`` level (25): task or operation completed.
 
+
         :param message: log message
         :type message: str
         """
@@ -302,6 +307,7 @@ class KamiLogger(logging.Logger):  # ===========================================
     def fail(self, message, *args, **kwargs):
         """
         Log at ``FAIL`` level (45): hook or test case failed.
+
 
         :param message: log message
         :type message: str
@@ -482,6 +488,9 @@ class _LogFormatEngine:  # *****************************************************
 
     def _fmt_source(self, name):
         """
+        build the colored source-label segment.
+
+
         :param name: logger name
         :type name: str
         :return: ``"name:"`` in grey, or ``":"`` in grey if name is
@@ -497,6 +506,9 @@ class _LogFormatEngine:  # *****************************************************
 
     def _fmt_relative(self, created):
         """
+        format elapsed time relative to ``_relative_to``.
+
+
         :param created: Unix timestamp of the log record
         :type created: float
         :return: elapsed time as ``+HH:MM:SS.mmm`` or ``-HH:MM:SS.mmm``
@@ -756,8 +768,11 @@ class _DiffOnlyMsgFilter(logging.Filter):  # ***********************************
 # pylint: disable-next=invalid-name
 def getLogger(name=None, *, datefmt=None, relative_to=None):
     """
+    return a configured :class:`KamiLogger` for ``name``, creating it if needed.
+
+
     :param name: logger name
-    :type name: str
+    :type name: str, optional
     :param datefmt: strftime format for timestamps; ignored when ``relative_to`` is set;
             defaults to ``None`` (no timestamp)
     :type datefmt: str, optional
