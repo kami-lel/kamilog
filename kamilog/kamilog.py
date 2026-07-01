@@ -1,8 +1,9 @@
 """
-kamilog: Customized Logging Output Module
+kamilog.py
 
-Provides Python loggers with structured output, custom log levels,
-ANSI 16-color support, and flexible timestamp options.
+customized Logging Output Module. Provides Python loggers with
+structured output, custom log levels, ANSI 16-color support, and
+flexible timestamp options.
 
 Q.v. https://github.com/kami-lel/kamilog
 """
@@ -184,14 +185,22 @@ class AnsiRenderer:  # =========================================================
         return self.color(text, color, use_bold=True)
 
     def color_grey(self, text):
-        """apply bright-black (grey) ANSI color to ``text``."""
+        """
+        apply bright-black (grey) ANSI color to ``text``.
+
+
+        :param text: text to colorize
+        :type text: str
+        :return: colored text, or ``text`` unchanged when disabled
+        :rtype: str
+        """
         return self.color(text, AnsiColor.GREY)
 
 
-# logger  ######################################################################
+# Logger  ######################################################################
 
 
-# constants  ===================================================================
+# Constants  ===================================================================
 
 NOTSET = logging.NOTSET  # 0
 DEBUG = logging.DEBUG  # 10
@@ -207,7 +216,7 @@ FAIL = _CustomLogLevel.FAIL  # 45
 CRITICAL = logging.CRITICAL  # 50
 
 
-# datetime formats  ============================================================
+# Datetime Formats  ============================================================
 DATEFMT_TIME = "%H:%M:%S"
 DATEFMT_TIME_MS = "%H:%M:%S.{ms}"
 DATEFMT_DATETIME = "%Y-%m-%d %H:%M:%S"
@@ -216,7 +225,7 @@ DATEFMT_DATETIME_MS = "%Y-%m-%d %H:%M:%S.{ms}"
 
 class KamiLogger(logging.Logger):  # ===========================================
     """
-    Logger subclass extending :class:`logging.Logger` with six additional levels.
+    logger subclass extending :class:`logging.Logger` with six additional levels.
 
     Custom levels (in numeric order between standard ones):
 
@@ -232,7 +241,8 @@ class KamiLogger(logging.Logger):  # ===========================================
 
     def enter(self, message, *args, **kwargs):
         """
-        Log at ``ENTER`` level (11): entering a hook or test case.
+        log at ``ENTER`` level (11): entering a hook or test case.
+
 
         :param message: log message
         :type message: str
@@ -244,7 +254,8 @@ class KamiLogger(logging.Logger):  # ===========================================
 
     def skip(self, message, *args, **kwargs):
         """
-        Log at ``SKIP`` level (12): skipping a hook or test case.
+        log at ``SKIP`` level (12): skipping a hook or test case.
+
 
         :param message: log message
         :type message: str
@@ -256,7 +267,8 @@ class KamiLogger(logging.Logger):  # ===========================================
 
     def pass_(self, message, *args, **kwargs):
         """
-        Log at ``PASS`` level (21): hook or test case passed.
+        log at ``PASS`` level (21): hook or test case passed.
+
 
         :param message: log message
         :type message: str
@@ -268,7 +280,8 @@ class KamiLogger(logging.Logger):  # ===========================================
 
     def succ(self, message, *args, **kwargs):
         """
-        Log at ``SUCC`` level (22): task or operation succeeded.
+        log at ``SUCC`` level (22): task or operation succeeded.
+
 
         :param message: log message
         :type message: str
@@ -280,7 +293,8 @@ class KamiLogger(logging.Logger):  # ===========================================
 
     def done(self, message, *args, **kwargs):
         """
-        Log at ``DONE`` level (25): task or operation completed.
+        log at ``DONE`` level (25): task or operation completed.
+
 
         :param message: log message
         :type message: str
@@ -292,7 +306,8 @@ class KamiLogger(logging.Logger):  # ===========================================
 
     def fail(self, message, *args, **kwargs):
         """
-        Log at ``FAIL`` level (45): hook or test case failed.
+        log at ``FAIL`` level (45): hook or test case failed.
+
 
         :param message: log message
         :type message: str
@@ -448,6 +463,9 @@ class _LogFormatEngine:  # *****************************************************
 
     def _fmt_asctime(self, asctime):
         """
+        color ``asctime`` grey.
+
+
         :param asctime: pre-formatted datetime string
         :type asctime: str
         :return: asctime in grey, or plain if color disabled
@@ -457,6 +475,9 @@ class _LogFormatEngine:  # *****************************************************
 
     def _fmt_level(self, levelno):
         """
+        build the padded, colored level-name segment.
+
+
         :param levelno: numeric logging level
         :type levelno: int
         :return: 5-char padded level name, colored and bold if enabled
@@ -467,6 +488,9 @@ class _LogFormatEngine:  # *****************************************************
 
     def _fmt_source(self, name):
         """
+        build the colored source-label segment.
+
+
         :param name: logger name
         :type name: str
         :return: ``"name:"`` in grey, or ``":"`` in grey if name is
@@ -482,6 +506,9 @@ class _LogFormatEngine:  # *****************************************************
 
     def _fmt_relative(self, created):
         """
+        format elapsed time relative to ``_relative_to``.
+
+
         :param created: Unix timestamp of the log record
         :type created: float
         :return: elapsed time as ``+HH:MM:SS.mmm`` or ``-HH:MM:SS.mmm``
@@ -735,14 +762,17 @@ class _DiffOnlyMsgFilter(logging.Filter):  # ***********************************
         return True
 
 
-# logger Public API  ===========================================================
+# Logger Public API  ===========================================================
 
 
 # pylint: disable-next=invalid-name
 def getLogger(name=None, *, datefmt=None, relative_to=None):
     """
+    return a configured :class:`KamiLogger` for ``name``, creating it if needed.
+
+
     :param name: logger name
-    :type name: str
+    :type name: str, optional
     :param datefmt: strftime format for timestamps; ignored when ``relative_to`` is set;
             defaults to ``None`` (no timestamp)
     :type datefmt: str, optional
@@ -793,7 +823,7 @@ def getLogger(name=None, *, datefmt=None, relative_to=None):
 
 def _calc_logging_level_from_verbosity(verbosity):
     """
-    Map a verbosity integer to a logging level.
+    map a verbosity integer to a logging level.
 
     - ``3`` or more: ``DEBUG`` (10)
     - ``2``: ``SUCC`` (15)
@@ -802,6 +832,7 @@ def _calc_logging_level_from_verbosity(verbosity):
     - ``-1``: ``WARNING`` (30)
     - ``-2``: ``ERROR`` (40)
     - ``-3`` or less: ``CRITICAL`` (50)
+
 
     :param verbosity: net verbosity count (positive = more verbose)
     :type verbosity: int
@@ -826,10 +857,11 @@ def _calc_logging_level_from_verbosity(verbosity):
 
 def _calc_logging_level_from_verbosity_namespace(namespace):
     """
-    Extract verbosity from a parsed namespace and return the corresponding
+    extract verbosity from a parsed namespace and return the corresponding
     logging level.
 
     Verbosity defaults to 0; each ``-v`` adds 1, each ``-q`` subtracts 1.
+
 
     :param namespace: parsed namespace containing ``verbose`` and/or ``quiet`` counts
     :type namespace: argparse.Namespace
@@ -849,9 +881,10 @@ def _calc_logging_level_from_verbosity_namespace(namespace):
 
 def add_verbose_arguments(parser):
     """
-    Add ``-v``/``--verbose`` and ``-q``/``--quiet`` options to ``parser``.
+    add ``-v``/``--verbose`` and ``-q``/``--quiet`` options to ``parser``.
 
     Each ``-v`` increases verbosity by 1; each ``-q`` decreases by 1.
+
 
     :param parser: argument parser to extend
     :type parser: argparse.ArgumentParser
@@ -874,7 +907,8 @@ def add_verbose_arguments(parser):
 
 def set_logging_level_by_verbosity(namespace, *, logger=None, logger_name=None):
     """
-    Set the logging level of a logger based on verbosity flags.
+    set the logging level of a logger based on verbosity flags.
+
 
     :param namespace: parsed namespace containing ``--verbose`` and/or ``--quiet`` counts
     :type namespace: argparse.Namespace
@@ -906,6 +940,36 @@ def _print_line_padding_generic(
     flush=False,
     renderer=None,
 ):
+    """
+    print ``content`` padded to ``line_width``; shared by the
+    centered/left/right public wrappers.
+
+
+    :param mode: padding style; ``0`` centered, ``1`` left-justified,
+            ``2`` right-justified
+    :type mode: int
+    :param content: text to print; must be a single, non-empty line no
+            longer than ``line_width``
+    :type content: str
+    :param padding: single printable non-space fill character
+    :type padding: str
+    :param line_width: total output width; defaults to ``80``
+    :type line_width: int
+    :param end: appended after output; defaults to ``"\\n"``
+    :type end: str
+    :param file: output stream; defaults to ``sys.stdout``
+    :type file: IO
+    :param flush: forcibly flush the stream; defaults to ``False``
+    :type flush: bool
+    :param renderer: ANSI color renderer;
+            if ``None``, created from ``file`` argument
+    :type renderer: AnsiRenderer or None
+    :raises ValueError: if ``content`` contains ``"\\n"`` or exceeds
+            ``line_width``; if ``padding`` is not exactly one printable
+            non-space character
+    :return: ANSI color renderer instance
+    :rtype: AnsiRenderer
+    """
     if "\n" in content:
         raise ValueError("param content must be a single line")
     if len(content) > line_width:

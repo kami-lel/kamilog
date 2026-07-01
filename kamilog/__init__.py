@@ -5,6 +5,7 @@ kamilog: Customized Logging Output Module
 from .kamilog import *
 from .kamilog import __all__ as __all__
 
-# Fixme simplified documentation in kamilog.py file
+# Todo stripping docstring and create stripped file
+# Todo better all docstring
 
 # TODO add arg parse function
