@@ -87,8 +87,6 @@ for _lvl in _CustomLogLevel:
 
 # ANSI Color   #################################################################
 
-# TODO better all docstring
-
 
 class AnsiColor(Enum):  # =====================================================
     """
@@ -114,15 +112,11 @@ class AnsiColor(Enum):  # =====================================================
 
 class AnsiRenderer:  # =========================================================
     """
-    ANSI color renderer; detects TTY at construction time and applies
-    color codes through its public methods.
-
-    when ``stream`` is ``None`` or is not a TTY, all coloring methods
-    return their input text unchanged.
+    TTY-aware ANSI color code renderer, detects TTY status at construction
 
 
-    :param stream: output stream used for TTY detection; ``None``
-            disables color unconditionally
+    :param stream: output stream used for TTY detection;
+            ``None`` disables color unconditionally
     :type stream: IO or None
     """
 
@@ -151,18 +145,16 @@ class AnsiRenderer:  # =========================================================
         """
         apply ANSI color code to text, optionally with bold.
 
-        returns the colored text if color is enabled; otherwise
-        returns text unchanged.
-
 
         :param text: text to colorize
         :type text: str
         :param color: ANSI color to apply
         :type color: AnsiColor
-        :param use_bold: whether to apply bold formatting; defaults to
-                ``False``
+        :param use_bold: whether to apply bold formatting;
+                defaults to ``False``
         :type use_bold: bool
-        :return: colored text, or ``text`` unchanged when disabled
+        :return: ``text`` with color applied if color is enabled;
+                otherwise ``text`` unchanged
         :rtype: str
         """
         if not self._enabled:
@@ -178,15 +170,11 @@ class AnsiRenderer:  # =========================================================
 
     def color_level(self, text, levelno):
         """
-        apply bold and level-specific ANSI color to ``text``.
+        apply bold and level-specific ANSI color to ``text``
 
 
-        :param text: text to colorize
-        :type text: str
         :param levelno: numeric log level used to select the color
         :type levelno: int
-        :return: colored text, or ``text`` unchanged when disabled
-        :rtype: str
         """
         color = self._LEVEL_COLORS.get(levelno)
         if color is None:
@@ -195,21 +183,14 @@ class AnsiRenderer:  # =========================================================
 
     def color_grey(self, text):
         """
-        apply bright-black (grey) ANSI color to ``text``.
-
-
-        :param text: text to colorize
-        :type text: str
-        :return: colored text, or ``text`` unchanged when disabled
-        :rtype: str
+        apply bright-black (grey) ANSI color to ``text``
         """
         return self.color(text, AnsiColor.GREY)
 
 
-# Logger  ######################################################################
+# Custom Logging  ##############################################################
 
-
-# Constants  ===================================================================
+# constants  ===================================================================
 
 NOTSET = logging.NOTSET  # 0
 DEBUG = logging.DEBUG  # 10
@@ -234,27 +215,15 @@ DATEFMT_DATETIME_MS = "%Y-%m-%d %H:%M:%S.{ms}"
 
 class KamiLogger(logging.Logger):  # ===========================================
     """
-    logger subclass extending :class:`logging.Logger` with six additional levels.
+    logger subclass extending :class:`logging.Logger` with custom levels.
 
-    Custom levels (in numeric order between standard ones):
-
-    - ``ENTER`` (11): entering a hook or test case
-    - ``SKIP``  (12): skipping a hook or test case
-    - ``PASS``  (21): hook or test case passed
-    - ``SUCC``  (22): task or operation succeeded
-    - ``DONE``  (25): task or operation completed
-    - ``FAIL``  (45): hook or test case failed
-
-    Use :func:`getLogger` to obtain a configured instance.
+    provides convenience methods for test and hook workflows;
+    obtain instances via :func:`getlogger`
     """
 
     def enter(self, message, *args, **kwargs):
         """
         log at ``ENTER`` level (11): entering a hook or test case.
-
-
-        :param message: log message
-        :type message: str
         """
         if self.isEnabledFor(_CustomLogLevel.ENTER):
             self._log(
@@ -264,10 +233,6 @@ class KamiLogger(logging.Logger):  # ===========================================
     def skip(self, message, *args, **kwargs):
         """
         log at ``SKIP`` level (12): skipping a hook or test case.
-
-
-        :param message: log message
-        :type message: str
         """
         if self.isEnabledFor(_CustomLogLevel.SKIP):
             self._log(
@@ -277,10 +242,6 @@ class KamiLogger(logging.Logger):  # ===========================================
     def pass_(self, message, *args, **kwargs):
         """
         log at ``PASS`` level (21): hook or test case passed.
-
-
-        :param message: log message
-        :type message: str
         """
         if self.isEnabledFor(_CustomLogLevel.PASS):
             self._log(
@@ -290,10 +251,6 @@ class KamiLogger(logging.Logger):  # ===========================================
     def succ(self, message, *args, **kwargs):
         """
         log at ``SUCC`` level (22): task or operation succeeded.
-
-
-        :param message: log message
-        :type message: str
         """
         if self.isEnabledFor(_CustomLogLevel.SUCC):
             self._log(
@@ -303,10 +260,6 @@ class KamiLogger(logging.Logger):  # ===========================================
     def done(self, message, *args, **kwargs):
         """
         log at ``DONE`` level (25): task or operation completed.
-
-
-        :param message: log message
-        :type message: str
         """
         if self.isEnabledFor(_CustomLogLevel.DONE):
             self._log(
@@ -316,10 +269,6 @@ class KamiLogger(logging.Logger):  # ===========================================
     def fail(self, message, *args, **kwargs):
         """
         log at ``FAIL`` level (45): hook or test case failed.
-
-
-        :param message: log message
-        :type message: str
         """
         if self.isEnabledFor(_CustomLogLevel.FAIL):
             self._log(
@@ -332,7 +281,7 @@ logging.setLoggerClass(KamiLogger)
 logging.root.__class__ = KamiLogger
 
 
-# log formatting  #=============================================================
+# log formatting  # ============================================================
 
 
 _PADDED_LEVELNAME_MAP = {
@@ -348,6 +297,9 @@ _PADDED_LEVELNAME_MAP = {
     _CustomLogLevel.FAIL: _CustomLogLevel.FAIL.display,
     logging.CRITICAL: "CRIT.",
 }
+
+
+# TODO better all docstring
 
 
 class _LogFormatEngine:  # *****************************************************
