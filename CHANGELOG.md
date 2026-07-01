@@ -20,15 +20,20 @@
 
 ### Added
 
+- CLI interface via `python -m kamilog` or direct module execution with `if __name__ == "__main__"` pattern
+- `line_padding` subcommand (alias: `lp`) for command-line access to line padding utilities
+- Mode argument supporting both short (`c`, `l`, `r`) and long (`center`, `left`, `right`) forms for text alignment
+- `--line-width WIDTH` option to customize output line width; defaults to 80 characters
+- `-e, --stderr` flag to direct output to stderr instead of stdout
+
 ### Changed
 
-### Deprecated
-
-### Removed
+- Updated docstrings across logger, formatting, and padding functions to Sphinx/reStructuredText style with proper field ordering and spacing
+- `_print_line_padding_generic()` now accepts string modes (`"c"`, `"l"`, `"r"`) instead of integers for clarity
 
 ### Fixed
 
-### Security
+- Mode comparison in `_print_line_padding_generic()` was checking string modes when receiving integer arguments; corrected to use string mode values
 
 [unreleased]: https://github.com/kami-lel/kamilog/compare/v1.7.0...dev
 
