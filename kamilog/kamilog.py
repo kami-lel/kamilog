@@ -1069,15 +1069,18 @@ def print_line_padding_right_just(*args, **kwargs):
 
 # CLI  #########################################################################
 
-# TODO rework all text & helps
-
 # main parser  =================================================================
 
-cli_parser = ArgumentParser(prog=__package__, description="")
+cli_parser = ArgumentParser(
+    prog=__name__,
+    description="kamilog CLI: utilities for formatted output and logging",
+)
 cli_parser.set_defaults(func=lambda _: cli_parser.print_help())
 cli_subparser = cli_parser.add_subparsers(title="subcommands")
 
 # line padding parser  =========================================================
+
+_LINE_PADDING_DESC = "print content padded to line width"
 
 
 def _line_padding_parser_main(args):
@@ -1103,35 +1106,37 @@ def _line_padding_parser_main(args):
 
 line_padding_parser = cli_subparser.add_parser(
     "line_padding",
-    help="print content padded to line width",
-    description="print content padded to line width with padding character",
+    help=_LINE_PADDING_DESC,
+    description=_LINE_PADDING_DESC,
     aliases=["lp"],
 )
 
 line_padding_parser.add_argument(
     "mode",
     choices=["c", "l", "r", "center", "left", "right"],
-    help="padding mode: c/center, l/left, r/right",
+    help="text alignment: c/center, l/left(-justified), r/right(-justified)",
 )
 line_padding_parser.add_argument(
     "content",
+    metavar="CONTENT",
     help="text to print; must be a single line no longer than line-width",
 )
 line_padding_parser.add_argument(
     "padding",
-    help="single printable non-space fill character",
+    metavar="PADDING",
+    help="single printable non-space fill character (e.g., #, -, =)",
 )
 line_padding_parser.add_argument(
     "--line-width",
     type=int,
     default=80,
-    help="total output width (default: 80)",
+    help="total character width of output line; default 80",
 )
 line_padding_parser.add_argument(
     "-e",
     "--stderr",
     action="store_true",
-    help="print to stderr instead of stdout",
+    help="print to stderr (instead of stdout)",
 )
 
 line_padding_parser.set_defaults(func=_line_padding_parser_main)
