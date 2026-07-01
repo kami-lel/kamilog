@@ -7,4 +7,4 @@ from .kamilog import __all__ as __all__
 
 # Fixme simplified documentation in kamilog.py file
 
-# Todo add arg parse function
+# TODO add arg parse function
