@@ -80,6 +80,8 @@ WARN. myapp: Warning message
 
 `KamiLogger` adds six levels for hook and test-case workflows. All log levels (native and custom) are shown in the table below, ordered by numeric value:
 
+<!-- Fixme better description of usage, and pairs -->
+
 | Level | Num | Function | Color | ANSI Code | Meaning |
 |---|---|---|---|---|---|
 | DEBUG | 10 | `.debug()` | Cyan | `\033[36m` | debugging information shown only during development |
