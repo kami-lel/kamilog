@@ -1069,10 +1069,11 @@ def print_line_padding_right_just(*args, **kwargs):
 
 # CLI  #########################################################################
 
+# TODO rework all text & helps
+
 # main parser  =================================================================
 
 cli_parser = ArgumentParser(prog=__package__, description="")
-# TODO write description
 cli_parser.set_defaults(func=lambda _: cli_parser.print_help())
 cli_subparser = cli_parser.add_subparsers(title="subcommands")
 
@@ -1088,9 +1089,11 @@ def _line_padding_parser_main(args):
             line_width, and stderr flag
     :type args: argparse.Namespace
     """
+    mode_map = {"center": "c", "left": "l", "right": "r"}
+    mode = mode_map.get(args.mode, args.mode)
     file = sys.stderr if args.stderr else sys.stdout
     _print_line_padding_generic(
-        args.mode,
+        mode,
         args.content,
         args.padding,
         line_width=args.line_width,
@@ -1107,8 +1110,8 @@ line_padding_parser = cli_subparser.add_parser(
 
 line_padding_parser.add_argument(
     "mode",
-    choices=["c", "l", "r"],
-    help="padding mode: c=centered, l=left-justified, r=right-justified",
+    choices=["c", "l", "r", "center", "left", "right"],
+    help="padding mode: c/center, l/left, r/right",
 )
 line_padding_parser.add_argument(
     "content",
@@ -1125,9 +1128,16 @@ line_padding_parser.add_argument(
     help="total output width (default: 80)",
 )
 line_padding_parser.add_argument(
+    "-e",
     "--stderr",
     action="store_true",
     help="print to stderr instead of stdout",
 )
 
 line_padding_parser.set_defaults(func=_line_padding_parser_main)
+
+
+# Entry Point  =================================================================
+if __name__ == "__main__":
+    parsed_args = cli_parser.parse_args()
+    parsed_args.func(parsed_args)
