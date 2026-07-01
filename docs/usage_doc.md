@@ -1,6 +1,6 @@
 # kamilog Usage Documentation
 
-## Logging
+## Custom Logging
 
 Use `kamilog.getLogger()` in place of `logging.getLogger()` to get a
 configured logger instance:
@@ -76,26 +76,41 @@ WARN. myapp: Warning message
 
 
 
-## Custom Log Levels
+### Custom Log Levels
 
-`KamiLogger` adds six levels for hook and test-case workflows. All log levels (native and custom) are shown in the table below, ordered by numeric value:
+`KamiLogger` extends the standard library logger with six custom levels for test and hook workflows. Full level reference:
 
 | Level | Num | Function | Color | ANSI Code | Meaning |
 |---|---|---|---|---|---|
-| DEBUG | 10 | `.debug()` | Cyan | `\033[36m` | debugging information shown only during development |
-| ENTER | 11 | `.enter()` | Bright Cyan | `\033[96m` | marks start of a routine; useful for tracking program logic during development |
-| SKIP  | 12 | `.skip()` | Blue | `\033[34m` | marks skipped portion of routine; useful for tracking program logic during development |
-| SUCC. | 15 | `.succ()` | Green | `\033[32m` | subroutine or execution succeeded |
-| INFO  | 20 | `.info()` | Bright Blue | `\033[94m` | general informational message related to program function |
-| PASS  | 21 | `.pass_()` | Bright Green | `\033[92m` | test case passed |
-| DONE  | 25 | `.done()` | Bright Yellow | `\033[93m` | entire program or major component completed successfully |
-| WARN. | 30 | `.warning()` | Yellow | `\033[33m` | warning condition that should be investigated |
-| ERROR | 40 | `.error()` | Red | `\033[31m` | error condition that prevented operation completion |
-| FAIL  | 45 | `.fail()` | Bright Red | `\033[91m` | test case or subroutine/execution failed |
-| CRIT. | 50 | `.critical()` | Bright Magenta | `\033[95m` | program stopping or crashing immediately |
+| DEBUG | 10 | `.debug()` | Cyan | `\033[36m` | internal program state and control flow |
+| ENTER | 11 | `.enter()` | Bright Cyan | `\033[96m` | starting a subroutine or code section |
+| SKIP  | 12 | `.skip()` | Blue | `\033[34m` | code section was skipped |
+| SUCC. | 15 | `.succ()` | Green | `\033[32m` | operation succeeded |
+| INFO  | 20 | `.info()` | Bright Blue | `\033[94m` | general program event or state change |
+| PASS  | 21 | `.pass_()` | Bright Green | `\033[92m` | test assertion or case passed |
+| DONE  | 25 | `.done()` | Bright Yellow | `\033[93m` | program or major phase completed successfully |
+| WARN. | 30 | `.warning()` | Yellow | `\033[33m` | unexpected but recoverable condition |
+| ERROR | 40 | `.error()` | Red | `\033[31m` | operation failed |
+| FAIL  | 45 | `.fail()` | Bright Red | `\033[91m` | test assertion or case failed |
+| CRIT. | 50 | `.critical()` | Bright Magenta | `\033[95m` | program failure or immediate crash |
 
-> [!NOTE]
+> [!IMPORTANT]
 > `.pass_()` uses a trailing underscore because `pass` is a Python keyword.
+
+> [!TIP]
+> **DEBUG vs INFO**: Use `DEBUG` to trace internal program state and control flow during development. Use `INFO` for general events and state changes that occur in normal execution.
+
+> [!TIP]
+> **WARN., ERROR, CRIT. for error escalation**: Use `WARN.` for unexpected but recoverable conditions. Use `ERROR` when operations fail but recovery is possible. Use `CRIT.` when the program must terminate.
+
+> [!TIP]
+> **ENTER, SKIP, SUCC. for subroutines**: Track major code sections with `ENTER` at the start. Pair with `SUCC.` upon completion. Use `SKIP` when sections are conditionally skipped.
+
+> [!TIP]
+> **DONE for program completion**: Use `DONE` only once at the end to indicate the entire program or major phase completed successfully.
+
+> [!TIP]
+> **PASS and FAIL for testing**: Use `PASS` and `FAIL` exclusively in test scripts. Each test case branch should log either `.pass_()` or `.fail()` depending on the outcome.
 
 
 
@@ -237,9 +252,9 @@ The filter is invisible during a warmup period (first 3 messages) and resets aut
 
 
 
-## ANSI Color API
+## ANSI Colored Output
 
-`AnsiColor` and `AnsiRenderer` are public utilities for TTY-aware color application, independent of the logger.
+`AnsiColor` and `AnsiRenderer` provide TTY-aware color application independent of logging.
 
 ```python
 import sys
@@ -262,9 +277,141 @@ print(renderer.color_grey("muted text"))
 `AnsiColor` members: `GREY`, `CYAN`, `BRIGHT_CYAN`, `BLUE`, `BRIGHT_BLUE`, `GREEN`, `BRIGHT_GREEN`, `YELLOW`, `BRIGHT_YELLOW`, `RED`, `BRIGHT_RED`, `BRIGHT_MAGENTA`, `RESET`, `BOLD`.
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## Line Padding
 
-Three functions print a fixed-width line by filling `line_width` (default 80) with a repeated `padding` character around `content`. A two-space separator is always placed between `content` and the fill.
+Three functions print fixed-width lines with padding characters: `print_line_padding_centered`, `print_line_padding_left_just`, `print_line_padding_right_just`. A two-space separator is always placed between content and fill.
 
 ```python
 import kamilog
@@ -326,9 +473,11 @@ All three raise `ValueError` when:
 
 
 
+
+
 ## Verbosity and Logging Level
 
-Set up a parser with `-v`/`--verbose` and `-q`/`--quiet` options:
+Map CLI flags (`-v`/`--verbose`, `-q`/`--quiet`) to logging levels with built-in helpers:
 
 ```python
 from argparse import ArgumentParser
@@ -366,3 +515,43 @@ Verbosity-to-logging-level mapping:
 | `-qq` | -2 | `ERROR` | 40 |
 | `-qqq` or more | ≤ -3 | `CRITICAL` | 50 |
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Command-Line Interface
+
+The line-padding utilities are accessible via CLI:
+
+```bash
+python kamilog/kamilog.py line_padding -h
+```

@@ -1,6 +1,6 @@
 # kamilog CONTEXT
 
-*Last updated: 2026-06-30 (post-v1.6.2)*
+*Last updated: 2026-07-02 (development)*
 
 ## Project Overview
 
@@ -28,7 +28,6 @@ kamilog/
 │   │   └── v-set_logging_level_by_verbosity_test.py
 │   └── source_quality_test.py       # banned-marker scan (no TODO/FIXME/HACK/BUG)
 ├── examples/
-│   ├── examples_note                        # open Fixme/Todo items for examples
 │   ├── line_padding_demo.py                 # all three line-padding functions
 │   ├── verbosity_demo.py                    # CLI -v/-q flags with custom levels
 │   └── logger/
@@ -153,7 +152,7 @@ The original (uncompressed) message is stored in `_history` so compression decis
 
 ### Line Padding Utilities
 
-Three public functions that print a fixed-width line by padding `content` with a repeated character to fill `line_width` (default 80). All share the same signature via a private dispatcher `_print_line_padding_generic(mode, content, padding, *, line_width, end, file, flush, renderer=None)`.
+Three public functions that print a fixed-width line by padding `content` with a repeated character to fill `line_width` (default 80). All share the same internal dispatcher `_print_line_padding_generic(mode, content, padding, *, line_width, end, file, flush, renderer=None)`, which accepts string modes (`"c"`, `"l"`, `"r"`).
 
 Each function accepts an optional `renderer` kwarg (`AnsiRenderer or None`). When `None`, a renderer is created from `file` automatically. All three functions return the `AnsiRenderer` instance used. When color is enabled, the padding fill is colored grey; `content` and the two-space separators are always printed uncolored.
 
@@ -166,9 +165,25 @@ Input validation (raises `ValueError`):
 
 | function | mode | layout |
 | --- | --- | --- |
-| `print_line_padding_centered` | 0 | `grey(padding * left) + "  " + content + "  " + grey(padding * right)` (remainder split evenly; odd char goes right) |
-| `print_line_padding_left_just` | 1 | `content + "  " + grey(padding * remaining)` |
-| `print_line_padding_right_just` | 2 | `grey(padding * remaining) + "  " + content` |
+| `print_line_padding_centered` | `"c"` | `grey(padding * left) + "  " + content + "  " + grey(padding * right)` (remainder split evenly; odd char goes right) |
+| `print_line_padding_left_just` | `"l"` | `content + "  " + grey(padding * remaining)` |
+| `print_line_padding_right_just` | `"r"` | `grey(padding * remaining) + "  " + content` |
+
+### Command-Line Interface
+
+The module provides a CLI entry point via direct script execution (`python kamilog/kamilog.py`) with an argparse-based subcommand structure. The `line_padding` subcommand (alias: `lp`) wraps the line-padding functions with string-based mode selection.
+
+Note: `python -m kamilog` does not work — the package has no `kamilog/__main__.py`. Use direct script execution (`python kamilog/kamilog.py`) instead.
+
+**CLI module organization**:
+- `cli_parser` — root ArgumentParser with `cli_subparser` for subcommands
+- `_line_padding_parser_main(args)` — handler that maps CLI modes to `_print_line_padding_generic` and routes output to stdout or stderr
+- `_LINE_PADDING_DESC` — shared description string for the subcommand
+
+**Mode mapping**:
+- CLI accepts `c|center`, `l|left`, `r|right` as aliases; mapped to internal string modes before calling `_print_line_padding_generic`
+- The `-w, --line-width LINE_WIDTH` option sets line width (default 80)
+- The `-e, --stderr` flag routes output to `sys.stderr` instead of `sys.stdout`
 
 ## Public API Surface
 
