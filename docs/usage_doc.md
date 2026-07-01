@@ -328,6 +328,8 @@ All three raise `ValueError` when:
 
 
 
+
+
 ## Verbosity and Logging Level
 
 Set up a parser with `-v`/`--verbose` and `-q`/`--quiet` options:
@@ -368,3 +370,43 @@ Verbosity-to-logging-level mapping:
 | `-qq` | -2 | `ERROR` | 40 |
 | `-qqq` or more | ≤ -3 | `CRITICAL` | 50 |
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## CLI
+
+The `line_padding` utility is accessible as a CLI subcommand, see:
+
+```bash
+python kamilog/kamilog.py line_padding -h
+```
