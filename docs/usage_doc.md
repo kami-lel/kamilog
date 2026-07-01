@@ -1,6 +1,6 @@
 # kamilog Usage Documentation
 
-## Logging
+## Custom Logging
 
 Use `kamilog.getLogger()` in place of `logging.getLogger()` to get a
 configured logger instance:
@@ -76,9 +76,9 @@ WARN. myapp: Warning message
 
 
 
-## Custom Log Levels
+### Custom Log Levels
 
-`KamiLogger` adds six levels for hook and test-case workflows. All log levels (native and custom) are shown in the table below, ordered by numeric value:
+`KamiLogger` extends the standard library logger with six custom levels for test and hook workflows. Full level reference:
 
 <!-- Fixme better description of usage, and pairs -->
 
@@ -239,9 +239,9 @@ The filter is invisible during a warmup period (first 3 messages) and resets aut
 
 
 
-## ANSI Color API
+## ANSI Colored Output
 
-`AnsiColor` and `AnsiRenderer` are public utilities for TTY-aware color application, independent of the logger.
+`AnsiColor` and `AnsiRenderer` provide TTY-aware color application independent of logging.
 
 ```python
 import sys
@@ -264,9 +264,141 @@ print(renderer.color_grey("muted text"))
 `AnsiColor` members: `GREY`, `CYAN`, `BRIGHT_CYAN`, `BLUE`, `BRIGHT_BLUE`, `GREEN`, `BRIGHT_GREEN`, `YELLOW`, `BRIGHT_YELLOW`, `RED`, `BRIGHT_RED`, `BRIGHT_MAGENTA`, `RESET`, `BOLD`.
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## Line Padding
 
-Three functions print a fixed-width line by filling `line_width` (default 80) with a repeated `padding` character around `content`. A two-space separator is always placed between `content` and the fill.
+Three functions print fixed-width lines with padding characters: `print_line_padding_centered`, `print_line_padding_left_just`, `print_line_padding_right_just`. A two-space separator is always placed between content and fill.
 
 ```python
 import kamilog
@@ -332,7 +464,7 @@ All three raise `ValueError` when:
 
 ## Verbosity and Logging Level
 
-Set up a parser with `-v`/`--verbose` and `-q`/`--quiet` options:
+Map CLI flags (`-v`/`--verbose`, `-q`/`--quiet`) to logging levels with built-in helpers:
 
 ```python
 from argparse import ArgumentParser
@@ -403,10 +535,10 @@ Verbosity-to-logging-level mapping:
 
 
 
-## CLI
+## Command-Line Interface
 
-The `line_padding` utility is accessible as a CLI subcommand, see:
+The line-padding utilities are accessible via CLI:
 
 ```bash
-python kamilog/kamilog.py line_padding -h
+python kamilog.py line_padding -h
 ```
