@@ -306,21 +306,14 @@ class _LogFormatEngine:  # *****************************************************
     """
     core log-line formatting logic, independent of ``logging.Formatter``.
 
-    builds each log line from its constituent parts — optional timestamp,
-    5-char padded level name, source label, and message — applying ANSI
-    color codes when enabled. exposed via ``_LogFormatter.engine`` so
-    external callers can reach ``count_prefix_chars`` without going
-    through the adapter.
-
 
     :param palette: color palette controlling ANSI output
     :type palette: _AnsiRenderer
     :param datefmt: strftime format string for wall-clock timestamps;
-            ignored when ``relative_to`` is set; ``None`` disables
-            timestamps
+            ``None`` disables timestamps
     :type datefmt: str or None
     :param relative_to: Unix timestamp used as the epoch for relative
-            time display; mutually exclusive with ``datefmt``
+            time display
     :type relative_to: float or None
     """
 
@@ -334,9 +327,6 @@ class _LogFormatEngine:  # *****************************************************
     def count_prefix_chars(self, record):
         """
         return the count of printable characters before the message text.
-
-        accounts for the optional timestamp, 5-char padded level name,
-        and source label; ANSI escape codes are excluded from the count.
 
 
         :param record: log record to measure
@@ -391,10 +381,6 @@ class _LogFormatEngine:  # *****************************************************
         """
         build the main log line from a record's parts.
 
-        produces the ``LEVEL source: message`` line with optional
-        timestamp prefix. does not handle exc_info or stack_info —
-        those are appended by the ``_LogFormatter`` adapter.
-
 
         :param record: log record to format
         :type record: logging.LogRecord
@@ -423,41 +409,16 @@ class _LogFormatEngine:  # *****************************************************
     # helpers  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     def _fmt_asctime(self, asctime):
-        """
-        color ``asctime`` grey.
-
-
-        :param asctime: pre-formatted datetime string
-        :type asctime: str
-        :return: asctime in grey, or plain if color disabled
-        :rtype: str
-        """
+        """color ``asctime`` grey."""
         return self._palette.color_grey(asctime)
 
     def _fmt_level(self, levelno):
-        """
-        build the padded, colored level-name segment.
-
-
-        :param levelno: numeric logging level
-        :type levelno: int
-        :return: 5-char padded level name, colored and bold if enabled
-        :rtype: str
-        """
+        """build the padded, colored level-name segment."""
         padded = _PADDED_LEVELNAME_MAP.get(levelno, str(levelno).ljust(5)[:5])
         return self._palette.color_level(padded, levelno)
 
     def _fmt_source(self, name):
-        """
-        build the colored source-label segment.
-
-
-        :param name: logger name
-        :type name: str
-        :return: ``"name:"`` in grey, or ``":"`` in grey if name is
-                root or absent
-        :rtype: str
-        """
+        """build the colored source-label segment."""
         if not name or name == "root":
             return self._palette.color_grey(":")
         return "{}{}".format(
@@ -466,15 +427,7 @@ class _LogFormatEngine:  # *****************************************************
         )
 
     def _fmt_relative(self, created):
-        """
-        format elapsed time relative to ``_relative_to``.
-
-
-        :param created: Unix timestamp of the log record
-        :type created: float
-        :return: elapsed time as ``+HH:MM:SS.mmm`` or ``-HH:MM:SS.mmm``
-        :rtype: str
-        """
+        """format elapsed time relative to ``_relative_to``."""
         delta = created - self._relative_to
         sign = "-" if delta < 0 else "+"
         delta = abs(delta)
@@ -487,13 +440,6 @@ class _LogFormatEngine:  # *****************************************************
 class _LogFormatter(Formatter):  # *********************************************
     """
     ``logging.Formatter`` adapter wrapping ``_LogFormatEngine``.
-
-    delegates all line-building and timestamp logic to an internal
-    ``_LogFormatEngine`` instance exposed via the ``engine`` property.
-    the ``_AnsiRenderer`` controlling color output is accessible via
-    ``palette``. exc_info and stack_info appending are handled here
-    because they depend on ``Formatter.formatException`` and
-    ``Formatter.formatStack``.
 
 
     :param stream: forwarded to ``_AnsiRenderer`` for TTY detection;
@@ -558,18 +504,11 @@ class _DiffOnlyEngine:  # ******************************************************
     """
     engine for diff-only compression of log message text.
 
-    maintains a sliding window of prior messages; once the window is
-    full, compresses character runs common to all of them into ``〃\\t``
-    markers aligned to 8-column boundaries from the rendered line start.
-    prefix-width measurement and marker coloring use ``formatter``
-    directly.
-
 
     :param formatter: formatter used to measure the prefix width and
             apply ``color_grey`` to compression markers
     :type formatter: _LogFormatter
-    :param window: number of prior messages held for comparison;
-            compression activates once this many messages have been seen
+    :param window: number of prior messages held for comparison
     :type window: int
     """
 
@@ -607,20 +546,7 @@ class _DiffOnlyEngine:  # ******************************************************
 
     def _compress(self, record, message):
         """
-        compress positions in ``message`` matching ``_common`` into
-        ``〃\\t`` markers.
-
-        aligns each marker to the next multiple-of-8 column measured
-        from the rendered line start (prefix + message offset); runs
-        too short to fit one full block after alignment are kept as-is.
-
-
-        :param record: log record used to measure the prefix width
-        :type record: logging.LogRecord
-        :param message: raw message text to compress
-        :type message: str
-        :return: compressed message string
-        :rtype: str
+        compress positions matching ``_common`` into ``〃\\t`` markers.
         """
         block = self._COMPRESSION_BLOCK_SIZE
         trail = self._PRESERVED_TRAILING_CHARS
@@ -665,10 +591,6 @@ class _DiffOnlyEngine:  # ******************************************************
         """
         process ``record`` and return the (possibly compressed) message.
 
-        if the history window is not yet full, the raw message is
-        returned unchanged. once full, character positions common to
-        all history messages are compressed into ``〃\\t`` markers.
-
 
         :param record: log record being processed
         :type record: logging.LogRecord
@@ -690,10 +612,6 @@ class _DiffOnlyEngine:  # ******************************************************
 class _DiffOnlyMsgFilter(logging.Filter):  # ***********************************
     """
     ``logging.Filter`` adapter that applies ``_DiffOnlyEngine`` to records.
-
-    delegates all compression logic to an internal ``_DiffOnlyEngine``
-    instance; ``filter()`` mutates ``record.msg`` in place with the
-    result.
 
 
     :param formatter: forwarded to ``_DiffOnlyEngine`` for prefix-width
