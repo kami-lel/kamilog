@@ -13,22 +13,40 @@ bug using different logger to print & diff only can produce confusing result
 
 ## Features
 
-- **Custom log levels** — `ENTER` (11), `SKIP` (12), `SUCC` (15), `PASS` (21), `DONE` (25), `FAIL` (45) for hook and test-case workflows
-- **Structured output** — `LEVEL source: message` with padded 5-char level names
-- **ANSI 16-color output** — per-level colors, auto-disabled when output is piped
-- **stdout/stderr split** — `< WARNING` goes to stdout, `>= WARNING` goes to stderr
-- **Optional timestamps** — disable by default; enable with `datefmt=kamilog.DATEFMT_TIME` or `relative_to=`
-- **Level constants** — `kamilog.DEBUG`, `kamilog.WARNING`, etc. — no `import logging` needed
-- **Diff-only output** — repeated log lines compressed to show only what changed; common character runs replaced with `〃\t` markers, auto-applied to every logger
-- **Verbosity helpers** — `-v`/`-q` CLI flags mapped to logging levels
-- **Line-padding utilities** — `print_line_padding_centered`, `print_line_padding_left_just`, `print_line_padding_right_just` for fixed-width terminal banners; grey fill on TTY output
-- **ANSI color API** — `AnsiColor` enum and `AnsiRenderer` class for TTY-aware color application
-- **Drop-in compatible** — `kamilog.getLogger()` in place of `logging.getLogger()`
+#### 🎯 Custom Logging Experience
+
+- Six custom log levels (`ENTER`, `SKIP`, `SUCC`, `PASS`, `DONE`, `FAIL`) for test and hook workflows
+- Structured output with padded level names
+- Automatic stdout/stderr split by severity
+- Diff-only compression for repeated log lines
+- Drop-in replacement for `logging.getLogger()`
+
+#### 🎨 ANSI Colored Output
+
+- Per-level 16-color ANSI formatting with bold
+- TTY-aware (auto-disabled when piped)
+- Public color API for custom colored output
+
+#### ⚡ Verbosity Control
+
+- `-v`/`-q` CLI argument helpers
+- Seven verbosity steps from `CRITICAL` to `DEBUG`
+
+#### 📐 Line Padding Utilities
+
+- Centered, left-justified, and right-justified alignment modes
+- Fixed-width terminal banners with custom fill characters
+
+#### 💻 Command-Line Interface
+
+- Built-in CLI for line padding via `python -m kamilog lp`
+- Support for short and long mode aliases
+- Customizable output width and destination (stdout/stderr)
 
 ---
 
-See [docs/install_guide.md](docs/install_guide.md) for installation instructions.
+Q.v. [docs/install_guide.md](docs/install_guide.md) for installation instructions.
 
-See [docs/usage_doc.md](docs/usage_doc.md) for full usage documentation.
+Q.v. [docs/usage_doc.md](docs/usage_doc.md) for full usage documentation.
 
-See [examples/](examples/) for runnable scripts demonstrating each feature.
+Q.v. [examples/](examples/) for runnable scripts demonstrating each feature.

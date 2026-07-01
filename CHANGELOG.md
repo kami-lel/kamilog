@@ -29,7 +29,10 @@
 ### Changed
 
 - Updated docstrings across logger, formatting, and padding functions to Sphinx/reStructuredText style with proper field ordering and spacing
-- `_print_line_padding_generic()` now accepts string modes (`"c"`, `"l"`, `"r"`) instead of integers for clarity
+- Simplified class and method docstrings: removed behavior details from classes, removed multi-line descriptions from public methods, reduced private methods to single-line summaries
+- `_print_line_padding_generic()` now accepts string modes (`"c"`, `"l"`, `"r"`) instead of integers for clarity; added comprehensive parameter documentation
+- README.md reorganized into 5 feature categories with emoji: 🎯 Custom Logging Experience, 🎨 ANSI Colored Output, ⚡ Verbosity Control, 📐 Line Padding Utilities, 💻 Command-Line Interface
+- docs/usage_doc.md restructured with updated Custom Log Levels table: refined level meanings, added 5 best-practice tips for usage patterns
 
 ### Fixed
 
