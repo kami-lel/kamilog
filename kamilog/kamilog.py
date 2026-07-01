@@ -966,9 +966,11 @@ line_padding_parser.add_argument(
     help="single printable non-space fill character (e.g., #, -, =)",
 )
 line_padding_parser.add_argument(
+    "-w",
     "--line-width",
     type=int,
     default=80,
+    metavar="LINE_WIDTH",
     help="total character width of output line; default 80",
 )
 line_padding_parser.add_argument(

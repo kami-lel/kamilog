@@ -181,8 +181,8 @@ The module provides a CLI entry point via `python -m kamilog` with an argparse-b
 
 **Mode mapping**:
 - CLI accepts `c|center`, `l|left`, `r|right` as aliases; mapped to internal string modes before calling `_print_line_padding_generic`
-- The `--line-width WIDTH` option sets line width (default 80)
-- The `-e|--stderr` flag routes output to `sys.stderr` instead of `sys.stdout`
+- The `-w, --line-width LINE_WIDTH` option sets line width (default 80)
+- The `-e, --stderr` flag routes output to `sys.stderr` instead of `sys.stdout`
 
 ## Public API Surface
 

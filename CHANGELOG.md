@@ -23,7 +23,7 @@
 - CLI interface via `python -m kamilog` or direct module execution with `if __name__ == "__main__"` pattern
 - `line_padding` subcommand (alias: `lp`) for command-line access to line padding utilities
 - Mode argument supporting both short (`c`, `l`, `r`) and long (`center`, `left`, `right`) forms for text alignment
-- `--line-width WIDTH` option to customize output line width; defaults to 80 characters
+- `-w, --line-width LINE_WIDTH` option to customize output line width; defaults to 80 characters
 - `-e, --stderr` flag to direct output to stderr instead of stdout
 
 ### Changed
