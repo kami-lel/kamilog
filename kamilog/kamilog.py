@@ -299,9 +299,6 @@ _PADDED_LEVELNAME_MAP = {
 }
 
 
-# TODO better all docstring
-
-
 class _LogFormatEngine:  # *****************************************************
     """
     core log-line formatting logic, independent of ``logging.Formatter``.
@@ -702,21 +699,7 @@ def getLogger(name=None, *, datefmt=None, relative_to=None):
 
 def _calc_logging_level_from_verbosity(verbosity):
     """
-    map a verbosity integer to a logging level.
-
-    - ``3`` or more: ``DEBUG`` (10)
-    - ``2``: ``SUCC`` (15)
-    - ``1``: ``INFO`` (20)
-    - ``0``: ``DONE`` (25)
-    - ``-1``: ``WARNING`` (30)
-    - ``-2``: ``ERROR`` (40)
-    - ``-3`` or less: ``CRITICAL`` (50)
-
-
-    :param verbosity: net verbosity count (positive = more verbose)
-    :type verbosity: int
-    :return: logging level constant
-    :rtype: int
+    map a verbosity integer to a logging level
     """
     if verbosity >= 3:
         return logging.DEBUG
@@ -736,16 +719,7 @@ def _calc_logging_level_from_verbosity(verbosity):
 
 def _calc_logging_level_from_verbosity_namespace(namespace):
     """
-    extract verbosity from a parsed namespace and return the corresponding
-    logging level.
-
-    Verbosity defaults to 0; each ``-v`` adds 1, each ``-q`` subtracts 1.
-
-
-    :param namespace: parsed namespace containing ``verbose`` and/or ``quiet`` counts
-    :type namespace: argparse.Namespace
-    :return: logging level constant
-    :rtype: int
+    extract verbosity from namespace and return the logging level
     """
     verbosity = 0
     if hasattr(namespace, "verbose"):
@@ -761,8 +735,6 @@ def _calc_logging_level_from_verbosity_namespace(namespace):
 def add_verbose_arguments(parser):
     """
     add ``-v``/``--verbose`` and ``-q``/``--quiet`` options to ``parser``.
-
-    Each ``-v`` increases verbosity by 1; each ``-q`` decreases by 1.
 
 
     :param parser: argument parser to extend
@@ -820,12 +792,11 @@ def _print_line_padding_generic(
     renderer=None,
 ):
     """
-    print ``content`` padded to ``line_width``; shared by the
-    centered/left/right public wrappers.
+    print ``content`` padded to ``line_width``
 
 
-    :param mode: padding style; ``"c"`` centered, ``"l"`` left-justified,
-            ``"r"`` right-justified
+    :param mode: text alignment:
+            ``"c"`` centered, ``"l"`` left-justified, ``"r"`` right-justified
     :type mode: str
     """
     if "\n" in content:
@@ -882,9 +853,7 @@ def print_line_padding_centered(*args, **kwargs):
     print ``content`` centered, filling both sides with ``padding`` to
     reach ``line_width``.
 
-    when the remaining width is odd, the extra character goes to the right.
-    odd remainder example with ``line_width=11``:
-    ``==  hi  ===``
+    when the remaining width is odd, the extra character goes to the right
 
 
     :param content: text to print; must be a single, non-empty line no
@@ -962,14 +931,6 @@ _LINE_PADDING_DESC = "print content padded to line width"
 
 
 def _line_padding_parser_main(args):
-    """
-    execute the line-padding subcommand.
-
-
-    :param args: parsed arguments containing mode, content, padding,
-            line_width, and stderr flag
-    :type args: argparse.Namespace
-    """
     mode_map = {"center": "c", "left": "l", "right": "r"}
     mode = mode_map.get(args.mode, args.mode)
     file = sys.stderr if args.stderr else sys.stdout
