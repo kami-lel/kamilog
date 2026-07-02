@@ -969,8 +969,7 @@ def gen_comment_banner_zero(
                     len(line), line_width - 2
                 )
             )
-        # TODO also color the #
-        formatted_lines.append("# " + line)
+        formatted_lines.append(renderer.color_grey("# ") + line)
 
     formatted_lines.append(ruler)
     return "\n".join(formatted_lines)
