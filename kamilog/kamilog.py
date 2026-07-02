@@ -8,7 +8,7 @@ Q.v. https://github.com/kami-lel/kamilog for Project Main Page
 Q.v. https://github.com/kami-lel/kamilog/tree/main/docs for Documentation
 """
 
-from argparse import ArgumentParser
+from argparse import ArgumentParser, RawDescriptionHelpFormatter
 import logging
 import sys
 import time
@@ -988,16 +988,17 @@ cli_subparser = cli_parser.add_subparsers(title="subcommands")
 
 # comment banner parser  =======================================================
 
-_COMMENT_BANNER_DESC = "print content padded to line width"
+_COMMENT_BANNER_HELP = "print stdin content padded to line width"
 
 
 def _comment_banner_parser_main(args):
     mode_map = {"center": "c", "left": "l", "right": "r"}
     mode = mode_map.get(args.mode, args.mode)
     file = sys.stderr if args.stderr else sys.stdout
+    content = sys.stdin.readline().rstrip("\n")  # single line from stdin
     line = _gen_comment_banner_generic(
         mode,
-        args.content,
+        content,
         args.padding,
         line_width=args.line_width,
         file=file,
@@ -1007,8 +1008,14 @@ def _comment_banner_parser_main(args):
 
 comment_banner_parser = cli_subparser.add_parser(
     "comment_banner",
-    help=_COMMENT_BANNER_DESC,
-    description=_COMMENT_BANNER_DESC,
+    help=_COMMENT_BANNER_HELP,
+    description=(
+        _COMMENT_BANNER_HELP
+        + "\n\ncontent is read from stdin, as a single line\n\n"
+        "example:\n"
+        "  echo 'hello world' | python kamilog.py cb c '=' -w 20"
+    ),
+    formatter_class=RawDescriptionHelpFormatter,
     aliases=["cb"],
 )
 
@@ -1017,20 +1024,11 @@ comment_banner_parser.add_argument(
     choices=["c", "l", "r", "center", "left", "right"],
     help="text alignment: c/center, l/left(-justified), r/right(-justified)",
 )
-comment_banner_parser.add_argument(
-    "content",
-    metavar="CONTENT",
-    help="text to print; must be a single line no longer than line-width",
-)
-
 
 comment_banner_parser.add_argument(
     "padding",
     metavar="PADDING",
-    help=(
-        "single printable non-space fill character, or int 1-5 (e.g., #, -, =,"
-        " or 1-5)"
-    ),
+    help="fill char, or int 1~5 for CB1~CB5 preset (1:#/2:=/3:*/4:+/5:-)",
 )
 comment_banner_parser.add_argument(
     "-w",
@@ -1052,13 +1050,14 @@ comment_banner_parser.set_defaults(func=_comment_banner_parser_main)
 
 # cb0 parser  ==================================================================
 
-_CB0_DESC = "print multi-line boxed comment banner (CB0)"
+_CB0_HELP = "print multi-line boxed comment banner (CB0)"
 
 
 def _comment_banner_zero_parser_main(args):
     file = sys.stderr if args.stderr else sys.stdout
+    lines = sys.stdin.read().splitlines()  # all lines from stdin
     banner = gen_comment_banner_zero(
-        args.lines,
+        lines,
         line_width=args.line_width,
         file=file,
     )
@@ -1067,17 +1066,17 @@ def _comment_banner_zero_parser_main(args):
 
 comment_banner_zero_parser = cli_subparser.add_parser(
     "comment_banner_zero",
-    help=_CB0_DESC,
-    description=_CB0_DESC,
+    help=_CB0_HELP,
+    description=(
+        _CB0_HELP
+        + "\n\nlines are read from stdin, one banner line per stdin line\n\n"
+        "example:\n"
+        "  printf 'line 1\\nline 2\\n' | python kamilog.py cb0 -w 20"
+    ),
+    formatter_class=RawDescriptionHelpFormatter,
     aliases=["cb0"],
 )
 
-comment_banner_zero_parser.add_argument(
-    "lines",
-    nargs="+",
-    metavar="LINE",
-    help="lines to include in the comment banner",
-)
 comment_banner_zero_parser.add_argument(
     "-w",
     "--line-width",

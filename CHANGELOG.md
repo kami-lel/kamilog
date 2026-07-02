@@ -29,10 +29,18 @@
 - Test directory reorganized: `tests/lp/` → `tests/cb/`; test files renamed from `lp-*_test.py` → `cb-*_test.py`
 - Example file renamed: `examples/line_padding_demo.py` → `examples/comment_banner_demo.py`
 - Documentation updated throughout to reflect new terminology
+- CLI subcommands `comment_banner` (`cb`) and `comment_banner_zero` (`cb0`) now follow the
+  Unix pipe pattern: text content is read from stdin instead of a positional argument
+  - `cb` drops the `CONTENT` positional; reads a single line via `sys.stdin.readline()`
+  - `cb0` drops the `LINE` positional (`nargs='+'`); reads all lines via `sys.stdin.read().splitlines()`
+  - `--help` output expanded with a usage example for each subcommand
+  - `PADDING` argument help text clarified
 
 > [!WARNING]
 > This release renames the line-padding API to comment-banner. Update callers to use the
 > `gen_comment_banner_*` function names and CLI subcommand `comment_banner` (or alias `cb`).
+> The `cb`/`cb0` CLI subcommands now read text content from stdin instead of positional
+> arguments — pipe input with `echo`/`printf` (e.g. `echo 'title' | python kamilog/kamilog.py cb c '=' `).
 
 ### Added
 
@@ -44,7 +52,7 @@
   - frames with top and bottom grey-colored `#` rulers at full `line_width`
   - returns formatted banner as string
 - CLI subcommand `comment_banner_zero` (alias: `cb0`) with support for multiple lines
-  - Usage: `python kamilog/kamilog.py cb0 "Line 1" "Line 2" -w 40`
+  - Usage: `printf 'Line 1\nLine 2\n' | python kamilog/kamilog.py cb0 -w 40`
 - Example demo: `examples/comment_banner_zero_demo.py` showcasing CB0 usage patterns
 
 ### Deprecated
