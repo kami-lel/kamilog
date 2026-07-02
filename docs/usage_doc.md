@@ -80,6 +80,8 @@ WARN. myapp: Warning message
 
 `KamiLogger` extends the standard library logger with six custom levels for test and hook workflows. Full level reference:
 
+<!-- TODO make improve order -->
+
 | Level | Num | Function | Color | ANSI Code | Meaning |
 |---|---|---|---|---|---|
 | DEBUG | 10 | `.debug()` | Cyan | `\033[36m` | internal program state and control flow |
@@ -426,15 +428,15 @@ kamilog.set_logging_level_by_verbosity(args, logger=log)
 
 Verbosity-to-logging-level mapping:
 
-| Flags | Verbosity | Level | Number |
-|---|---|---|---|
-| `-vvv` or more | ≥ 3 | `DEBUG` | 10 |
-| `-vv` | 2 | `SUCC` | 15 |
-| `-v` | 1 | `INFO` | 20 |
-| *(none)* | 0 | `DONE` | 25 |
-| `-q` | -1 | `WARNING` | 30 |
-| `-qq` | -2 | `ERROR` | 40 |
-| `-qqq` or more | ≤ -3 | `CRITICAL` | 50 |
+| Flags | Verbosity | Level | Number | Shows |
+|---|---|---|---|---|
+| `-vvv` or more | ≥ 3 | `DEBUG` | 10 | DEBUG, ENTER, SKIP, 〃 |
+| `-vv` | 2 | `SUCC` | 15 | SUCC, 〃 |
+| `-v` | 1 | `INFO` | 20 | INFO, PASS, 〃 |
+| *(none)* | 0 | `DONE` | 25 | DONE, 〃 |
+| `-q` | -1 | `WARN` | 30 | WARN, 〃 |
+| `-qq` | -2 | `ERROR` | 40 | ERROR, FAIL, 〃 |
+| `-qqq` or more | ≤ -3 | `CRIT` | 50 | CRIT |
 
 
 
