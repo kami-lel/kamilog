@@ -154,6 +154,8 @@ The original (uncompressed) message is stored in `_history` so compression decis
 
 Three public functions that return a fixed-width line by padding `content` with a repeated character to fill `line_width` (default 80). All share the same internal dispatcher `_gen_comment_banner_generic(mode, content, padding, *, line_width, file, renderer=None)`, which accepts string modes (`"c"`, `"l"`, `"r"`).
 
+The `padding` parameter accepts either a string (single character) or an integer (1-5). Integer shortcuts map to predefined characters: 1→`#`, 2→`=`, 3→`*`, 4→`+`, 5→`-`. The function converts integer padding to its corresponding character before processing.
+
 Each function accepts an optional `renderer` kwarg (`AnsiRenderer or None`). When `None`, a renderer is created from `file` automatically (`file` is otherwise only used for TTY detection). All three functions return the padded line as a `str`; none of them print. When color is enabled, the padding fill is colored grey; `content` and the two-space separators are always uncolored. Callers that invoke the same function repeatedly against the same stream should construct one `AnsiRenderer` up front and pass it via `renderer=` to avoid re-detecting TTY state on every call.
 
 A two-space separator (`_CONTENT_SPACING = "  "`) is always inserted between `content` and the padding fill. For centered mode it is placed on both sides; for left/right modes on one side only.
@@ -161,7 +163,8 @@ A two-space separator (`_CONTENT_SPACING = "  "`) is always inserted between `co
 Input validation (raises `ValueError`):
 - `content` must be a single line (no `\n`)
 - `len(content)` must not exceed `line_width`
-- `padding` must be exactly one printable, non-space character
+- `padding` (string) must be exactly one printable, non-space character
+- `padding` (integer) must be in range 1-5
 
 | function | mode | layout |
 | --- | --- | --- |
