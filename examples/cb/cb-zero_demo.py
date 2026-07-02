@@ -1,5 +1,5 @@
 """
-comment_banner_zero_demo.py
+cb-zero_demo.py
 
 demonstrate CB0 (multi-line boxed comment banner) with various content
 """

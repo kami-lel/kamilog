@@ -1,6 +1,6 @@
 # kamilog CONTEXT
 
-*Last updated: 2026-07-02 (v2.1.0)*
+*Last updated: 2026-07-02 (v2.1.1)*
 
 ## Project Overview
 
@@ -28,7 +28,10 @@ kamilog/
 │   │   └── v-set_logging_level_by_verbosity_test.py
 │   └── source_quality_test.py       # banned-marker scan (no TODO/FIXME/HACK/BUG)
 ├── examples/
-│   ├── comment_banner_demo.py               # all three comment-banner functions
+│   ├── cb/
+│   │   ├── cb-demo.py                       # all three comment-banner functions with char padding
+│   │   ├── cb-number-demo.py                # numeric padding shortcuts (1-5)
+│   │   └── cb-zero_demo.py                  # multi-line boxed banner (CB0)
 │   ├── verbosity_demo.py                    # CLI -v/-q flags with custom levels
 │   └── logger/
 │       ├── logger-all_levels_demo.py        # all eleven log levels with descriptions

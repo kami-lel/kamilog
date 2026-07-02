@@ -30,7 +30,23 @@
 
 ### Security
 
-[unreleased]: https://github.com/kami-lel/kamilog/compare/v2.1.0...dev
+## [2.1.1] - 2026-07-02
+
+### Added
+
+- `examples/cb/cb-number-demo.py` — numeric padding shortcuts (1-5) demo
+
+### Changed
+
+- simplified usage tips in `docs/usage_doc.md` — condensed log-level guidance, consolidated testing tips, reordered DONE
+- reorganized comment-banner demos under `examples/cb/` — renamed to `cb-demo.py` and `cb-zero_demo.py`
+
+### Fixed
+
+- CLI `cb` subcommand padding conversion — numeric arguments (1-5) now correctly convert to integer for preset characters
+
+[unreleased]: https://github.com/kami-lel/kamilog/compare/v2.1.1...dev
+[2.1.1]: https://github.com/kami-lel/kamilog/compare/v2.1.0...v2.1.1
 
 
 
