@@ -112,6 +112,7 @@ WARN. myapp: Warning message
 > [!TIP]
 > **PASS and FAIL for testing**: Use `PASS` and `FAIL` exclusively in test scripts. Each test case branch should log either `.pass_()` or `.fail()` depending on the outcome.
 
+<!-- Fixme enter can also pairs with pass & fail -->
 
 
 
