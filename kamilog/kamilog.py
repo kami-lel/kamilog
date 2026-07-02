@@ -1025,14 +1025,10 @@ comment_banner_parser.add_argument(
     help="text alignment: c/center, l/left(-justified), r/right(-justified)",
 )
 
-# FIXME better help for this arg
 comment_banner_parser.add_argument(
     "padding",
     metavar="PADDING",
-    help=(
-        "single printable non-space fill character, or int 1-5 (e.g., #, -, =,"
-        " or 1-5)"
-    ),
+    help="fill char, or int 1~5 for CB1~CB5 preset (1:#/2:=/3:*/4:+/5:-)",
 )
 comment_banner_parser.add_argument(
     "-w",
