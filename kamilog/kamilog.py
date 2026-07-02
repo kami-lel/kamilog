@@ -778,6 +778,7 @@ def set_logging_level_by_verbosity(namespace, *, logger=None, logger_name=None):
 
 
 _CONTENT_SPACING = "  "
+_PADDING_MAP = {1: "#", 2: "=", 3: "*", 4: "+", 5: "-"}
 
 
 def _gen_comment_banner_generic(
@@ -797,6 +798,11 @@ def _gen_comment_banner_generic(
             ``"c"`` centered, ``"l"`` left-justified, ``"r"`` right-justified
     :type mode: str
     """
+    if isinstance(padding, int):
+        if padding not in _PADDING_MAP:
+            raise ValueError("param padding int must be 1~5")
+        padding = _PADDING_MAP[padding]
+
     if "\n" in content:
         raise ValueError("param content must be a single line")
     if len(content) > line_width:
