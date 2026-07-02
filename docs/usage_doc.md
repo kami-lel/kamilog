@@ -98,21 +98,19 @@ WARN. myapp: Warning message
 > `.pass_()` uses a trailing underscore because `pass` is a Python keyword.
 
 > [!TIP]
-> **DEBUG vs INFO**: Use `DEBUG` to trace internal program state and control flow during development. Use `INFO` for general events and state changes that occur in normal execution.
+> **DEBUG vs INFO**: `DEBUG` traces internal state and control flow; `INFO` logs general events and state changes in normal execution.
 
 > [!TIP]
-> **WARN., ERROR, CRIT. for error escalation**: Use `WARN.` for unexpected but recoverable conditions. Use `ERROR` when operations fail but recovery is possible. Use `CRIT.` when the program must terminate.
+> **WARN., ERROR, CRIT. for error escalation**: Use in escalation order of increasing severity.
 
 > [!TIP]
 > **ENTER, SKIP, SUCC. for subroutines**: Track major code sections with `ENTER` at the start. Pair with `SUCC.` upon completion. Use `SKIP` when sections are conditionally skipped.
 
 > [!TIP]
-> **DONE for program completion**: Use `DONE` only once at the end to indicate the entire program or major phase completed successfully.
+> **ENTER, PASS, FAIL for testing**: Use in test scripts to track major sections (`ENTER`), passing tests (`.pass_()`), and failing tests (`.fail()`). Each test case branch logs one of the three.
 
 > [!TIP]
-> **PASS and FAIL for testing**: Use `PASS` and `FAIL` exclusively in test scripts. Each test case branch should log either `.pass_()` or `.fail()` depending on the outcome.
-
-<!-- Fixme enter can also pairs with pass & fail -->
+> **DONE for program completion**: Use `DONE` only once at the end to indicate the entire program or major phase completed successfully.
 
 
 
@@ -276,106 +274,6 @@ print(renderer.color_grey("muted text"))
 `AnsiRenderer` detects TTY status once at construction. When `stream` is not a TTY (e.g. piped output), all methods return their input unchanged — no escape codes are emitted.
 
 `AnsiColor` members: `GREY`, `CYAN`, `BRIGHT_CYAN`, `BLUE`, `BRIGHT_BLUE`, `GREEN`, `BRIGHT_GREEN`, `YELLOW`, `BRIGHT_YELLOW`, `RED`, `BRIGHT_RED`, `BRIGHT_MAGENTA`, `RESET`, `BOLD`.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
