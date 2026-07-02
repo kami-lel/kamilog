@@ -18,9 +18,23 @@
 
 ## [Unreleased]
 
-### Added
-
 ### Changed
+
+- API renaming: `gen_line_padding_*` functions renamed to `gen_comment_banner_*`
+  - `gen_line_padding_centered` → `gen_comment_banner_centered`
+  - `gen_line_padding_left_just` → `gen_comment_banner_left_just`
+  - `gen_line_padding_right_just` → `gen_comment_banner_right_just`
+  - Internal `_gen_line_padding_generic()` → `_gen_comment_banner_generic()`
+- CLI subcommand renamed: `line_padding` → `comment_banner` with alias `cb` (replacing `lp`)
+- Test directory reorganized: `tests/lp/` → `tests/cb/`; test files renamed from `lp-*_test.py` → `cb-*_test.py`
+- Example file renamed: `examples/line_padding_demo.py` → `examples/comment_banner_demo.py`
+- Documentation updated throughout to reflect new terminology
+
+> [!WARNING]
+> This release renames the line-padding API to comment-banner. Update callers to use the
+> `gen_comment_banner_*` function names and CLI subcommand `comment_banner` (or alias `cb`).
+
+### Added
 
 ### Deprecated
 

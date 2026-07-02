@@ -33,7 +33,7 @@ pytest tests/v/v-calc_logging_level_test.py
 pytest tests/v/v-calc_logging_level_test.py::TestCalcLoggingLevel::test_v2
 ```
 
-Scope tests to the changed module before pushing — `tests/v/` for verbosity helpers, `tests/lp/` for line-padding functions, `tests/source_quality_test.py` for banned-marker scan.
+Scope tests to the changed module before pushing — `tests/v/` for verbosity helpers, `tests/cb/` for comment-banner functions, `tests/source_quality_test.py` for banned-marker scan.
 
 ## Code Style
 
@@ -53,7 +53,7 @@ Before merging:
 1. `pytest tests/` — all 71 tests must pass with zero failures.
 2. `tests/source_quality_test.py` scans `kamilog/kamilog.py` and `kamilog/__init__.py` for `todo`, `bug`, `fixme`, `hack` (case-insensitive) — leave none behind.
 
-When adding new public functions, add corresponding tests under the relevant subdirectory — `tests/v/` for verbosity helpers (named `v-<feature>_test.py`), `tests/lp/` for line-padding functions (named `lp-<feature>_test.py`).
+When adding new public functions, add corresponding tests under the relevant subdirectory — `tests/v/` for verbosity helpers (named `v-<feature>_test.py`), `tests/cb/` for comment-banner functions (named `cb-<feature>_test.py`).
 
 ## PR & Commit Instructions
 
