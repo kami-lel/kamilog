@@ -46,6 +46,7 @@ __all__ = (
     "gen_comment_banner_centered",
     "gen_comment_banner_left_just",
     "gen_comment_banner_right_just",
+    "gen_comment_banner_zero",
 )
 
 
@@ -927,9 +928,9 @@ def gen_comment_banner_zero(
     lines, *, line_width=80, file=sys.stdout, renderer=None
 ):
     """
-    generate a multi-line comment banner from an iterable of strings.
+    generate a multi-line boxed comment banner (CB0).
 
-    TODO placeholder — implementation pending
+    wraps each line with `# `, framed by top and bottom `#` rulers
 
 
     :param lines: lines to include in the banner
@@ -942,8 +943,34 @@ def gen_comment_banner_zero(
     :param renderer: ANSI color renderer;
             if ``None``, created from ``file`` argument
     :type renderer: AnsiRenderer or None
+    :return: multi-line boxed banner as a string
+    :rtype: str
+    :example:
+    >>> gen_comment_banner_zero(["line 1", "line 2"], line_width=20)
+    ####################
+    # line 1
+    # line 2
+    ####################
     """
-    pass  # TODO
+    if renderer is None:
+        renderer = AnsiRenderer(file)
+
+    ruler = renderer.color_grey("#" * line_width)
+    formatted_lines = [ruler]
+
+    for line in lines:
+        if "\n" in line:
+            raise ValueError("param lines must not contain newlines")
+        if len(line) > line_width - 2:
+            raise ValueError(
+                "param line length {} exceeds line_width - 2 {}".format(
+                    len(line), line_width - 2
+                )
+            )
+        formatted_lines.append("# " + line)
+
+    formatted_lines.append(ruler)
+    return "\n".join(formatted_lines)
 
 
 # CLI  #########################################################################
@@ -1015,8 +1042,6 @@ comment_banner_parser.add_argument(
 
 comment_banner_parser.set_defaults(func=_comment_banner_parser_main)
 
-
-# TODO add cb0 parser
 
 # Entry Point  =================================================================
 if __name__ == "__main__":
