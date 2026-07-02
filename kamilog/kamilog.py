@@ -73,9 +73,9 @@ class _CustomLogLevel(IntEnum):
         obj.display = display
         return obj
 
-    ENTER = (11, "ENTER")
-    SKIP = (12, "SKIP ")
     SUCC = (15, "SUCC.")
+    ENTER = (16, "ENTER")
+    SKIP = (17, "SKIP ")
     PASS = (21, "PASS ")
     DONE = (25, "DONE ")
     FAIL = (45, "FAIL ")
@@ -195,9 +195,9 @@ class AnsiRenderer:  # =========================================================
 
 NOTSET = logging.NOTSET  # 0
 DEBUG = logging.DEBUG  # 10
-ENTER = _CustomLogLevel.ENTER  # 11
-SKIP = _CustomLogLevel.SKIP  # 12
 SUCC = _CustomLogLevel.SUCC  # 15
+ENTER = _CustomLogLevel.ENTER  # 16
+SKIP = _CustomLogLevel.SKIP  # 17
 INFO = logging.INFO  # 20
 PASS = _CustomLogLevel.PASS  # 21
 DONE = _CustomLogLevel.DONE  # 25
@@ -224,7 +224,7 @@ class KamiLogger(logging.Logger):  # ===========================================
 
     def enter(self, message, *args, **kwargs):
         """
-        log at ``ENTER`` level (11): entering a hook or test case.
+        log at ``ENTER`` level (16): entering a hook or test case.
         """
         if self.isEnabledFor(_CustomLogLevel.ENTER):
             self._log(
@@ -233,7 +233,7 @@ class KamiLogger(logging.Logger):  # ===========================================
 
     def skip(self, message, *args, **kwargs):
         """
-        log at ``SKIP`` level (12): skipping a hook or test case.
+        log at ``SKIP`` level (17): skipping a hook or test case.
         """
         if self.isEnabledFor(_CustomLogLevel.SKIP):
             self._log(

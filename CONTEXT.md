@@ -57,9 +57,9 @@ Private `IntEnum` subclass that consolidates every custom log level in one place
 
 | member | value | `.name` | `.display` |
 | --- | --- | --- | --- |
-| `ENTER` | 11 | `"ENTER"` | `"ENTER"` |
-| `SKIP` | 12 | `"SKIP"` | `"SKIP "` |
 | `SUCC` | 15 | `"SUCC"` | `"SUCC."` |
+| `ENTER` | 16 | `"ENTER"` | `"ENTER"` |
+| `SKIP` | 17 | `"SKIP"` | `"SKIP "` |
 | `PASS` | 21 | `"PASS"` | `"PASS "` |
 | `DONE` | 25 | `"DONE"` | `"DONE "` |
 | `FAIL` | 45 | `"FAIL"` | `"FAIL "` |
@@ -105,14 +105,14 @@ Subclasses `logging.Logger`. Adds six convenience methods mapping to the custom 
 
 | method | level name | numeric |
 | --- | --- | --- |
-| `.enter()` | `ENTER` | 11 |
-| `.skip()` | `SKIP` | 12 |
 | `.succ()` | `SUCC` | 15 |
+| `.enter()` | `ENTER` | 16 |
+| `.skip()` | `SKIP` | 17 |
 | `.pass_()` | `PASS` | 21 |
 | `.done()` | `DONE` | 25 |
 | `.fail()` | `FAIL` | 45 |
 
-The full level progression: `DEBUG`(10) → `ENTER`(11) → `SKIP`(12) → `SUCC`(15) → `INFO`(20) → `PASS`(21) → `DONE`(25) → `WARNING`(30) → `ERROR`(40) → `FAIL`(45) → `CRITICAL`(50).
+The full level progression: `DEBUG`(10) → `SUCC`(15) → `ENTER`(16) → `SKIP`(17) → `INFO`(20) → `PASS`(21) → `DONE`(25) → `WARNING`(30) → `ERROR`(40) → `FAIL`(45) → `CRITICAL`(50).
 
 ### `_LogFormatEngine`
 

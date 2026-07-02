@@ -7,7 +7,8 @@ custom log levels and stdlib levels
 usage:
     python verbosity_demo.py          # DONE and above (default)
     python verbosity_demo.py -v       # INFO and above
-    python verbosity_demo.py -vv      # DEBUG and above
+    python verbosity_demo.py -vv      # SUCC, ENTER, SKIP and above
+    python verbosity_demo.py -vvv     # DEBUG and above
     python verbosity_demo.py -q       # WARNING and above
     python verbosity_demo.py -qq      # ERROR and above
     python verbosity_demo.py -qqq     # CRITICAL and above
@@ -23,10 +24,10 @@ args = parser.parse_args()
 log = kamilog.getLogger()
 kamilog.set_logging_level_by_verbosity(args)
 
-log.debug("debug detail (visible with -vv)")
+log.debug("debug detail (visible with -vvv)")
+log.succ("operation succeeded (visible with -vv)")
 log.enter("entering subroutine (visible with -vv)")
 log.skip("skipped step (visible with -vv)")
-log.succ("operation succeeded (visible with -vv)")
 log.info("info message (visible with -v)")
 log.pass_("test passed (visible with -v)")
 log.done("task completed (visible by default)")
