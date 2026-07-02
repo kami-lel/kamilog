@@ -778,6 +778,7 @@ def set_logging_level_by_verbosity(namespace, *, logger=None, logger_name=None):
 
 
 _CONTENT_SPACING = "  "
+_PADDING_MAP = {1: "#", 2: "=", 3: "*", 4: "+", 5: "-"}
 
 
 def _gen_comment_banner_generic(
@@ -797,6 +798,11 @@ def _gen_comment_banner_generic(
             ``"c"`` centered, ``"l"`` left-justified, ``"r"`` right-justified
     :type mode: str
     """
+    if isinstance(padding, int):
+        if padding not in _PADDING_MAP:
+            raise ValueError("param padding int must be 1~5")
+        padding = _PADDING_MAP[padding]
+
     if "\n" in content:
         raise ValueError("param content must be a single line")
     if len(content) > line_width:
@@ -856,8 +862,9 @@ def gen_comment_banner_centered(*args, **kwargs):
     :param content: text to pad; must be a single, non-empty line no
             longer than ``line_width``
     :type content: str
-    :param padding: single printable non-space fill character
-    :type padding: str
+    :param padding: single printable non-space fill character, or int 1-5
+            (1: #, 2: =, 3: *, 4: +, 5: -)
+    :type padding: str or int
     :param line_width: total output width; defaults to ``80``
     :type line_width: int
     :param file: output stream, used only for ANSI TTY detection;
@@ -870,9 +877,11 @@ def gen_comment_banner_centered(*args, **kwargs):
     :rtype: str
     :raises ValueError: if ``content`` contains ``"\\n"`` or exceeds
             ``line_width``; if ``padding`` is not exactly one printable
-            non-space character
+            non-space character or outside range 1-5 if int
     :example:
     >>> gen_comment_banner_centered("hi", "=", line_width=20)
+    '=======  hi  ======='
+    >>> gen_comment_banner_centered("hi", 2, line_width=20)
     '=======  hi  ======='
     """
     return _gen_comment_banner_generic("c", *args, **kwargs)
@@ -890,6 +899,8 @@ def gen_comment_banner_left_just(*args, **kwargs):
     :example:
     >>> gen_comment_banner_left_just("hi", "=", line_width=20)
     'hi  ================'
+    >>> gen_comment_banner_left_just("hi", 2, line_width=20)
+    'hi  ================'
     """
     return _gen_comment_banner_generic("l", *args, **kwargs)
 
@@ -905,6 +916,8 @@ def gen_comment_banner_right_just(*args, **kwargs):
 
     :example:
     >>> gen_comment_banner_right_just("hi", "=", line_width=20)
+    '================  hi'
+    >>> gen_comment_banner_right_just("hi", 2, line_width=20)
     '================  hi'
     """
     return _gen_comment_banner_generic("r", *args, **kwargs)

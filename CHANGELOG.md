@@ -36,6 +36,10 @@
 
 ### Added
 
+- Comment-banner functions now accept integer `padding` (1-5) as shorthand for common fill characters
+  - `1` → `#`, `2` → `=`, `3` → `*`, `4` → `+`, `5` → `-`
+  - Example: `gen_comment_banner_centered("title", 2)` equivalent to `gen_comment_banner_centered("title", "=")`
+
 ### Deprecated
 
 ### Removed

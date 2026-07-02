@@ -421,21 +421,46 @@ print(kamilog.gen_comment_banner_left_just("hello", "="))
 print(kamilog.gen_comment_banner_right_just("hello", "="))
 ```
 
+### Padding
+
+The `padding` parameter accepts either a string (single character) or an integer (1-5):
+
+| padding | character |
+|---|---|
+| `"#"` or `1` | `#` |
+| `"="` or `2` | `=` |
+| `"*"` or `3` | `*` |
+| `"+"` or `4` | `+` |
+| `"-"` or `5` | `-` |
+
+```python
+# String padding
+print(kamilog.gen_comment_banner_centered("release", "="))
+
+# Integer padding (shorter to type)
+print(kamilog.gen_comment_banner_centered("release", 2))
+```
+
+### Renderer Reuse
+
 All three functions accept `line_width` (default `80`), `file` (used only for ANSI TTY detection; defaults to `sys.stdout`), and an optional `renderer` kwarg. If you call any of them repeatedly, construct one `AnsiRenderer` up front and pass it in — this avoids re-detecting TTY state on every call:
 
 ```python
 renderer = kamilog.AnsiRenderer(sys.stdout)
-print(kamilog.gen_comment_banner_centered("section", "#", renderer=renderer))
-print(kamilog.gen_comment_banner_centered("subsection", "-", renderer=renderer))
+print(kamilog.gen_comment_banner_centered("section", 1, renderer=renderer))
+print(kamilog.gen_comment_banner_centered("subsection", 5, renderer=renderer))
 
 # custom width
-print(kamilog.gen_comment_banner_centered("title", "*", line_width=40))
+print(kamilog.gen_comment_banner_centered("title", 3, line_width=40))
 ```
+
+### Validation
 
 All three raise `ValueError` when:
 - `content` contains a newline
 - `len(content)` exceeds `line_width`
-- `padding` is not exactly one printable non-space character
+- `padding` (string) is not exactly one printable non-space character
+- `padding` (int) is not in range 1-5
 
 
 
