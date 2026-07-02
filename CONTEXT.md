@@ -1,6 +1,6 @@
 # kamilog CONTEXT
 
-*Last updated: 2026-07-02 (development)*
+*Last updated: 2026-07-02 (v2.0.0)*
 
 ## Project Overview
 
@@ -14,7 +14,7 @@ Repository: <https://github.com/kami-lel/kamilog>
 kamilog/
 ├── kamilog/
 │   ├── __init__.py          # re-exports all public symbols from kamilog.py
-│   └── kamilog.py           # entire implementation (~970 lines)
+│   └── kamilog.py           # entire implementation (~990 lines)
 ├── tests/
 │   ├── lp/                          # line-padding test suite
 │   │   ├── lp-centered_test.py
