@@ -7,12 +7,12 @@ contrast short and long message compression under _DiffOnlyMsgFilter
 import sys
 
 import kamilog
-from kamilog.kamilog import AnsiRenderer, gen_line_padding_centered
+from kamilog.kamilog import AnsiRenderer, gen_comment_banner_centered
 
 # repeated calls share one renderer instead of re-detecting TTY state
 renderer = AnsiRenderer(sys.stdout)
 
-print(gen_line_padding_centered("short messages", "#", renderer=renderer))
+print(gen_comment_banner_centered("short messages", "#", renderer=renderer))
 
 log_short = kamilog.getLogger("sensor")
 log_short.setLevel(kamilog.DEBUG)
@@ -44,7 +44,7 @@ for temp, humid, status in readings:
 
 
 print()
-print(gen_line_padding_centered("long messages", "#", renderer=renderer))
+print(gen_comment_banner_centered("long messages", "#", renderer=renderer))
 
 log_long = kamilog.getLogger("scanner")
 log_long.setLevel(kamilog.DEBUG)

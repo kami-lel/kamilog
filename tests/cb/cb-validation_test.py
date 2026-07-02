@@ -1,26 +1,26 @@
 """
-lp-validation_test.py
+cb-validation_test.py
 
-tests for ValueError guards in line-padding functions (shared across all
+tests for ValueError guards in comment-banner functions (shared across all
 three callables)
 """
 
 import pytest
 from kamilog import (
-    gen_line_padding_centered,
-    gen_line_padding_left_just,
-    gen_line_padding_right_just,
+    gen_comment_banner_centered,
+    gen_comment_banner_left_just,
+    gen_comment_banner_right_just,
 )
 
 
 FUNCS = [
-    gen_line_padding_centered,
-    gen_line_padding_left_just,
-    gen_line_padding_right_just,
+    gen_comment_banner_centered,
+    gen_comment_banner_left_just,
+    gen_comment_banner_right_just,
 ]
 
 
-class TestLinePaddingValidation:
+class TestCommentBannerValidation:
     @pytest.mark.parametrize("func", FUNCS)
     def test_content_with_newline(_, func):
         with pytest.raises(ValueError, match="single line"):

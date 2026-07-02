@@ -30,7 +30,36 @@
 
 ### Security
 
-[unreleased]: https://github.com/kami-lel/kamilog/compare/v2.0.0...dev
+[unreleased]: https://github.com/kami-lel/kamilog/compare/v2.1.0...dev
+
+
+
+
+## [2.1.0] - 2026-07-02
+
+### Added
+
+- `comment_banner_zero()` and CLI subcommand `comment_banner_zero` (alias `cb0`) — a multi-line
+  boxed comment banner (CB0), framed top and bottom by `#` rulers
+- Comment-banner functions accept an integer `padding` shorthand (1-5) for common fill
+  characters: `#`, `=`, `*`, `+`, `-`
+- Example demo: `examples/comment_banner_zero_demo.py`
+
+### Changed
+
+- Renamed the line-padding API to comment-banner: `gen_line_padding_*` → `gen_comment_banner_*`,
+  CLI subcommand `line_padding` (`lp`) → `comment_banner` (`cb`)
+- Reorganized tests, examples, and docs to match the new naming
+- `cb` and `cb0` now read their text content from stdin instead of a positional argument,
+  following the Unix pipe pattern
+- Clearer `--help` output for `cb`/`cb0`, with usage examples and a better `PADDING` description
+
+> [!WARNING]
+> This release renames the line-padding API to comment-banner, and switches the `cb`/`cb0` CLI
+> subcommands to read content from stdin. Update callers to use `gen_comment_banner_*` and pipe
+> input, e.g. `echo 'title' | python kamilog/kamilog.py cb c '='`.
+
+[2.1.0]: https://github.com/kami-lel/kamilog/compare/v2.0.0...v2.1.0
 
 
 

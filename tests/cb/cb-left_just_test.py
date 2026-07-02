@@ -1,0 +1,36 @@
+"""
+cb-left_just_test.py
+
+tests for `gen_comment_banner_left_just` in `kamilog.py`
+"""
+
+from kamilog import AnsiRenderer, gen_comment_banner_left_just
+
+
+class TestCommentBannerLeftJust:
+    def test_normal(_):
+        result = gen_comment_banner_left_just("hi", "=", line_width=10)
+        assert result == "hi  ======"
+
+    def test_empty_content(_):
+        result = gen_comment_banner_left_just("", "=", line_width=6)
+        assert result == "  ===="
+
+    def test_content_fills_with_no_padding(_):
+        result = gen_comment_banner_left_just("hi", "=", line_width=4)
+        assert result == "hi  "
+
+    def test_output_length(_):
+        result = gen_comment_banner_left_just("hello", "-", line_width=20)
+        assert len(result) == 20
+
+    def test_default_line_width_is_80(_):
+        result = gen_comment_banner_left_just("test", "*")
+        assert len(result) == 80
+
+    def test_reuses_passed_renderer(_):
+        renderer = AnsiRenderer(None)
+        result = gen_comment_banner_left_just(
+            "test", "#", line_width=12, renderer=renderer
+        )
+        assert result.startswith("test")
