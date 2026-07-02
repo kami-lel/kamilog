@@ -37,9 +37,9 @@ print(gen_comment_banner_centered(
     "all levels (in order)", "#", renderer=renderer
 ))
 log.debug("Debugging information shown only during development")
-log.succ("Subroutine or execution succeeded")
 log.enter("Marks start of a routine")
 log.skip("Marks skipped portion of routine")
+log.succ("Subroutine or execution succeeded")
 log.info("General informational message related to program function")
 log.pass_("Test case passed")
 log.done("Entire program or major component completed successfully")
