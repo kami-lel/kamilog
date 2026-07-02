@@ -172,6 +172,18 @@ Input validation (raises `ValueError`):
 | `gen_comment_banner_left_just` | `"l"` | `content + "  " + grey(padding * remaining)` |
 | `gen_comment_banner_right_just` | `"r"` | `grey(padding * remaining) + "  " + content` |
 
+### Multi-Line Comment Banner (CB0)
+
+`gen_comment_banner_zero(lines, *, line_width=80, file=sys.stdout, renderer=None)` returns a multi-line boxed banner (CB0) by wrapping each line in an iterable with a grey-colored `# ` prefix, framed by top and bottom grey-colored `#` rulers at full `line_width`.
+
+Input validation (raises `ValueError`):
+- Each line must not contain `\n`
+- Each line must not exceed `line_width - 2` (reserved for `# ` prefix)
+
+Layout: top ruler + newline-separated prefixed lines + bottom ruler, where `ruler = grey("#" * line_width)` and each line becomes `grey("# ") + line`.
+
+The function returns the formatted banner as a single `str` with embedded newlines; it does not print.
+
 ### Command-Line Interface
 
 The module provides a CLI entry point via direct script execution (`python kamilog/kamilog.py`) with an argparse-based subcommand structure. The `comment_banner` subcommand (alias: `cb`) wraps the comment-banner functions with string-based mode selection.
@@ -182,11 +194,19 @@ Note: `python -m kamilog` does not work — the package has no `kamilog/__main__
 - `cli_parser` — root ArgumentParser with `cli_subparser` for subcommands
 - `_comment_banner_parser_main(args)` — handler that maps CLI modes to `_gen_comment_banner_generic`, then prints the returned line to stdout or stderr
 - `_COMMENT_BANNER_DESC` — shared description string for the subcommand
+- `_comment_banner_zero_parser_main(args)` — handler that calls `gen_comment_banner_zero`, then prints the returned banner
+- `_CB0_DESC` — shared description string for the CB0 subcommand
 
-**Mode mapping**:
-- CLI accepts `c|center`, `l|left`, `r|right` as aliases; mapped to internal string modes before calling `_gen_comment_banner_generic`
-- The `-w, --line-width LINE_WIDTH` option sets line width (default 80)
-- The `-e, --stderr` flag routes output to `sys.stderr` instead of `sys.stdout`
+**Comment Banner subcommand (`comment_banner` / `cb`)**:
+- Positional: `MODE` (c/center, l/left, r/right), `CONTENT` (text), `PADDING` (char or int 1-5)
+- Option: `-w, --line-width LINE_WIDTH` (default 80)
+- Option: `-e, --stderr` (output to stderr)
+
+**Comment Banner Zero subcommand (`comment_banner_zero` / `cb0`)**:
+- Positional: `LINES` (one or more strings, `nargs='+'`)
+- Option: `-w, --line-width LINE_WIDTH` (default 80)
+- Option: `-e, --stderr` (output to stderr)
+- Example: `python kamilog/kamilog.py cb0 "Title" "Subtitle" -w 40`
 
 ## Public API Surface
 
@@ -203,6 +223,7 @@ kamilog.AnsiRenderer                            # TTY-detecting color applier
 kamilog.gen_comment_banner_centered(content, padding, *, line_width=80, file, renderer=None) -> str
 kamilog.gen_comment_banner_left_just(content, padding, *, line_width=80, file, renderer=None) -> str
 kamilog.gen_comment_banner_right_just(content, padding, *, line_width=80, file, renderer=None) -> str
+kamilog.gen_comment_banner_zero(lines, *, line_width=80, file=sys.stdout, renderer=None) -> str
 
 # log level constants
 kamilog.NOTSET, DEBUG, ENTER, SKIP, INFO, PASS, SUCC, DONE,
