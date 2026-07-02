@@ -46,6 +46,7 @@ __all__ = (
     "gen_comment_banner_centered",
     "gen_comment_banner_left_just",
     "gen_comment_banner_right_just",
+    "gen_comment_banner_zero",
 )
 
 
@@ -923,6 +924,57 @@ def gen_comment_banner_right_just(*args, **kwargs):
     return _gen_comment_banner_generic("r", *args, **kwargs)
 
 
+def gen_comment_banner_zero(
+    lines, *, line_width=80, file=sys.stdout, renderer=None
+):
+    """
+    generate a multi-line boxed comment banner (CB0).
+
+    wraps each line with `# `, framed by top and bottom `#` rulers
+
+
+    :param lines: lines to include in the banner
+    :type lines: iterable of str
+    :param line_width: total output width; defaults to ``80``
+    :type line_width: int
+    :param file: output stream, used only for ANSI TTY detection;
+            defaults to ``sys.stdout``
+    :type file: IO
+    :param renderer: ANSI color renderer;
+            if ``None``, created from ``file`` argument
+    :type renderer: AnsiRenderer or None
+    :return: multi-line boxed banner as a string
+    :rtype: str
+    :raises ValueError: any line contains ``"\\n"`` or exceeds
+            ``line_width - 2`` (reserved for `# ` prefix)
+    :example:
+    >>> gen_comment_banner_zero(["line 1", "line 2"], line_width=20)
+    ####################
+    # line 1
+    # line 2
+    ####################
+    """
+    if renderer is None:
+        renderer = AnsiRenderer(file)
+
+    ruler = renderer.color_grey("#" * line_width)
+    formatted_lines = [ruler]
+
+    for line in lines:
+        if "\n" in line:
+            raise ValueError("param lines must not contain newlines")
+        if len(line) > line_width - 2:
+            raise ValueError(
+                "param line length {} exceeds line_width - 2 {}".format(
+                    len(line), line_width - 2
+                )
+            )
+        formatted_lines.append(renderer.color_grey("# ") + line)
+
+    formatted_lines.append(ruler)
+    return "\n".join(formatted_lines)
+
+
 # CLI  #########################################################################
 
 # main parser  =================================================================
@@ -970,10 +1022,15 @@ comment_banner_parser.add_argument(
     metavar="CONTENT",
     help="text to print; must be a single line no longer than line-width",
 )
+
+
 comment_banner_parser.add_argument(
     "padding",
     metavar="PADDING",
-    help="single printable non-space fill character (e.g., #, -, =)",
+    help=(
+        "single printable non-space fill character, or int 1-5 (e.g., #, -, =,"
+        " or 1-5)"
+    ),
 )
 comment_banner_parser.add_argument(
     "-w",
@@ -991,6 +1048,52 @@ comment_banner_parser.add_argument(
 )
 
 comment_banner_parser.set_defaults(func=_comment_banner_parser_main)
+
+
+# cb0 parser  ==================================================================
+
+_CB0_DESC = "print multi-line boxed comment banner (CB0)"
+
+
+def _comment_banner_zero_parser_main(args):
+    file = sys.stderr if args.stderr else sys.stdout
+    banner = gen_comment_banner_zero(
+        args.lines,
+        line_width=args.line_width,
+        file=file,
+    )
+    print(banner, file=file)
+
+
+comment_banner_zero_parser = cli_subparser.add_parser(
+    "comment_banner_zero",
+    help=_CB0_DESC,
+    description=_CB0_DESC,
+    aliases=["cb0"],
+)
+
+comment_banner_zero_parser.add_argument(
+    "lines",
+    nargs="+",
+    metavar="LINE",
+    help="lines to include in the comment banner",
+)
+comment_banner_zero_parser.add_argument(
+    "-w",
+    "--line-width",
+    type=int,
+    default=80,
+    metavar="LINE_WIDTH",
+    help="total character width of output line; default 80",
+)
+comment_banner_zero_parser.add_argument(
+    "-e",
+    "--stderr",
+    action="store_true",
+    help="print to stderr (instead of stdout)",
+)
+
+comment_banner_zero_parser.set_defaults(func=_comment_banner_zero_parser_main)
 
 
 # Entry Point  =================================================================

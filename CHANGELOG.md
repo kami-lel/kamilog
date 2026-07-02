@@ -39,6 +39,13 @@
 - Comment-banner functions now accept integer `padding` (1-5) as shorthand for common fill characters
   - `1` → `#`, `2` → `=`, `3` → `*`, `4` → `+`, `5` → `-`
   - Example: `gen_comment_banner_centered("title", 2)` equivalent to `gen_comment_banner_centered("title", "=")`
+- `gen_comment_banner_zero(lines, *, line_width=80, file=sys.stdout, renderer=None)` — multi-line boxed comment banner (CB0)
+  - wraps each line with grey-colored `# ` prefix
+  - frames with top and bottom grey-colored `#` rulers at full `line_width`
+  - returns formatted banner as string
+- CLI subcommand `comment_banner_zero` (alias: `cb0`) with support for multiple lines
+  - Usage: `python kamilog/kamilog.py cb0 "Line 1" "Line 2" -w 40`
+- Example demo: `examples/comment_banner_zero_demo.py` showcasing CB0 usage patterns
 
 ### Deprecated
 
