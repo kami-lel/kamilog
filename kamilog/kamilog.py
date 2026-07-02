@@ -780,19 +780,17 @@ def set_logging_level_by_verbosity(namespace, *, logger=None, logger_name=None):
 _CONTENT_SPACING = "  "
 
 
-def _print_line_padding_generic(
+def _gen_line_padding_generic(
     mode,
     content,
     padding,
     *,
     line_width=80,
-    end="\n",
     file=sys.stdout,
-    flush=False,
     renderer=None,
 ):
     """
-    print ``content`` padded to ``line_width``
+    return ``content`` padded to ``line_width``
 
 
     :param mode: text alignment:
@@ -841,8 +839,7 @@ def _print_line_padding_generic(
             + renderer.color_grey(padding * right)
         )
 
-    print(padded_content, end=end, file=file, flush=flush)
-    return renderer
+    return padded_content
 
 
 # Line Padding Public API  =====================================================
@@ -881,7 +878,7 @@ def print_line_padding_centered(*args, **kwargs):
     >>> print_line_padding_centered("hi", "=", line_width=20)
     =======  hi  =======
     """
-    return _print_line_padding_generic("c", *args, **kwargs)
+    return _gen_line_padding_generic("c", *args, **kwargs)
 
 
 def print_line_padding_left_just(*args, **kwargs):
@@ -896,7 +893,7 @@ def print_line_padding_left_just(*args, **kwargs):
     >>> print_line_padding_left_just("hi", "=", line_width=20)
     hi  ================
     """
-    return _print_line_padding_generic("l", *args, **kwargs)
+    return _gen_line_padding_generic("l", *args, **kwargs)
 
 
 def print_line_padding_right_just(*args, **kwargs):
@@ -911,7 +908,7 @@ def print_line_padding_right_just(*args, **kwargs):
     >>> print_line_padding_right_just("hi", "=", line_width=20)
     ================  hi
     """
-    return _print_line_padding_generic("r", *args, **kwargs)
+    return _gen_line_padding_generic("r", *args, **kwargs)
 
 
 # CLI  #########################################################################
@@ -934,7 +931,7 @@ def _line_padding_parser_main(args):
     mode_map = {"center": "c", "left": "l", "right": "r"}
     mode = mode_map.get(args.mode, args.mode)
     file = sys.stderr if args.stderr else sys.stdout
-    _print_line_padding_generic(
+    _gen_line_padding_generic(
         mode,
         args.content,
         args.padding,
