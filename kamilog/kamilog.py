@@ -930,13 +930,14 @@ def _line_padding_parser_main(args):
     mode_map = {"center": "c", "left": "l", "right": "r"}
     mode = mode_map.get(args.mode, args.mode)
     file = sys.stderr if args.stderr else sys.stdout
-    _gen_line_padding_generic(
+    line = _gen_line_padding_generic(
         mode,
         args.content,
         args.padding,
         line_width=args.line_width,
         file=file,
     )
+    print(line, file=file)
 
 
 line_padding_parser = cli_subparser.add_parser(
