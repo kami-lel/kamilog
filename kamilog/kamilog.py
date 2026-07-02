@@ -988,16 +988,18 @@ cli_subparser = cli_parser.add_subparsers(title="subcommands")
 
 # comment banner parser  =======================================================
 
-_COMMENT_BANNER_DESC = "print content padded to line width"
+_COMMENT_BANNER_DESC = "print stdin content padded to line width"
+# TODO additional description
 
 
 def _comment_banner_parser_main(args):
     mode_map = {"center": "c", "left": "l", "right": "r"}
     mode = mode_map.get(args.mode, args.mode)
     file = sys.stderr if args.stderr else sys.stdout
+    content = sys.stdin.readline().rstrip("\n")  # single line from stdin
     line = _gen_comment_banner_generic(
         mode,
-        args.content,
+        content,
         args.padding,
         line_width=args.line_width,
         file=file,
@@ -1017,13 +1019,8 @@ comment_banner_parser.add_argument(
     choices=["c", "l", "r", "center", "left", "right"],
     help="text alignment: c/center, l/left(-justified), r/right(-justified)",
 )
-comment_banner_parser.add_argument(
-    "content",
-    metavar="CONTENT",
-    help="text to print; must be a single line no longer than line-width",
-)
 
-
+# FIXME better help for this arg
 comment_banner_parser.add_argument(
     "padding",
     metavar="PADDING",
@@ -1053,12 +1050,14 @@ comment_banner_parser.set_defaults(func=_comment_banner_parser_main)
 # cb0 parser  ==================================================================
 
 _CB0_DESC = "print multi-line boxed comment banner (CB0)"
+# TODO additional description
 
 
 def _comment_banner_zero_parser_main(args):
     file = sys.stderr if args.stderr else sys.stdout
+    lines = sys.stdin.read().splitlines()  # all lines from stdin
     banner = gen_comment_banner_zero(
-        args.lines,
+        lines,
         line_width=args.line_width,
         file=file,
     )
@@ -1068,16 +1067,10 @@ def _comment_banner_zero_parser_main(args):
 comment_banner_zero_parser = cli_subparser.add_parser(
     "comment_banner_zero",
     help=_CB0_DESC,
-    description=_CB0_DESC,
+    description=_CB0_DESC + "; lines are read from stdin",
     aliases=["cb0"],
 )
 
-comment_banner_zero_parser.add_argument(
-    "lines",
-    nargs="+",
-    metavar="LINE",
-    help="lines to include in the comment banner",
-)
 comment_banner_zero_parser.add_argument(
     "-w",
     "--line-width",
