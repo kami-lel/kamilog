@@ -9,7 +9,7 @@ todo allows use -V being equivalent to -vvv (v.v.)
 todo allows to use only -V, dont add -v (v.v.)
 todo smart time print
 bug using different logger to print & diff only can produce confusing result
-Fixme rename line padding to CB
+Todo padding allow number 1~5
 Todo add cb0
 -->
 
@@ -34,14 +34,14 @@ Todo add cb0
 - `-v`/`-q` CLI argument helpers
 - Seven verbosity steps from `CRITICAL` to `DEBUG`
 
-#### 📐 Line Padding Utilities
+#### 📐 Comment Banner Utilities
 
 - Centered, left-justified, and right-justified alignment modes
 - Fixed-width terminal banners with custom fill characters
 
 #### 💻 Command-Line Interface
 
-- Built-in CLI for line padding via `python kamilog/kamilog.py lp`
+- Built-in CLI for comment banner via `python kamilog/kamilog.py cb`
 - Support for short and long mode aliases
 - Customizable output width and destination (stdout/stderr)
 

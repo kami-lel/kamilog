@@ -409,27 +409,27 @@ print(renderer.color_grey("muted text"))
 
 
 
-## Line Padding
+## Comment Banner
 
-Three functions return fixed-width lines padded with a fill character: `gen_line_padding_centered`, `gen_line_padding_left_just`, `gen_line_padding_right_just`. A two-space separator is always placed between content and fill. Print the result yourself:
+Three functions return fixed-width lines padded with a fill character: `gen_comment_banner_centered`, `gen_comment_banner_left_just`, `gen_comment_banner_right_just`. A two-space separator is always placed between content and fill. Print the result yourself:
 
 ```python
 import kamilog
 
-print(kamilog.gen_line_padding_centered("hello", "="))
-print(kamilog.gen_line_padding_left_just("hello", "="))
-print(kamilog.gen_line_padding_right_just("hello", "="))
+print(kamilog.gen_comment_banner_centered("hello", "="))
+print(kamilog.gen_comment_banner_left_just("hello", "="))
+print(kamilog.gen_comment_banner_right_just("hello", "="))
 ```
 
 All three functions accept `line_width` (default `80`), `file` (used only for ANSI TTY detection; defaults to `sys.stdout`), and an optional `renderer` kwarg. If you call any of them repeatedly, construct one `AnsiRenderer` up front and pass it in — this avoids re-detecting TTY state on every call:
 
 ```python
 renderer = kamilog.AnsiRenderer(sys.stdout)
-print(kamilog.gen_line_padding_centered("section", "#", renderer=renderer))
-print(kamilog.gen_line_padding_centered("subsection", "-", renderer=renderer))
+print(kamilog.gen_comment_banner_centered("section", "#", renderer=renderer))
+print(kamilog.gen_comment_banner_centered("subsection", "-", renderer=renderer))
 
 # custom width
-print(kamilog.gen_line_padding_centered("title", "*", line_width=40))
+print(kamilog.gen_comment_banner_centered("title", "*", line_width=40))
 ```
 
 All three raise `ValueError` when:
@@ -547,8 +547,8 @@ Verbosity-to-logging-level mapping:
 
 ## Command-Line Interface
 
-The line-padding utilities are accessible via CLI:
+The comment-banner utilities are accessible via CLI:
 
 ```bash
-python kamilog/kamilog.py line_padding -h
+python kamilog/kamilog.py comment_banner -h
 ```

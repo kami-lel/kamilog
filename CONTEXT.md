@@ -16,11 +16,11 @@ kamilog/
 │   ├── __init__.py          # re-exports all public symbols from kamilog.py
 │   └── kamilog.py           # entire implementation (~990 lines)
 ├── tests/
-│   ├── lp/                          # line-padding test suite
-│   │   ├── lp-centered_test.py
-│   │   ├── lp-left_just_test.py
-│   │   ├── lp-right_just_test.py
-│   │   └── lp-validation_test.py
+│   ├── cb/                          # comment-banner test suite
+│   │   ├── cb-centered_test.py
+│   │   ├── cb-left_just_test.py
+│   │   ├── cb-right_just_test.py
+│   │   └── cb-validation_test.py
 │   ├── v/                           # verbosity helper test suite
 │   │   ├── v-add_verbose_arguments_test.py
 │   │   ├── v-calc_logging_level_test.py
@@ -28,7 +28,7 @@ kamilog/
 │   │   └── v-set_logging_level_by_verbosity_test.py
 │   └── source_quality_test.py       # banned-marker scan (no TODO/FIXME/HACK/BUG)
 ├── examples/
-│   ├── line_padding_demo.py                 # all three line-padding functions
+│   ├── comment_banner_demo.py               # all three comment-banner functions
 │   ├── verbosity_demo.py                    # CLI -v/-q flags with custom levels
 │   └── logger/
 │       ├── logger-all_levels_demo.py        # all eleven log levels with descriptions
@@ -150,9 +150,9 @@ Algorithm (`_DiffOnlyEngine`):
 
 The original (uncompressed) message is stored in `_history` so compression decisions are always based on the raw text, not prior compressed output.
 
-### Line Padding Utilities
+### Comment Banner Utilities
 
-Three public functions that return a fixed-width line by padding `content` with a repeated character to fill `line_width` (default 80). All share the same internal dispatcher `_gen_line_padding_generic(mode, content, padding, *, line_width, file, renderer=None)`, which accepts string modes (`"c"`, `"l"`, `"r"`).
+Three public functions that return a fixed-width line by padding `content` with a repeated character to fill `line_width` (default 80). All share the same internal dispatcher `_gen_comment_banner_generic(mode, content, padding, *, line_width, file, renderer=None)`, which accepts string modes (`"c"`, `"l"`, `"r"`).
 
 Each function accepts an optional `renderer` kwarg (`AnsiRenderer or None`). When `None`, a renderer is created from `file` automatically (`file` is otherwise only used for TTY detection). All three functions return the padded line as a `str`; none of them print. When color is enabled, the padding fill is colored grey; `content` and the two-space separators are always uncolored. Callers that invoke the same function repeatedly against the same stream should construct one `AnsiRenderer` up front and pass it via `renderer=` to avoid re-detecting TTY state on every call.
 
@@ -165,23 +165,23 @@ Input validation (raises `ValueError`):
 
 | function | mode | layout |
 | --- | --- | --- |
-| `gen_line_padding_centered` | `"c"` | `grey(padding * left) + "  " + content + "  " + grey(padding * right)` (remainder split evenly; odd char goes right) |
-| `gen_line_padding_left_just` | `"l"` | `content + "  " + grey(padding * remaining)` |
-| `gen_line_padding_right_just` | `"r"` | `grey(padding * remaining) + "  " + content` |
+| `gen_comment_banner_centered` | `"c"` | `grey(padding * left) + "  " + content + "  " + grey(padding * right)` (remainder split evenly; odd char goes right) |
+| `gen_comment_banner_left_just` | `"l"` | `content + "  " + grey(padding * remaining)` |
+| `gen_comment_banner_right_just` | `"r"` | `grey(padding * remaining) + "  " + content` |
 
 ### Command-Line Interface
 
-The module provides a CLI entry point via direct script execution (`python kamilog/kamilog.py`) with an argparse-based subcommand structure. The `line_padding` subcommand (alias: `lp`) wraps the line-padding functions with string-based mode selection.
+The module provides a CLI entry point via direct script execution (`python kamilog/kamilog.py`) with an argparse-based subcommand structure. The `comment_banner` subcommand (alias: `cb`) wraps the comment-banner functions with string-based mode selection.
 
 Note: `python -m kamilog` does not work — the package has no `kamilog/__main__.py`. Use direct script execution (`python kamilog/kamilog.py`) instead.
 
 **CLI module organization**:
 - `cli_parser` — root ArgumentParser with `cli_subparser` for subcommands
-- `_line_padding_parser_main(args)` — handler that maps CLI modes to `_gen_line_padding_generic`, then prints the returned line to stdout or stderr
-- `_LINE_PADDING_DESC` — shared description string for the subcommand
+- `_comment_banner_parser_main(args)` — handler that maps CLI modes to `_gen_comment_banner_generic`, then prints the returned line to stdout or stderr
+- `_COMMENT_BANNER_DESC` — shared description string for the subcommand
 
 **Mode mapping**:
-- CLI accepts `c|center`, `l|left`, `r|right` as aliases; mapped to internal string modes before calling `_gen_line_padding_generic`
+- CLI accepts `c|center`, `l|left`, `r|right` as aliases; mapped to internal string modes before calling `_gen_comment_banner_generic`
 - The `-w, --line-width LINE_WIDTH` option sets line width (default 80)
 - The `-e, --stderr` flag routes output to `sys.stderr` instead of `sys.stdout`
 
@@ -196,10 +196,10 @@ kamilog.KamiLogger                              # logger class (subclass of logg
 kamilog.AnsiColor                               # Enum of ANSI escape codes
 kamilog.AnsiRenderer                            # TTY-detecting color applier
 
-# line padding
-kamilog.gen_line_padding_centered(content, padding, *, line_width=80, file, renderer=None) -> str
-kamilog.gen_line_padding_left_just(content, padding, *, line_width=80, file, renderer=None) -> str
-kamilog.gen_line_padding_right_just(content, padding, *, line_width=80, file, renderer=None) -> str
+# comment banner
+kamilog.gen_comment_banner_centered(content, padding, *, line_width=80, file, renderer=None) -> str
+kamilog.gen_comment_banner_left_just(content, padding, *, line_width=80, file, renderer=None) -> str
+kamilog.gen_comment_banner_right_just(content, padding, *, line_width=80, file, renderer=None) -> str
 
 # log level constants
 kamilog.NOTSET, DEBUG, ENTER, SKIP, INFO, PASS, SUCC, DONE,
@@ -231,4 +231,4 @@ Verbosity mapping (default level is `DONE` = 25):
 ## Known Limitations and Future Work
 
 - No file handler option on `getLogger()` — stdout/stderr only.
-- Test coverage spans verbosity helpers and line-padding functions; no unit tests for `_LogFormatter` or `_DiffOnlyMsgFilter`.
+- Test coverage spans verbosity helpers and comment-banner functions; no unit tests for `_LogFormatter` or `_DiffOnlyMsgFilter`.

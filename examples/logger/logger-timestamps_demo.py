@@ -9,12 +9,12 @@ import sys
 import time
 
 import kamilog
-from kamilog.kamilog import AnsiRenderer, gen_line_padding_centered
+from kamilog.kamilog import AnsiRenderer, gen_comment_banner_centered
 
 # repeated calls share one renderer instead of re-detecting TTY state
 renderer = AnsiRenderer(sys.stdout)
 
-print(gen_line_padding_centered("datefmt formats", "#", renderer=renderer))
+print(gen_comment_banner_centered("datefmt formats", "#", renderer=renderer))
 
 log = kamilog.getLogger("app")
 log.setLevel(kamilog.DEBUG)
@@ -47,7 +47,7 @@ log_dt_ms.info("YYYY-MM-DD HH:MM:SS.mmm")
 # relative  --------------------------------------------------------------------
 
 print()
-print(gen_line_padding_centered(
+print(gen_comment_banner_centered(
     "relative_to elapsed time", "#", renderer=renderer
 ))
 

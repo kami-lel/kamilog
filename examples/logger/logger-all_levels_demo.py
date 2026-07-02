@@ -7,7 +7,7 @@ demonstrate all eleven log levels with a brief description of each
 import sys
 
 import kamilog
-from kamilog.kamilog import AnsiRenderer, gen_line_padding_centered
+from kamilog.kamilog import AnsiRenderer, gen_comment_banner_centered
 
 log = kamilog.getLogger()
 log.setLevel(kamilog.DEBUG)
@@ -15,7 +15,7 @@ log.setLevel(kamilog.DEBUG)
 # repeated calls share one renderer instead of re-detecting TTY state
 renderer = AnsiRenderer(sys.stdout)
 
-print(gen_line_padding_centered("standard levels", "#", renderer=renderer))
+print(gen_comment_banner_centered("standard levels", "#", renderer=renderer))
 log.debug("Debugging details here")
 log.info("Informational message")
 log.warning("Warning message")
@@ -23,7 +23,7 @@ log.error("Error occurred")
 log.critical("Critical issue")
 
 print()
-print(gen_line_padding_centered("custom levels", "#", renderer=renderer))
+print(gen_comment_banner_centered("custom levels", "#", renderer=renderer))
 log.enter("Starting database migration")
 log.skip("Skipped validation step")
 log.pass_("All assertions passed")
@@ -33,7 +33,7 @@ log.fail("Test case failed")
 
 
 print()
-print(gen_line_padding_centered(
+print(gen_comment_banner_centered(
     "all levels (in order)", "#", renderer=renderer
 ))
 log.debug("Debugging information shown only during development")

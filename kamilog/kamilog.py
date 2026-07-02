@@ -2,7 +2,7 @@
 kamilog.py
 
 Lightweight Python logging wrapper with custom log levels, structured output,
-ANSI colored logging, verbosity control, line-padding utilities, and CLI.
+ANSI colored logging, verbosity control, comment banner utilities, and CLI.
 
 Q.v. https://github.com/kami-lel/kamilog for Project Main Page
 Q.v. https://github.com/kami-lel/kamilog/tree/main/docs for Documentation
@@ -42,10 +42,10 @@ __all__ = (
     "DATEFMT_TIME_MS",
     "DATEFMT_DATETIME",
     "DATEFMT_DATETIME_MS",
-    # line padding
-    "gen_line_padding_centered",
-    "gen_line_padding_left_just",
-    "gen_line_padding_right_just",
+    # comment banner
+    "gen_comment_banner_centered",
+    "gen_comment_banner_left_just",
+    "gen_comment_banner_right_just",
 )
 
 
@@ -774,13 +774,13 @@ def set_logging_level_by_verbosity(namespace, *, logger=None, logger_name=None):
     logger.setLevel(_calc_logging_level_from_verbosity_namespace(namespace))
 
 
-# Line Padding  ################################################################
+# Comment Banner  #############################################################
 
 
 _CONTENT_SPACING = "  "
 
 
-def _gen_line_padding_generic(
+def _gen_comment_banner_generic(
     mode,
     content,
     padding,
@@ -842,10 +842,10 @@ def _gen_line_padding_generic(
     return padded_content
 
 
-# Line Padding Public API  =====================================================
+# Comment Banner Public API  ==================================================
 
 
-def gen_line_padding_centered(*args, **kwargs):
+def gen_comment_banner_centered(*args, **kwargs):
     """
     generate a line with ``content`` centered,
     filling both sides with ``padding`` to reach ``line_width``.
@@ -872,42 +872,42 @@ def gen_line_padding_centered(*args, **kwargs):
             ``line_width``; if ``padding`` is not exactly one printable
             non-space character
     :example:
-    >>> gen_line_padding_centered("hi", "=", line_width=20)
+    >>> gen_comment_banner_centered("hi", "=", line_width=20)
     '=======  hi  ======='
     """
-    return _gen_line_padding_generic("c", *args, **kwargs)
+    return _gen_comment_banner_generic("c", *args, **kwargs)
 
 
-def gen_line_padding_left_just(*args, **kwargs):
+def gen_comment_banner_left_just(*args, **kwargs):
     """
     generate a line with ``content`` left-justified,
     filling the right with ``padding``.
 
-    see :func:`gen_line_padding_centered` for parameter and error
+    see :func:`gen_comment_banner_centered` for parameter and error
     details.
 
 
     :example:
-    >>> gen_line_padding_left_just("hi", "=", line_width=20)
+    >>> gen_comment_banner_left_just("hi", "=", line_width=20)
     'hi  ================'
     """
-    return _gen_line_padding_generic("l", *args, **kwargs)
+    return _gen_comment_banner_generic("l", *args, **kwargs)
 
 
-def gen_line_padding_right_just(*args, **kwargs):
+def gen_comment_banner_right_just(*args, **kwargs):
     """
     generate a line with ``content`` right-justified,
     filling the left with ``padding``.
 
-    see :func:`gen_line_padding_centered` for parameter and error
+    see :func:`gen_comment_banner_centered` for parameter and error
     details.
 
 
     :example:
-    >>> gen_line_padding_right_just("hi", "=", line_width=20)
+    >>> gen_comment_banner_right_just("hi", "=", line_width=20)
     '================  hi'
     """
-    return _gen_line_padding_generic("r", *args, **kwargs)
+    return _gen_comment_banner_generic("r", *args, **kwargs)
 
 
 # CLI  #########################################################################
@@ -921,16 +921,16 @@ cli_parser = ArgumentParser(
 cli_parser.set_defaults(func=lambda _: cli_parser.print_help())
 cli_subparser = cli_parser.add_subparsers(title="subcommands")
 
-# line padding parser  =========================================================
+# comment banner parser  =======================================================
 
-_LINE_PADDING_DESC = "print content padded to line width"
+_COMMENT_BANNER_DESC = "print content padded to line width"
 
 
-def _line_padding_parser_main(args):
+def _comment_banner_parser_main(args):
     mode_map = {"center": "c", "left": "l", "right": "r"}
     mode = mode_map.get(args.mode, args.mode)
     file = sys.stderr if args.stderr else sys.stdout
-    line = _gen_line_padding_generic(
+    line = _gen_comment_banner_generic(
         mode,
         args.content,
         args.padding,
@@ -940,29 +940,29 @@ def _line_padding_parser_main(args):
     print(line, file=file)
 
 
-line_padding_parser = cli_subparser.add_parser(
-    "line_padding",
-    help=_LINE_PADDING_DESC,
-    description=_LINE_PADDING_DESC,
-    aliases=["lp"],
+comment_banner_parser = cli_subparser.add_parser(
+    "comment_banner",
+    help=_COMMENT_BANNER_DESC,
+    description=_COMMENT_BANNER_DESC,
+    aliases=["cb"],
 )
 
-line_padding_parser.add_argument(
+comment_banner_parser.add_argument(
     "mode",
     choices=["c", "l", "r", "center", "left", "right"],
     help="text alignment: c/center, l/left(-justified), r/right(-justified)",
 )
-line_padding_parser.add_argument(
+comment_banner_parser.add_argument(
     "content",
     metavar="CONTENT",
     help="text to print; must be a single line no longer than line-width",
 )
-line_padding_parser.add_argument(
+comment_banner_parser.add_argument(
     "padding",
     metavar="PADDING",
     help="single printable non-space fill character (e.g., #, -, =)",
 )
-line_padding_parser.add_argument(
+comment_banner_parser.add_argument(
     "-w",
     "--line-width",
     type=int,
@@ -970,14 +970,14 @@ line_padding_parser.add_argument(
     metavar="LINE_WIDTH",
     help="total character width of output line; default 80",
 )
-line_padding_parser.add_argument(
+comment_banner_parser.add_argument(
     "-e",
     "--stderr",
     action="store_true",
     help="print to stderr (instead of stdout)",
 )
 
-line_padding_parser.set_defaults(func=_line_padding_parser_main)
+comment_banner_parser.set_defaults(func=_comment_banner_parser_main)
 
 
 # Entry Point  =================================================================
