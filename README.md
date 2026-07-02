@@ -9,7 +9,6 @@ todo allows use -V being equivalent to -vvv (v.v.)
 todo allows to use only -V, dont add -v (v.v.)
 todo smart time print
 bug using different logger to print & diff only can produce confusing result
-TODO add cb0
 -->
 
 ## Features

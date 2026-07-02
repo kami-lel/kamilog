@@ -923,6 +923,29 @@ def gen_comment_banner_right_just(*args, **kwargs):
     return _gen_comment_banner_generic("r", *args, **kwargs)
 
 
+def gen_comment_banner_zero(
+    lines, *, line_width=80, file=sys.stdout, renderer=None
+):
+    """
+    generate a multi-line comment banner from an iterable of strings.
+
+    TODO placeholder — implementation pending
+
+
+    :param lines: lines to include in the banner
+    :type lines: iterable of str
+    :param line_width: total output width; defaults to ``80``
+    :type line_width: int
+    :param file: output stream, used only for ANSI TTY detection;
+            defaults to ``sys.stdout``
+    :type file: IO
+    :param renderer: ANSI color renderer;
+            if ``None``, created from ``file`` argument
+    :type renderer: AnsiRenderer or None
+    """
+    pass  # TODO
+
+
 # CLI  #########################################################################
 
 # main parser  =================================================================
@@ -992,6 +1015,8 @@ comment_banner_parser.add_argument(
 
 comment_banner_parser.set_defaults(func=_comment_banner_parser_main)
 
+
+# TODO add cb0 parser
 
 # Entry Point  =================================================================
 if __name__ == "__main__":
