@@ -190,23 +190,27 @@ The module provides a CLI entry point via direct script execution (`python kamil
 
 Note: `python -m kamilog` does not work — the package has no `kamilog/__main__.py`. Use direct script execution (`python kamilog/kamilog.py`) instead.
 
+Both `cb` and `cb0` follow the Unix pipe pattern: text content is read from stdin rather than passed as a positional argument, so each subcommand's remaining positionals are formatting-only (mode, padding, width).
+
 **CLI module organization**:
 - `cli_parser` — root ArgumentParser with `cli_subparser` for subcommands
-- `_comment_banner_parser_main(args)` — handler that maps CLI modes to `_gen_comment_banner_generic`, then prints the returned line to stdout or stderr
-- `_COMMENT_BANNER_DESC` — shared description string for the subcommand
-- `_comment_banner_zero_parser_main(args)` — handler that calls `gen_comment_banner_zero`, then prints the returned banner
-- `_CB0_DESC` — shared description string for the CB0 subcommand
+- `_comment_banner_parser_main(args)` — handler that reads `content` from stdin (single line), maps CLI modes to `_gen_comment_banner_generic`, then prints the returned line to stdout or stderr
+- `_COMMENT_BANNER_HELP` — shared help/description string for the subcommand
+- `_comment_banner_zero_parser_main(args)` — handler that reads `lines` from stdin (one banner line per stdin line), calls `gen_comment_banner_zero`, then prints the returned banner
+- `_CB0_HELP` — shared help/description string for the CB0 subcommand
 
 **Comment Banner subcommand (`comment_banner` / `cb`)**:
-- Positional: `MODE` (c/center, l/left, r/right), `CONTENT` (text), `PADDING` (char or int 1-5)
+- Stdin: `CONTENT` — single line of text, read via `sys.stdin.readline()`
+- Positional: `MODE` (c/center, l/left, r/right), `PADDING` (char or int 1-5)
 - Option: `-w, --line-width LINE_WIDTH` (default 80)
 - Option: `-e, --stderr` (output to stderr)
+- Example: `echo 'hello world' | python kamilog/kamilog.py cb c '=' -w 20`
 
 **Comment Banner Zero subcommand (`comment_banner_zero` / `cb0`)**:
-- Positional: `LINES` (one or more strings, `nargs='+'`)
+- Stdin: `LINES` — one or more lines, read via `sys.stdin.read().splitlines()`
 - Option: `-w, --line-width LINE_WIDTH` (default 80)
 - Option: `-e, --stderr` (output to stderr)
-- Example: `python kamilog/kamilog.py cb0 "Title" "Subtitle" -w 40`
+- Example: `printf 'Title\nSubtitle\n' | python kamilog/kamilog.py cb0 -w 40`
 
 ## Public API Surface
 
