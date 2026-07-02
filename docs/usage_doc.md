@@ -83,9 +83,9 @@ WARN. myapp: Warning message
 | Level | Num | Function | Color | ANSI Code | Meaning |
 |---|---|---|---|---|---|
 | DEBUG | 10 | `.debug()` | Cyan | `\033[36m` | internal program state and control flow |
-| ENTER | 11 | `.enter()` | Bright Cyan | `\033[96m` | starting a subroutine or code section |
-| SKIP  | 12 | `.skip()` | Blue | `\033[34m` | code section was skipped |
-| SUCC. | 15 | `.succ()` | Green | `\033[32m` | operation succeeded |
+| ENTER | 15 | `.enter()` | Bright Cyan | `\033[96m` | starting a subroutine or code section |
+| SKIP  | 16 | `.skip()` | Blue | `\033[34m` | code section was skipped |
+| SUCC. | 17 | `.succ()` | Green | `\033[32m` | operation succeeded |
 | INFO  | 20 | `.info()` | Bright Blue | `\033[94m` | general program event or state change |
 | PASS  | 21 | `.pass_()` | Bright Green | `\033[92m` | test assertion or case passed |
 | DONE  | 25 | `.done()` | Bright Yellow | `\033[93m` | program or major phase completed successfully |
@@ -426,15 +426,15 @@ kamilog.set_logging_level_by_verbosity(args, logger=log)
 
 Verbosity-to-logging-level mapping:
 
-| Flags | Verbosity | Level | Number |
-|---|---|---|---|
-| `-vvv` or more | ≥ 3 | `DEBUG` | 10 |
-| `-vv` | 2 | `SUCC` | 15 |
-| `-v` | 1 | `INFO` | 20 |
-| *(none)* | 0 | `DONE` | 25 |
-| `-q` | -1 | `WARNING` | 30 |
-| `-qq` | -2 | `ERROR` | 40 |
-| `-qqq` or more | ≤ -3 | `CRITICAL` | 50 |
+| Flags | Verbosity | Level | Number | Shows |
+|---|---|---|---|---|
+| `-vvv` or more | ≥ 3 | `DEBUG` | 10 | DEBUG, 〃 |
+| `-vv` | 2 | `ENTER` | 15 | ENTER, SKIP, SUCC, 〃 |
+| `-v` | 1 | `INFO` | 20 | INFO, PASS, 〃 |
+| *(none)* | 0 | `DONE` | 25 | DONE, 〃 |
+| `-q` | -1 | `WARN` | 30 | WARN, 〃 |
+| `-qq` | -2 | `ERROR` | 40 | ERROR, FAIL, 〃 |
+| `-qqq` or more | ≤ -3 | `CRIT` | 50 | CRIT |
 
 
 
