@@ -1,6 +1,6 @@
 # kamilog CONTEXT
 
-*Last updated: 2026-07-02 (v2.1.1)*
+*Last updated: 2026-07-02 (v2.2.0)*
 
 ## Project Overview
 

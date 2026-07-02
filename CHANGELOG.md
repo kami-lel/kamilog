@@ -30,6 +30,14 @@
 
 ### Security
 
+## [2.2.0] - 2026-07-02
+
+### Changed
+
+- Reordered custom log levels: `ENTER` (15), `SKIP` (16), `SUCC` (17) — placing structural flow markers (`ENTER`/`SKIP`) before success indicators (`SUCC`), closer to `DEBUG` and earlier in the verbosity hierarchy
+- Verbosity flag `-vv` now maps to `ENTER` (15) instead of `SUCC` — making `-vv` the threshold for structural tracking
+- Updated all examples and documentation to reflect new level ordering
+
 ## [2.1.1] - 2026-07-02
 
 ### Added
@@ -45,7 +53,8 @@
 
 - CLI `cb` subcommand padding conversion — numeric arguments (1-5) now correctly convert to integer for preset characters
 
-[unreleased]: https://github.com/kami-lel/kamilog/compare/v2.1.1...dev
+[unreleased]: https://github.com/kami-lel/kamilog/compare/v2.2.0...dev
+[2.2.0]: https://github.com/kami-lel/kamilog/compare/v2.1.1...v2.2.0
 [2.1.1]: https://github.com/kami-lel/kamilog/compare/v2.1.0...v2.1.1
 
 
