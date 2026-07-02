@@ -945,6 +945,8 @@ def gen_comment_banner_zero(
     :type renderer: AnsiRenderer or None
     :return: multi-line boxed banner as a string
     :rtype: str
+    :raises ValueError: any line contains ``"\\n"`` or exceeds
+            ``line_width - 2`` (reserved for `# ` prefix)
     :example:
     >>> gen_comment_banner_zero(["line 1", "line 2"], line_width=20)
     ####################
@@ -1041,6 +1043,8 @@ comment_banner_parser.add_argument(
 )
 
 comment_banner_parser.set_defaults(func=_comment_banner_parser_main)
+
+# TODO add cli for cb0
 
 
 # Entry Point  =================================================================
