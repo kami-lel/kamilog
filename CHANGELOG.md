@@ -18,42 +18,9 @@
 
 ## [Unreleased]
 
-### Changed
-
-- API renaming: `gen_line_padding_*` functions renamed to `gen_comment_banner_*`
-  - `gen_line_padding_centered` → `gen_comment_banner_centered`
-  - `gen_line_padding_left_just` → `gen_comment_banner_left_just`
-  - `gen_line_padding_right_just` → `gen_comment_banner_right_just`
-  - Internal `_gen_line_padding_generic()` → `_gen_comment_banner_generic()`
-- CLI subcommand renamed: `line_padding` → `comment_banner` with alias `cb` (replacing `lp`)
-- Test directory reorganized: `tests/lp/` → `tests/cb/`; test files renamed from `lp-*_test.py` → `cb-*_test.py`
-- Example file renamed: `examples/line_padding_demo.py` → `examples/comment_banner_demo.py`
-- Documentation updated throughout to reflect new terminology
-- CLI subcommands `comment_banner` (`cb`) and `comment_banner_zero` (`cb0`) now follow the
-  Unix pipe pattern: text content is read from stdin instead of a positional argument
-  - `cb` drops the `CONTENT` positional; reads a single line via `sys.stdin.readline()`
-  - `cb0` drops the `LINE` positional (`nargs='+'`); reads all lines via `sys.stdin.read().splitlines()`
-  - `--help` output expanded with a usage example for each subcommand
-  - `PADDING` argument help text clarified
-
-> [!WARNING]
-> This release renames the line-padding API to comment-banner. Update callers to use the
-> `gen_comment_banner_*` function names and CLI subcommand `comment_banner` (or alias `cb`).
-> The `cb`/`cb0` CLI subcommands now read text content from stdin instead of positional
-> arguments — pipe input with `echo`/`printf` (e.g. `echo 'title' | python kamilog/kamilog.py cb c '=' `).
-
 ### Added
 
-- Comment-banner functions now accept integer `padding` (1-5) as shorthand for common fill characters
-  - `1` → `#`, `2` → `=`, `3` → `*`, `4` → `+`, `5` → `-`
-  - Example: `gen_comment_banner_centered("title", 2)` equivalent to `gen_comment_banner_centered("title", "=")`
-- `gen_comment_banner_zero(lines, *, line_width=80, file=sys.stdout, renderer=None)` — multi-line boxed comment banner (CB0)
-  - wraps each line with grey-colored `# ` prefix
-  - frames with top and bottom grey-colored `#` rulers at full `line_width`
-  - returns formatted banner as string
-- CLI subcommand `comment_banner_zero` (alias: `cb0`) with support for multiple lines
-  - Usage: `printf 'Line 1\nLine 2\n' | python kamilog/kamilog.py cb0 -w 40`
-- Example demo: `examples/comment_banner_zero_demo.py` showcasing CB0 usage patterns
+### Changed
 
 ### Deprecated
 
@@ -63,7 +30,36 @@
 
 ### Security
 
-[unreleased]: https://github.com/kami-lel/kamilog/compare/v2.0.0...dev
+[unreleased]: https://github.com/kami-lel/kamilog/compare/v2.1.0...dev
+
+
+
+
+## [2.1.0] - 2026-07-02
+
+### Added
+
+- `comment_banner_zero()` and CLI subcommand `comment_banner_zero` (alias `cb0`) — a multi-line
+  boxed comment banner (CB0), framed top and bottom by `#` rulers
+- Comment-banner functions accept an integer `padding` shorthand (1-5) for common fill
+  characters: `#`, `=`, `*`, `+`, `-`
+- Example demo: `examples/comment_banner_zero_demo.py`
+
+### Changed
+
+- Renamed the line-padding API to comment-banner: `gen_line_padding_*` → `gen_comment_banner_*`,
+  CLI subcommand `line_padding` (`lp`) → `comment_banner` (`cb`)
+- Reorganized tests, examples, and docs to match the new naming
+- `cb` and `cb0` now read their text content from stdin instead of a positional argument,
+  following the Unix pipe pattern
+- Clearer `--help` output for `cb`/`cb0`, with usage examples and a better `PADDING` description
+
+> [!WARNING]
+> This release renames the line-padding API to comment-banner, and switches the `cb`/`cb0` CLI
+> subcommands to read content from stdin. Update callers to use `gen_comment_banner_*` and pipe
+> input, e.g. `echo 'title' | python kamilog/kamilog.py cb c '='`.
+
+[2.1.0]: https://github.com/kami-lel/kamilog/compare/v2.0.0...v2.1.0
 
 
 
