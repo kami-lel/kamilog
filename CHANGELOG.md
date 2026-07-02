@@ -29,7 +29,7 @@
 
 ### Fixed
 
-- **known issue**: CLI `cb` subcommand with numeric padding argument (1-5) is broken and produces incorrect output
+- **CLI**: `cb` subcommand now correctly converts numeric padding argument (1-5) to integer, enabling preset fill characters (#, =, *, +, -)
 
 [unreleased]: https://github.com/kami-lel/kamilog/compare/v2.1.0...dev
 
