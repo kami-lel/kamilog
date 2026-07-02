@@ -1,7 +1,7 @@
 """
-comment_banner_demo.py
+cb-demo.py
 
-demonstrate all three comment-banner functions printed to stdout
+demonstrate all three comment-banner functions with character padding
 """
 
 import sys
