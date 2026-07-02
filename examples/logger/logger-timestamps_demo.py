@@ -5,11 +5,16 @@ demonstrate all four ``DATEFMT_*`` timestamp formats and ``relative_to``
 elapsed-time display
 """
 
+import sys
 import time
-import kamilog
-from kamilog.kamilog import print_line_padding_centered
 
-renderer = print_line_padding_centered("datefmt formats", "#")
+import kamilog
+from kamilog.kamilog import AnsiRenderer, gen_line_padding_centered
+
+# repeated calls share one renderer instead of re-detecting TTY state
+renderer = AnsiRenderer(sys.stdout)
+
+print(gen_line_padding_centered("datefmt formats", "#", renderer=renderer))
 
 log = kamilog.getLogger("app")
 log.setLevel(kamilog.DEBUG)
@@ -42,7 +47,9 @@ log_dt_ms.info("YYYY-MM-DD HH:MM:SS.mmm")
 # relative  --------------------------------------------------------------------
 
 print()
-print_line_padding_centered("relative_to elapsed time", "#", renderer=renderer)
+print(gen_line_padding_centered(
+    "relative_to elapsed time", "#", renderer=renderer
+))
 
 start = time.time()
 log_rel = kamilog.getLogger("task", relative_to=start)

@@ -30,7 +30,27 @@
 
 ### Security
 
-[unreleased]: https://github.com/kami-lel/kamilog/compare/v1.8.0...dev
+[unreleased]: https://github.com/kami-lel/kamilog/compare/v2.0.0...dev
+
+
+
+
+## [2.0.0] - 2026-07-02
+
+### Changed
+
+- `print_line_padding_centered`, `print_line_padding_left_just`, `print_line_padding_right_just` renamed to `gen_line_padding_centered`, `gen_line_padding_left_just`, `gen_line_padding_right_just`; each now returns the padded line as a `str` instead of printing it
+- CLI `line_padding` subcommand (alias `lp`) updated internally to print the returned line; command-line behavior is unchanged
+
+### Removed
+
+- `end` and `flush` keyword arguments removed from all line-padding functions
+
+> [!WARNING]
+> This release breaks the line-padding API. Update callers to use the
+> `gen_line_padding_*` names and print the returned string yourself.
+
+[2.0.0]: https://github.com/kami-lel/kamilog/compare/v1.8.0...v2.0.0
 
 
 

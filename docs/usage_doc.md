@@ -411,28 +411,25 @@ print(renderer.color_grey("muted text"))
 
 ## Line Padding
 
-Three functions print fixed-width lines with padding characters: `print_line_padding_centered`, `print_line_padding_left_just`, `print_line_padding_right_just`. A two-space separator is always placed between content and fill.
+Three functions return fixed-width lines padded with a fill character: `gen_line_padding_centered`, `gen_line_padding_left_just`, `gen_line_padding_right_just`. A two-space separator is always placed between content and fill. Print the result yourself:
 
 ```python
 import kamilog
 
-kamilog.print_line_padding_centered("hello", "=")
-kamilog.print_line_padding_left_just("hello", "=")
-kamilog.print_line_padding_right_just("hello", "=")
+print(kamilog.gen_line_padding_centered("hello", "="))
+print(kamilog.gen_line_padding_left_just("hello", "="))
+print(kamilog.gen_line_padding_right_just("hello", "="))
 ```
 
-All three functions accept the same keyword arguments as `print()` (`end`, `file`, `flush`) plus an optional `renderer` kwarg:
+All three functions accept `line_width` (default `80`), `file` (used only for ANSI TTY detection; defaults to `sys.stdout`), and an optional `renderer` kwarg. If you call any of them repeatedly, construct one `AnsiRenderer` up front and pass it in — this avoids re-detecting TTY state on every call:
 
 ```python
-import sys
-import kamilog
-
-# reuse a renderer across calls for consistent color state
-renderer = kamilog.print_line_padding_centered("section", "#")
-kamilog.print_line_padding_centered("subsection", "-", renderer=renderer)
+renderer = kamilog.AnsiRenderer(sys.stdout)
+print(kamilog.gen_line_padding_centered("section", "#", renderer=renderer))
+print(kamilog.gen_line_padding_centered("subsection", "-", renderer=renderer))
 
 # custom width
-kamilog.print_line_padding_centered("title", "*", line_width=40)
+print(kamilog.gen_line_padding_centered("title", "*", line_width=40))
 ```
 
 All three raise `ValueError` when:

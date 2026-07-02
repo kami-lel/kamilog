@@ -1,60 +1,41 @@
 """
 lp-centered_test.py
 
-tests for `print_line_padding_centered` in `kamilog.py`
+tests for `gen_line_padding_centered` in `kamilog.py`
 """
 
-import io
-from kamilog import print_line_padding_centered
+from kamilog import AnsiRenderer, gen_line_padding_centered
 
 
 class TestLinePaddingCentered:
     def test_even_remaining(_):
-        out = io.StringIO()
-        print_line_padding_centered("hi", "=", line_width=14, file=out)
-        assert out.getvalue() == "====  hi  ====\n"
+        result = gen_line_padding_centered("hi", "=", line_width=14)
+        assert result == "====  hi  ===="
 
     def test_odd_remaining_extra_right(_):
-        out = io.StringIO()
-        print_line_padding_centered("hi", "=", line_width=11, file=out)
-        assert out.getvalue() == "==  hi  ===\n"
+        result = gen_line_padding_centered("hi", "=", line_width=11)
+        assert result == "==  hi  ==="
 
     def test_empty_content(_):
-        out = io.StringIO()
-        print_line_padding_centered("", "=", line_width=6, file=out)
-        assert out.getvalue() == "=    =\n"
+        result = gen_line_padding_centered("", "=", line_width=6)
+        assert result == "=    ="
 
     def test_content_fills_with_no_padding(_):
-        out = io.StringIO()
-        print_line_padding_centered("hi", "=", line_width=6, file=out)
-        assert out.getvalue() == "  hi  \n"
+        result = gen_line_padding_centered("hi", "=", line_width=6)
+        assert result == "  hi  "
 
     def test_output_length_equals_line_width(_):
-        out = io.StringIO()
-        print_line_padding_centered("hello", "-", line_width=20, file=out)
-        line = out.getvalue().rstrip("\n")
-        assert len(line) == 20
+        result = gen_line_padding_centered("hello", "-", line_width=20)
+        assert len(result) == 20
 
     def test_default_line_width_is_80(_):
-        out = io.StringIO()
-        print_line_padding_centered("test", "*", file=out)
-        line = out.getvalue().rstrip("\n")
-        assert len(line) == 80
+        result = gen_line_padding_centered("test", "*")
+        assert len(result) == 80
 
-    def test_custom_end(_):
-        out = io.StringIO()
-        print_line_padding_centered("hi", "=", line_width=14, end="", file=out)
-        assert out.getvalue() == "====  hi  ===="
-
-    def test_custom_file(_):
-        out = io.StringIO()
-        print_line_padding_centered("test", "#", line_width=16, file=out)
-        assert "#" in out.getvalue()
-        assert "test" in out.getvalue()
-
-    def test_flush_param(_):
-        out = io.StringIO()
-        print_line_padding_centered(
-            "x", ".", line_width=5, file=out, flush=True
+    def test_reuses_passed_renderer(_):
+        renderer = AnsiRenderer(None)
+        result = gen_line_padding_centered(
+            "test", "#", line_width=16, renderer=renderer
         )
-        assert out.getvalue() == "  x  \n"
+        assert "#" in result
+        assert "test" in result

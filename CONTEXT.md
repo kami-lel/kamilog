@@ -1,6 +1,6 @@
 # kamilog CONTEXT
 
-*Last updated: 2026-07-02 (development)*
+*Last updated: 2026-07-02 (v2.0.0)*
 
 ## Project Overview
 
@@ -14,7 +14,7 @@ Repository: <https://github.com/kami-lel/kamilog>
 kamilog/
 ├── kamilog/
 │   ├── __init__.py          # re-exports all public symbols from kamilog.py
-│   └── kamilog.py           # entire implementation (~970 lines)
+│   └── kamilog.py           # entire implementation (~990 lines)
 ├── tests/
 │   ├── lp/                          # line-padding test suite
 │   │   ├── lp-centered_test.py
@@ -152,9 +152,9 @@ The original (uncompressed) message is stored in `_history` so compression decis
 
 ### Line Padding Utilities
 
-Three public functions that print a fixed-width line by padding `content` with a repeated character to fill `line_width` (default 80). All share the same internal dispatcher `_print_line_padding_generic(mode, content, padding, *, line_width, end, file, flush, renderer=None)`, which accepts string modes (`"c"`, `"l"`, `"r"`).
+Three public functions that return a fixed-width line by padding `content` with a repeated character to fill `line_width` (default 80). All share the same internal dispatcher `_gen_line_padding_generic(mode, content, padding, *, line_width, file, renderer=None)`, which accepts string modes (`"c"`, `"l"`, `"r"`).
 
-Each function accepts an optional `renderer` kwarg (`AnsiRenderer or None`). When `None`, a renderer is created from `file` automatically. All three functions return the `AnsiRenderer` instance used. When color is enabled, the padding fill is colored grey; `content` and the two-space separators are always printed uncolored.
+Each function accepts an optional `renderer` kwarg (`AnsiRenderer or None`). When `None`, a renderer is created from `file` automatically (`file` is otherwise only used for TTY detection). All three functions return the padded line as a `str`; none of them print. When color is enabled, the padding fill is colored grey; `content` and the two-space separators are always uncolored. Callers that invoke the same function repeatedly against the same stream should construct one `AnsiRenderer` up front and pass it via `renderer=` to avoid re-detecting TTY state on every call.
 
 A two-space separator (`_CONTENT_SPACING = "  "`) is always inserted between `content` and the padding fill. For centered mode it is placed on both sides; for left/right modes on one side only.
 
@@ -165,9 +165,9 @@ Input validation (raises `ValueError`):
 
 | function | mode | layout |
 | --- | --- | --- |
-| `print_line_padding_centered` | `"c"` | `grey(padding * left) + "  " + content + "  " + grey(padding * right)` (remainder split evenly; odd char goes right) |
-| `print_line_padding_left_just` | `"l"` | `content + "  " + grey(padding * remaining)` |
-| `print_line_padding_right_just` | `"r"` | `grey(padding * remaining) + "  " + content` |
+| `gen_line_padding_centered` | `"c"` | `grey(padding * left) + "  " + content + "  " + grey(padding * right)` (remainder split evenly; odd char goes right) |
+| `gen_line_padding_left_just` | `"l"` | `content + "  " + grey(padding * remaining)` |
+| `gen_line_padding_right_just` | `"r"` | `grey(padding * remaining) + "  " + content` |
 
 ### Command-Line Interface
 
@@ -177,11 +177,11 @@ Note: `python -m kamilog` does not work — the package has no `kamilog/__main__
 
 **CLI module organization**:
 - `cli_parser` — root ArgumentParser with `cli_subparser` for subcommands
-- `_line_padding_parser_main(args)` — handler that maps CLI modes to `_print_line_padding_generic` and routes output to stdout or stderr
+- `_line_padding_parser_main(args)` — handler that maps CLI modes to `_gen_line_padding_generic`, then prints the returned line to stdout or stderr
 - `_LINE_PADDING_DESC` — shared description string for the subcommand
 
 **Mode mapping**:
-- CLI accepts `c|center`, `l|left`, `r|right` as aliases; mapped to internal string modes before calling `_print_line_padding_generic`
+- CLI accepts `c|center`, `l|left`, `r|right` as aliases; mapped to internal string modes before calling `_gen_line_padding_generic`
 - The `-w, --line-width LINE_WIDTH` option sets line width (default 80)
 - The `-e, --stderr` flag routes output to `sys.stderr` instead of `sys.stdout`
 
@@ -197,9 +197,9 @@ kamilog.AnsiColor                               # Enum of ANSI escape codes
 kamilog.AnsiRenderer                            # TTY-detecting color applier
 
 # line padding
-kamilog.print_line_padding_centered(content, padding, *, line_width=80, end, file, flush, renderer=None) -> AnsiRenderer
-kamilog.print_line_padding_left_just(content, padding, *, line_width=80, end, file, flush, renderer=None) -> AnsiRenderer
-kamilog.print_line_padding_right_just(content, padding, *, line_width=80, end, file, flush, renderer=None) -> AnsiRenderer
+kamilog.gen_line_padding_centered(content, padding, *, line_width=80, file, renderer=None) -> str
+kamilog.gen_line_padding_left_just(content, padding, *, line_width=80, file, renderer=None) -> str
+kamilog.gen_line_padding_right_just(content, padding, *, line_width=80, file, renderer=None) -> str
 
 # log level constants
 kamilog.NOTSET, DEBUG, ENTER, SKIP, INFO, PASS, SUCC, DONE,

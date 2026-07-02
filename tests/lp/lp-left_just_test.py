@@ -1,53 +1,36 @@
 """
 lp-left_just_test.py
 
-tests for `print_line_padding_left_just` in `kamilog.py`
+tests for `gen_line_padding_left_just` in `kamilog.py`
 """
 
-import io
-from kamilog import print_line_padding_left_just
+from kamilog import AnsiRenderer, gen_line_padding_left_just
 
 
 class TestLinePaddingLeftJust:
     def test_normal(_):
-        out = io.StringIO()
-        print_line_padding_left_just("hi", "=", line_width=10, file=out)
-        assert out.getvalue() == "hi  ======\n"
+        result = gen_line_padding_left_just("hi", "=", line_width=10)
+        assert result == "hi  ======"
 
     def test_empty_content(_):
-        out = io.StringIO()
-        print_line_padding_left_just("", "=", line_width=6, file=out)
-        assert out.getvalue() == "  ====\n"
+        result = gen_line_padding_left_just("", "=", line_width=6)
+        assert result == "  ===="
 
     def test_content_fills_with_no_padding(_):
-        out = io.StringIO()
-        print_line_padding_left_just("hi", "=", line_width=4, file=out)
-        assert out.getvalue() == "hi  \n"
+        result = gen_line_padding_left_just("hi", "=", line_width=4)
+        assert result == "hi  "
 
     def test_output_length(_):
-        out = io.StringIO()
-        print_line_padding_left_just("hello", "-", line_width=20, file=out)
-        line = out.getvalue().rstrip("\n")
-        assert len(line) == 20
+        result = gen_line_padding_left_just("hello", "-", line_width=20)
+        assert len(result) == 20
 
     def test_default_line_width_is_80(_):
-        out = io.StringIO()
-        print_line_padding_left_just("test", "*", file=out)
-        line = out.getvalue().rstrip("\n")
-        assert len(line) == 80
+        result = gen_line_padding_left_just("test", "*")
+        assert len(result) == 80
 
-    def test_custom_end(_):
-        out = io.StringIO()
-        print_line_padding_left_just("hi", "=", line_width=10, end="", file=out)
-        assert out.getvalue() == "hi  ======"
-
-    def test_custom_file(_):
-        out = io.StringIO()
-        print_line_padding_left_just("test", "#", line_width=12, file=out)
-        assert out.getvalue().startswith("test")
-
-    def test_flush_param(_):
-        out = io.StringIO()
-        print_line_padding_left_just("x", ".", line_width=5, file=out,
-                                     flush=True)
-        assert out.getvalue() == "x  ..\n"
+    def test_reuses_passed_renderer(_):
+        renderer = AnsiRenderer(None)
+        result = gen_line_padding_left_just(
+            "test", "#", line_width=12, renderer=renderer
+        )
+        assert result.startswith("test")
