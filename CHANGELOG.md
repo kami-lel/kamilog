@@ -18,17 +18,13 @@
 
 ## [Unreleased]
 
-### Added
-
 ### Changed
 
-### Deprecated
-
-### Removed
+- **docs**: simplified usage tips in `docs/usage_doc.md` — DEBUG vs INFO emphasizes difference rather than use cases; WARN/ERROR/CRIT condensed to focus on escalation order; testing tips consolidated into single ENTER/PASS/FAIL section; DONE moved to final tip
 
 ### Fixed
 
-### Security
+- **known issue**: CLI `cb` subcommand with numeric padding argument (1-5) is broken and produces incorrect output
 
 [unreleased]: https://github.com/kami-lel/kamilog/compare/v2.1.0...dev
 
