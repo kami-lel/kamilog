@@ -80,14 +80,12 @@ WARN. myapp: Warning message
 
 `KamiLogger` extends the standard library logger with six custom levels for test and hook workflows. Full level reference:
 
-<!-- TODO make improve order -->
-
 | Level | Num | Function | Color | ANSI Code | Meaning |
 |---|---|---|---|---|---|
 | DEBUG | 10 | `.debug()` | Cyan | `\033[36m` | internal program state and control flow |
-| ENTER | 11 | `.enter()` | Bright Cyan | `\033[96m` | starting a subroutine or code section |
-| SKIP  | 12 | `.skip()` | Blue | `\033[34m` | code section was skipped |
 | SUCC. | 15 | `.succ()` | Green | `\033[32m` | operation succeeded |
+| ENTER | 16 | `.enter()` | Bright Cyan | `\033[96m` | starting a subroutine or code section |
+| SKIP  | 17 | `.skip()` | Blue | `\033[34m` | code section was skipped |
 | INFO  | 20 | `.info()` | Bright Blue | `\033[94m` | general program event or state change |
 | PASS  | 21 | `.pass_()` | Bright Green | `\033[92m` | test assertion or case passed |
 | DONE  | 25 | `.done()` | Bright Yellow | `\033[93m` | program or major phase completed successfully |
@@ -430,8 +428,8 @@ Verbosity-to-logging-level mapping:
 
 | Flags | Verbosity | Level | Number | Shows |
 |---|---|---|---|---|
-| `-vvv` or more | ≥ 3 | `DEBUG` | 10 | DEBUG, ENTER, SKIP, 〃 |
-| `-vv` | 2 | `SUCC` | 15 | SUCC, 〃 |
+| `-vvv` or more | ≥ 3 | `DEBUG` | 10 | DEBUG, 〃 |
+| `-vv` | 2 | `SUCC` | 15 | SUCC, ENTER, SKIP, 〃 |
 | `-v` | 1 | `INFO` | 20 | INFO, PASS, 〃 |
 | *(none)* | 0 | `DONE` | 25 | DONE, 〃 |
 | `-q` | -1 | `WARN` | 30 | WARN, 〃 |
