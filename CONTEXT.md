@@ -25,7 +25,7 @@ kamilog/
 │   │   ├── v-add_verbose_arguments_test.py
 │   │   ├── v-calc_logging_level_test.py
 │   │   ├── v-calc_logging_level_namespace_test.py
-│   │   └── v-set_logging_level_by_verbosity_test.py
+│   │   └── v-set_logging_level_by_namespace_test.py
 │   └── source_quality_test.py       # banned-marker scan (no TODO/FIXME/HACK/BUG)
 ├── examples/
 │   ├── cb/
@@ -244,7 +244,7 @@ kamilog.DATEFMT_DATETIME_MS   # "YYYY-MM-DD HH:MM:SS.mmm"
 
 # verbosity helpers
 kamilog.add_verbose_arguments(parser)
-kamilog.set_logging_level_by_verbosity(namespace, logger=None, logger_name=None)
+kamilog.set_logging_level_by_namespace(namespace, logger=None, logger_name=None)
 ```
 
 Verbosity mapping (default level is `DONE` = 25):

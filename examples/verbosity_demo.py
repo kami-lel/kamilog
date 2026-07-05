@@ -22,7 +22,7 @@ kamilog.add_verbose_arguments(parser)
 args = parser.parse_args()
 
 log = kamilog.getLogger()
-kamilog.set_logging_level_by_verbosity(args)
+kamilog.set_logging_level_by_namespace(args)
 
 log.debug("debug detail (visible with -vvv)")
 log.enter("entering subroutine (visible with -vv)")

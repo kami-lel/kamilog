@@ -20,7 +20,7 @@ __all__ = (
     "getLogger",
     "KamiLogger",
     "add_verbose_arguments",
-    "set_logging_level_by_verbosity",
+    "set_logging_level_by_namespace",
     # ANSI color
     "AnsiColor",
     "AnsiRenderer",
@@ -757,7 +757,7 @@ def add_verbose_arguments(parser):
     )
 
 
-def set_logging_level_by_verbosity(namespace, *, logger=None, logger_name=None):
+def set_logging_level_by_namespace(namespace, *, logger=None, logger_name=None):
     """
     set the logging level of a logger based on verbosity flags.
 
