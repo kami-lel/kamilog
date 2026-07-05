@@ -33,12 +33,24 @@
 - `getLogger()` now defaults `datefmt` to `DATEFMT_TIME` (`HH:MM:SS`) instead
   of `None` — timestamps are shown by default; pass `datefmt=None` to
   disable them
+- Diff-only compression now cuts each common run at a word boundary
+  (`0-9A-Za-z` plus `-`/`_` count as word characters) instead of always
+  compressing to the run end, so a changing token keeps its full word
+  intact (e.g. `/batch_002.csv` instead of a mid-word fragment); falls
+  back to a tab-aligned mid-word cut when a run has no boundary within
+  2 tab stops, so compression never vanishes on long unbroken tokens
+  (hashes, URLs)
+- Renamed the `_DiffOnlyMsgFilter`/`_DiffOnlyEngine` `window` parameter to
+  `threshold`
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
+
+- Diff-only compression no longer leaks a leftover fragment of common
+  text between the last full marker and the word-boundary cut
 
 ### Security
 
