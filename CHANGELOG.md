@@ -30,6 +30,9 @@
   now takes the integer instead
 - Reorganized the "Verbosity and Logging Level" usage doc section into
   subheadings (CLI Flags, Verbosity Integer, Verbosity-to-Level Mapping)
+- `getLogger()` now defaults `datefmt` to `DATEFMT_TIME` (`HH:MM:SS`) instead
+  of `None` — timestamps are shown by default; pass `datefmt=None` to
+  disable them
 
 ### Deprecated
 
