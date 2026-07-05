@@ -16,15 +16,15 @@ renderer = AnsiRenderer(sys.stdout)
 
 print(gen_comment_banner_centered("datefmt formats", "#", renderer=renderer))
 
-log = kamilog.getLogger("app")
-log.setLevel(kamilog.DEBUG)
-log.propagate = False
-log.info("no timestamp (default)")
-
-log_t = kamilog.getLogger("app.time", datefmt=kamilog.DATEFMT_TIME)
+log_t = kamilog.getLogger("app.time")
 log_t.setLevel(kamilog.DEBUG)
 log_t.propagate = False
-log_t.info("HH:MM:SS")
+log_t.info("HH:MM:SS (default)")
+
+log_none = kamilog.getLogger("app.none", datefmt=None)
+log_none.setLevel(kamilog.DEBUG)
+log_none.propagate = False
+log_none.info("no timestamp")
 
 log_tms = kamilog.getLogger("app.time_ms", datefmt=kamilog.DATEFMT_TIME_MS)
 log_tms.setLevel(kamilog.DEBUG)

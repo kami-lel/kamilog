@@ -30,6 +30,77 @@
 
 ### Security
 
+
+
+
+
+
+
+
+
+
+
+
+
+## [2.3.0] - 2026-07-06
+
+### Added
+
+- `set_logging_level_by_verbosity()` — set a logger's level directly from a
+  verbosity integer, no parsed `argparse` namespace needed
+
+### Changed
+
+Verbosity API:
+
+- `set_logging_level_by_verbosity()` renamed to
+  `set_logging_level_by_namespace()`; the old name now takes a verbosity
+  integer (see Added above)
+
+Timestamps:
+
+- timestamps are now shown by default: `getLogger()` defaults `datefmt`
+  to `DATEFMT_TIME` (`HH:MM:SS`); pass `datefmt=None` to disable them
+
+Diff-only compression:
+
+- compressed runs now end at a word boundary, so a changing token keeps
+  its full word intact (e.g. `/batch_002.csv`, not a mid-word fragment)
+- long unbroken tokens (hashes, URLs) without a nearby boundary fall back
+  to a tab-aligned cut, so compression never vanishes
+- `_DiffOnlyMsgFilter`/`_DiffOnlyEngine` parameter `window` renamed to
+  `threshold`
+
+Documentation:
+
+- "Verbosity and Logging Level" usage doc section reorganized into
+  subheadings: CLI Flags, Verbosity Integer, Verbosity-to-Level Mapping
+
+### Fixed
+
+- Diff-only compression no longer leaks a fragment of common text between
+  the last marker and the cut
+- Verbosity tests brought in line with the v2.2.0 level mapping
+  (`-vv` → `ENTER`); the full suite passes again
+
+> [!WARNING]
+> Two breaking changes: `set_logging_level_by_verbosity(namespace)` is now
+> `set_logging_level_by_namespace(namespace)` — the old name takes an
+> integer instead — and loggers print `HH:MM:SS` timestamps by default;
+> pass `datefmt=None` to restore the previous silent output.
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## [2.2.0] - 2026-07-02
 
 ### Changed
@@ -37,6 +108,18 @@
 - Reordered custom log levels: `ENTER` (15), `SKIP` (16), `SUCC` (17) — placing structural flow markers (`ENTER`/`SKIP`) before success indicators (`SUCC`), closer to `DEBUG` and earlier in the verbosity hierarchy
 - Verbosity flag `-vv` now maps to `ENTER` (15) instead of `SUCC` — making `-vv` the threshold for structural tracking
 - Updated all examples and documentation to reflect new level ordering
+
+
+
+
+
+
+
+
+
+
+
+
 
 ## [2.1.1] - 2026-07-02
 
@@ -53,9 +136,19 @@
 
 - CLI `cb` subcommand padding conversion — numeric arguments (1-5) now correctly convert to integer for preset characters
 
-[unreleased]: https://github.com/kami-lel/kamilog/compare/v2.2.0...dev
+[unreleased]: https://github.com/kami-lel/kamilog/compare/v2.3.0...dev
+[2.3.0]: https://github.com/kami-lel/kamilog/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/kami-lel/kamilog/compare/v2.1.1...v2.2.0
 [2.1.1]: https://github.com/kami-lel/kamilog/compare/v2.1.0...v2.1.1
+
+
+
+
+
+
+
+
+
 
 
 

@@ -151,25 +151,27 @@ Formatting:
 
 ### Timestamp Format
 
-By default, no timestamp is shown. Pass `datefmt` to enable it:
+By default, timestamps are shown as `HH:MM:SS` (`DATEFMT_TIME`). Pass a
+different `datefmt` constant to change the format, or `None` to disable
+timestamps:
 
 | Constant | Value | Example |
 |---|---|---|
-| (default) | `None` | `INFO  myapp: message` |
-| `DATEFMT_TIME` | `"%H:%M:%S"` | `14:30:00 INFO  myapp: message` |
+| `DATEFMT_TIME` (default) | `"%H:%M:%S"` | `14:30:00 INFO  myapp: message` |
 | `DATEFMT_TIME_MS` | `"%H:%M:%S.{ms}"` | `14:30:00.123 INFO  myapp: message` |
 | `DATEFMT_DATETIME` | `"%Y-%m-%d %H:%M:%S"` | `2026-06-15 14:30:00 INFO  myapp: message` |
 | `DATEFMT_DATETIME_MS` | `"%Y-%m-%d %H:%M:%S.{ms}"` | `2026-06-15 14:30:00.123 INFO  myapp: message` |
+| (disabled) | `None` | `INFO  myapp: message` |
 
 ```python
-# No timestamp (default)
+# Time only (default)
 log = kamilog.getLogger("myapp")
-
-# Time only
-log = kamilog.getLogger("myapp", datefmt=kamilog.DATEFMT_TIME)
 
 # Date and time
 log = kamilog.getLogger("myapp", datefmt=kamilog.DATEFMT_DATETIME)
+
+# No timestamp
+log = kamilog.getLogger("myapp", datefmt=None)
 ```
 
 
@@ -206,7 +208,7 @@ log.info("later message")   # +00:00:01.234 [INFO ] myapp:    later message
 
 ### Diff-only Output
 
-`getLogger()` automatically attaches a diff-only filter to every logger. Once three messages have been seen, character positions shared across all of them are compressed: each group of 8 identical characters is replaced by one `〃\t` marker. At least 2 original characters are preserved at each end of the compressed block for visual context.
+`getLogger()` automatically attaches a diff-only filter to every logger. Once three messages have been seen, character positions shared across all of them are compressed: each group of 8 identical characters is replaced by one `〃\t` marker. Each compressed stretch ends at a word boundary (`0-9A-Za-z`, `-`, and `_` count as word characters), so a changing token keeps its full word intact; long unbroken tokens such as hashes or URLs fall back to a tab-aligned mid-word cut so compression never vanishes.
 
 This means repeated log lines — such as a fixed prefix followed by a changing value — collapse down to show only what changed:
 
@@ -398,7 +400,24 @@ All three raise `ValueError` when:
 
 ## Verbosity and Logging Level
 
-Map CLI flags (`-v`/`--verbose`, `-q`/`--quiet`) to logging levels with built-in helpers:
+Built-in helpers map verbosity, from either CLI flags or a plain integer, to
+logging levels.
+
+
+
+
+
+
+
+
+
+
+
+
+
+### CLI Flags
+
+Add `-v`/`--verbose` and `-q`/`--quiet` to a parser:
 
 ```python
 from argparse import ArgumentParser
@@ -408,23 +427,63 @@ parser = ArgumentParser()
 kamilog.add_verbose_arguments(parser)
 ```
 
-After parsing, apply the verbosity to a logger:
+After parsing, apply the verbosity to a logger with
+`set_logging_level_by_namespace`:
 
 ```python
 args = parser.parse_args()
 
 # target the root logger
-kamilog.set_logging_level_by_verbosity(args)
+kamilog.set_logging_level_by_namespace(args)
 
 # target a named logger by name
-kamilog.set_logging_level_by_verbosity(args, logger_name="myapp")
+kamilog.set_logging_level_by_namespace(args, logger_name="myapp")
 
 # pass a logger instance directly (takes priority over logger_name)
 log = kamilog.getLogger("myapp")
-kamilog.set_logging_level_by_verbosity(args, logger=log)
+kamilog.set_logging_level_by_namespace(args, logger=log)
 ```
 
-Verbosity-to-logging-level mapping:
+
+
+
+
+
+
+
+
+
+
+
+
+### Verbosity Integer
+
+To set the level from a verbosity integer directly, without a parsed
+`argparse` namespace, use `set_logging_level_by_verbosity`:
+
+```python
+# positive raises detail, negative lowers it
+kamilog.set_logging_level_by_verbosity(2)
+
+kamilog.set_logging_level_by_verbosity(2, logger_name="myapp")
+
+log = kamilog.getLogger("myapp")
+kamilog.set_logging_level_by_verbosity(2, logger=log)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+### Verbosity-to-Level Mapping
 
 | Flags | Verbosity | Level | Number | Shows |
 |---|---|---|---|---|
@@ -435,44 +494,3 @@ Verbosity-to-logging-level mapping:
 | `-q` | -1 | `WARN` | 30 | WARN, 〃 |
 | `-qq` | -2 | `ERROR` | 40 | ERROR, FAIL, 〃 |
 | `-qqq` or more | ≤ -3 | `CRIT` | 50 | CRIT |
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-## Command-Line Interface
-
-The comment-banner utilities are accessible via CLI:
-
-```bash
-python kamilog/kamilog.py comment_banner -h
-```
