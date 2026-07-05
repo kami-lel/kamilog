@@ -247,16 +247,19 @@ kamilog.DATEFMT_DATETIME_MS   # "YYYY-MM-DD HH:MM:SS.mmm"
 
 # verbosity helpers
 kamilog.add_verbose_arguments(parser)
-kamilog.set_logging_level_by_namespace(namespace, logger=None, logger_name=None)
+kamilog.set_logging_level_by_namespace(namespace, verbosity=0, logger=None, logger_name=None)
 kamilog.set_logging_level_by_verbosity(verbosity, logger=None, logger_name=None)
 ```
+
+`set_logging_level_by_namespace`'s `verbosity` kwarg sets the base level that
+the namespace's `-v`/`-q` counts offset from, instead of always starting at 0.
 
 Verbosity mapping (default level is `DONE` = 25):
 
 | flags | verbosity | level |
 | --- | --- | --- |
 | `-vvv` or more | ≥ 3 | `DEBUG` (10) |
-| `-vv` | 2 | `SUCC` (15) |
+| `-vv` | 2 | `ENTER` (15) |
 | `-v` | 1 | `INFO` (20) |
 | *(none)* | 0 | `DONE` (25) |
 | `-q` | -1 | `WARNING` (30) |
