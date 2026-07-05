@@ -444,6 +444,14 @@ log = kamilog.getLogger("myapp")
 kamilog.set_logging_level_by_namespace(args, logger=log)
 ```
 
+Pass `verbosity` to shift the base level that `-v`/`-q` counts are added
+to/subtracted from, instead of starting from `0`:
+
+```python
+# start two steps quieter, then apply -v/-q on top
+kamilog.set_logging_level_by_namespace(args, verbosity=-2)
+```
+
 
 
 
