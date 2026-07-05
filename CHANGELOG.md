@@ -42,6 +42,27 @@
 
 
 
+## [2.3.1] - 2026-07-06
+
+### Changed
+
+- `set_logging_level_by_namespace()` — new `verbosity=0` kwarg sets a base
+  level that the namespace's `-v`/`-q` counts offset from, instead of always
+  starting from zero
+- `docs/usage_doc.md` and `CONTEXT.md` — documented the `verbosity` kwarg
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## [2.3.0] - 2026-07-06
 
 ### Added
@@ -136,7 +157,8 @@ Documentation:
 
 - CLI `cb` subcommand padding conversion — numeric arguments (1-5) now correctly convert to integer for preset characters
 
-[unreleased]: https://github.com/kami-lel/kamilog/compare/v2.3.0...dev
+[unreleased]: https://github.com/kami-lel/kamilog/compare/v2.3.1...dev
+[2.3.1]: https://github.com/kami-lel/kamilog/compare/v2.3.0...v2.3.1
 [2.3.0]: https://github.com/kami-lel/kamilog/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/kami-lel/kamilog/compare/v2.1.1...v2.2.0
 [2.1.1]: https://github.com/kami-lel/kamilog/compare/v2.1.0...v2.1.1
