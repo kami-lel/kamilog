@@ -398,7 +398,24 @@ All three raise `ValueError` when:
 
 ## Verbosity and Logging Level
 
-Map CLI flags (`-v`/`--verbose`, `-q`/`--quiet`) to logging levels with built-in helpers:
+Built-in helpers map verbosity, from either CLI flags or a plain integer, to
+logging levels.
+
+
+
+
+
+
+
+
+
+
+
+
+
+### CLI Flags
+
+Add `-v`/`--verbose` and `-q`/`--quiet` to a parser:
 
 ```python
 from argparse import ArgumentParser
@@ -408,7 +425,8 @@ parser = ArgumentParser()
 kamilog.add_verbose_arguments(parser)
 ```
 
-After parsing, apply the verbosity to a logger:
+After parsing, apply the verbosity to a logger with
+`set_logging_level_by_namespace`:
 
 ```python
 args = parser.parse_args()
@@ -424,7 +442,46 @@ log = kamilog.getLogger("myapp")
 kamilog.set_logging_level_by_namespace(args, logger=log)
 ```
 
-Verbosity-to-logging-level mapping:
+
+
+
+
+
+
+
+
+
+
+
+
+### Verbosity Integer
+
+To set the level from a verbosity integer directly, without a parsed
+`argparse` namespace, use `set_logging_level_by_verbosity`:
+
+```python
+# positive raises detail, negative lowers it
+kamilog.set_logging_level_by_verbosity(2)
+
+kamilog.set_logging_level_by_verbosity(2, logger_name="myapp")
+
+log = kamilog.getLogger("myapp")
+kamilog.set_logging_level_by_verbosity(2, logger=log)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+### Verbosity-to-Level Mapping
 
 | Flags | Verbosity | Level | Number | Shows |
 |---|---|---|---|---|

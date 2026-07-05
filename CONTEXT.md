@@ -245,6 +245,7 @@ kamilog.DATEFMT_DATETIME_MS   # "YYYY-MM-DD HH:MM:SS.mmm"
 # verbosity helpers
 kamilog.add_verbose_arguments(parser)
 kamilog.set_logging_level_by_namespace(namespace, logger=None, logger_name=None)
+kamilog.set_logging_level_by_verbosity(verbosity, logger=None, logger_name=None)
 ```
 
 Verbosity mapping (default level is `DONE` = 25):
