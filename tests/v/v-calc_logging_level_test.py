@@ -5,7 +5,7 @@ tests for `_calc_logging_level_from_verbosity` in `kamilog.py`
 """
 
 import logging
-from kamilog.kamilog import _calc_logging_level_from_verbosity, SUCC, DONE
+from kamilog.kamilog import _calc_logging_level_from_verbosity, ENTER, DONE
 
 
 class TestCalcLoggingLevel:
@@ -16,7 +16,7 @@ class TestCalcLoggingLevel:
         assert _calc_logging_level_from_verbosity(1) == logging.INFO
 
     def test_v2(_):
-        assert _calc_logging_level_from_verbosity(2) == SUCC
+        assert _calc_logging_level_from_verbosity(2) == ENTER
 
     def test_v3(_):
         assert _calc_logging_level_from_verbosity(3) == logging.DEBUG

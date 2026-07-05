@@ -9,7 +9,7 @@ from argparse import ArgumentParser
 from kamilog.kamilog import (
     add_verbose_arguments,
     _calc_logging_level_from_verbosity_namespace,
-    SUCC,
+    ENTER,
     DONE,
 )
 
@@ -31,7 +31,7 @@ class TestCalcLoggingLevelNamespace:
         parser = ArgumentParser()
         add_verbose_arguments(parser)
         args = parser.parse_args(["-vv"])
-        assert _calc_logging_level_from_verbosity_namespace(args) == SUCC
+        assert _calc_logging_level_from_verbosity_namespace(args) == ENTER
 
     def test_combined_vv_verbose_qq_net_v1(_):
         parser = ArgumentParser()

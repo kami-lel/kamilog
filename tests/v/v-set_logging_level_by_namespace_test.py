@@ -6,7 +6,7 @@ tests for `set_logging_level_by_namespace` in `kamilog.py`
 
 import logging
 from argparse import ArgumentParser
-from kamilog.kamilog import add_verbose_arguments, set_logging_level_by_namespace, SUCC, DONE
+from kamilog.kamilog import add_verbose_arguments, set_logging_level_by_namespace, ENTER, DONE
 
 LOGGER_NAME = "TestSetLoggingLevelByNamespace"
 
@@ -31,7 +31,7 @@ class TestSetLoggingLevelByNamespace:
         add_verbose_arguments(parser)
         args = parser.parse_args(["-vv"])
         set_logging_level_by_namespace(args, logger_name=LOGGER_NAME)
-        assert logging.getLogger(LOGGER_NAME).level == SUCC
+        assert logging.getLogger(LOGGER_NAME).level == ENTER
 
     def test_v3(_):
         parser = ArgumentParser()
