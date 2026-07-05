@@ -546,9 +546,9 @@ class _DiffOnlyEngine:  # ******************************************************
     @staticmethod
     def _is_word_char(ch):
         """
-        report whether ``ch`` is a word character (``0-9A-Za-z`` only)
+        report whether ``ch`` is a word character (``0-9A-Za-z`` or ``-_``)
         """
-        return ch.isascii() and ch.isalnum()
+        return (ch.isascii() and ch.isalnum()) or ch in "-_"
 
     def _find_cut(self, message, run_s, run_e, prefix_len):
         """
