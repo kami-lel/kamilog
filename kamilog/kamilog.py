@@ -514,6 +514,8 @@ class _DiffOnlyEngine:  # ******************************************************
     _COMPRESSION_BLOCK_SIZE = 8
     _FALLBACK_TAB_SPAN = 2
     _COMPRESSION_MARKER = "〃\t"
+    _MARKER_CHAR = "〃"
+    _MARKER_WIDTH = 2  # rendered columns of _MARKER_CHAR
 
     def __init__(self, formatter, threshold=3):
         self._formatter = formatter
@@ -554,10 +556,12 @@ class _DiffOnlyEngine:  # ******************************************************
         """
         find cut position ending the replaceable part of a common run.
 
-        scans backward from the run end for a word boundary (position
-        right after a non-word character); the scan reaches back at most
-        ``_FALLBACK_TAB_SPAN`` tab stops, falling back to that tab-aligned
-        floor when no boundary exists within the span
+        scans backward from the run end for the nearest word-boundary
+        character (any non-word char); the cut lands on that character
+        itself, so the boundary symbol prints intact with the tail.
+        the scan reaches back at most ``_FALLBACK_TAB_SPAN`` tab stops,
+        falling back to that tab-aligned floor when no boundary exists
+        within the span
 
 
         :param message: full message text being compressed
@@ -569,15 +573,15 @@ class _DiffOnlyEngine:  # ******************************************************
         :param prefix_len: printable prefix width before the message
         :type prefix_len: int
         :return: cut index in ``[run_s, run_e]``; text before it is
-                replaceable, text after it stays printed
+                replaceable, text from it stays printed
         :rtype: int
         """
         block = self._COMPRESSION_BLOCK_SIZE
         col_e = prefix_len + run_e
         floor_col = (col_e // block - self._FALLBACK_TAB_SPAN) * block
         cut_min = max(run_s, floor_col - prefix_len)
-        for b in range(run_e - 1, cut_min, -1):
-            if not self._is_word_char(message[b - 1]):
+        for b in range(run_e - 1, cut_min - 1, -1):
+            if not self._is_word_char(message[b]):
                 return b
         return cut_min
 
@@ -615,13 +619,24 @@ class _DiffOnlyEngine:  # ******************************************************
                 if k == 0:
                     result.append(message[run_s:run_e])
                 else:
+                    gap = replaceable - block * k
                     result.append(message[run_s:tab_s])
                     result.append(
                         self._formatter.palette.color_grey(
                             self._COMPRESSION_MARKER * k
                         )
                     )
-                    result.append(message[tab_s + block * k : run_e])
+                    # partial block: marker + spaces padding to the cut
+                    if gap >= self._MARKER_WIDTH:
+                        result.append(
+                            self._formatter.palette.color_grey(
+                                self._MARKER_CHAR
+                            )
+                        )
+                        result.append(" " * (gap - self._MARKER_WIDTH))
+                    else:
+                        result.append(" " * gap)
+                    result.append(message[cut:run_e])
         return "".join(result)
 
     def process(self, record):
