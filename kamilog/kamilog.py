@@ -21,6 +21,7 @@ __all__ = (
     "KamiLogger",
     "add_verbose_arguments",
     "set_logging_level_by_namespace",
+    "set_logging_level_by_verbosity",
     # ANSI color
     "AnsiColor",
     "AnsiRenderer",
@@ -730,6 +731,15 @@ def _calc_logging_level_from_verbosity_namespace(namespace):
     return _calc_logging_level_from_verbosity(verbosity)
 
 
+def _set_logger_level(level, *, logger=None, logger_name=None):
+    """
+    set ``level`` on ``logger``, falling back to ``logger_name``
+    """
+    if logger is None:
+        logger = logging.getLogger(logger_name)
+    logger.setLevel(level)
+
+
 # Verbosity Public API  ========================================================
 
 
@@ -764,15 +774,39 @@ def set_logging_level_by_namespace(namespace, *, logger=None, logger_name=None):
 
     :param namespace: parsed namespace containing ``--verbose`` and/or ``--quiet`` counts
     :type namespace: argparse.Namespace
-    :param logger: logger instance to configure; takes priority over ``logger_name``
+    :param logger: logger instance to configure
     :type logger: logging.Logger, optional
-    :param logger_name: name of logger to configure; ``None`` targets the root logger;
+    :param logger_name: name of logger to configure;
+            ``None`` targets the root logger;
             ignored when ``logger`` is provided
     :type logger_name: str, optional
     """
-    if logger is None:
-        logger = logging.getLogger(logger_name)
-    logger.setLevel(_calc_logging_level_from_verbosity_namespace(namespace))
+    _set_logger_level(
+        _calc_logging_level_from_verbosity_namespace(namespace),
+        logger=logger,
+        logger_name=logger_name,
+    )
+
+
+def set_logging_level_by_verbosity(verbosity, *, logger=None, logger_name=None):
+    """
+    set the logging level of a logger based on a verbosity integer.
+
+
+    :param verbosity:
+    :type verbosity: int
+    :param logger: logger instance to configure
+    :type logger: logging.Logger, optional
+    :param logger_name: name of logger to configure;
+            ``None`` targets the root logger;
+            ignored when ``logger`` is provided
+    :type logger_name: str, optional
+    """
+    _set_logger_level(
+        _calc_logging_level_from_verbosity(verbosity),
+        logger=logger,
+        logger_name=logger_name,
+    )
 
 
 # Comment Banner  #############################################################
