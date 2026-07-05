@@ -507,24 +507,24 @@ class _DiffOnlyEngine:  # ******************************************************
     :param formatter: formatter used to measure the prefix width and
             apply ``color_grey`` to compression markers
     :type formatter: _LogFormatter
-    :param window: number of prior messages held for comparison
-    :type window: int
+    :param threshold: number of prior messages held for comparison
+    :type threshold: int
     """
 
     _COMPRESSION_BLOCK_SIZE = 8
-    _PRESERVED_TRAILING_CHARS = 2
+    _FALLBACK_TAB_SPAN = 2
     _COMPRESSION_MARKER = "〃\t"
 
-    def __init__(self, formatter, window=3):
+    def __init__(self, formatter, threshold=3):
         self._formatter = formatter
-        self._history = deque(maxlen=window)
+        self._history = deque(maxlen=threshold)
         # _common[i] = shared char at position i across all history,
         # or None where messages diverge or lengths differ
         self._common: list = []
 
     def _update_common(self):
         """
-        recompute ``_common`` from the current ``_history`` window
+        recompute ``_common`` from the current ``_history`` messages
         """
         history = list(self._history)
         if not history:
@@ -543,12 +543,49 @@ class _DiffOnlyEngine:  # ******************************************************
                 )
         self._common = common
 
+    @staticmethod
+    def _is_word_char(ch):
+        """
+        report whether ``ch`` is a word character (``0-9A-Za-z`` only)
+        """
+        return ch.isascii() and ch.isalnum()
+
+    def _find_cut(self, message, run_s, run_e, prefix_len):
+        """
+        find cut position ending the replaceable part of a common run.
+
+        scans backward from the run end for a word boundary (position
+        right after a non-word character); the scan reaches back at most
+        ``_FALLBACK_TAB_SPAN`` tab stops, falling back to that tab-aligned
+        floor when no boundary exists within the span
+
+
+        :param message: full message text being compressed
+        :type message: str
+        :param run_s: start index of the common run
+        :type run_s: int
+        :param run_e: end index (exclusive) of the common run
+        :type run_e: int
+        :param prefix_len: printable prefix width before the message
+        :type prefix_len: int
+        :return: cut index in ``[run_s, run_e]``; text before it is
+                replaceable, text after it stays printed
+        :rtype: int
+        """
+        block = self._COMPRESSION_BLOCK_SIZE
+        col_e = prefix_len + run_e
+        floor_col = (col_e // block - self._FALLBACK_TAB_SPAN) * block
+        cut_min = max(run_s, floor_col - prefix_len)
+        for b in range(run_e - 1, cut_min, -1):
+            if not self._is_word_char(message[b - 1]):
+                return b
+        return cut_min
+
     def _compress(self, record, message):
         """
         compress positions matching ``_common`` into ``〃\\t`` markers.
         """
         block = self._COMPRESSION_BLOCK_SIZE
-        trail = self._PRESERVED_TRAILING_CHARS
         prefix_len = self._formatter.engine.count_prefix_chars(record)
         n_common = len(self._common)
         is_common = [
@@ -569,10 +606,11 @@ class _DiffOnlyEngine:  # ******************************************************
                 while i < msg_len and is_common[i]:
                     i += 1
                 run_e = i
+                cut = self._find_cut(message, run_s, run_e, prefix_len)
                 col_offset = (prefix_len + run_s) % block
                 padding = (block - col_offset) % block
                 tab_s = run_s + padding
-                replaceable = run_e - tab_s - trail
+                replaceable = cut - tab_s
                 k = replaceable // block if replaceable > 0 else 0
                 if k == 0:
                     result.append(message[run_s:run_e])
@@ -616,14 +654,14 @@ class _DiffOnlyMsgFilter(logging.Filter):  # ***********************************
     :param formatter: forwarded to ``_DiffOnlyEngine`` for prefix-width
             measurement; pass ``None`` to disable prefix alignment
     :type formatter: _LogFormatter or None
-    :param window: forwarded to ``_DiffOnlyEngine`` as the history
-            window size
-    :type window: int
+    :param threshold: forwarded to ``_DiffOnlyEngine`` as the history
+            depth before compression activates
+    :type threshold: int
     """
 
-    def __init__(self, formatter, window=3):
+    def __init__(self, formatter, threshold=3):
         super().__init__()
-        self._engine = _DiffOnlyEngine(formatter, window)
+        self._engine = _DiffOnlyEngine(formatter, threshold)
 
     def filter(self, record):
         """
