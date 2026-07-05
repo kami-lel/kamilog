@@ -8,7 +8,6 @@ todo comprehensive unit tests for logger
 todo allows use -V being equivalent to -vvv (v.v.)
 todo allows to use only -V, dont add -v (v.v.)
 TODO smart time print
-TODO default time shown
 Fixme diff only smartly break at word boundary
 bug using different logger to print & diff only can produce confusing result
 -->

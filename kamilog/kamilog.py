@@ -644,7 +644,7 @@ class _DiffOnlyMsgFilter(logging.Filter):  # ***********************************
 
 
 # pylint: disable-next=invalid-name
-def getLogger(name=None, *, datefmt=None, relative_to=None):
+def getLogger(name=None, *, datefmt=DATEFMT_TIME, relative_to=None):
     """
     return a configured :class:`KamiLogger` for ``name``, creating it if needed.
 
@@ -652,8 +652,8 @@ def getLogger(name=None, *, datefmt=None, relative_to=None):
     :param name: logger name
     :type name: str, optional
     :param datefmt: strftime format for timestamps; ignored when ``relative_to`` is set;
-            defaults to ``None`` (no timestamp)
-    :type datefmt: str, optional
+            defaults to ``DATEFMT_TIME`` (``HH:MM:SS``); pass ``None`` to disable timestamps
+    :type datefmt: str or None, optional
     :param relative_to: Unix timestamp to use as epoch for relative time display;
             mutually exclusive with ``datefmt``
     :type relative_to: float, optional
