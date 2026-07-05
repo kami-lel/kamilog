@@ -1,8 +1,8 @@
 """
 logger-diff_only_stress_demo.py
 
-exercise _DiffOnlyMsgFilter across word-boundary and edge-case scenarios;
-each demo logs 6 lines: 3 warmup, then 3 compressed
+exercise _DiffOnlyMsgFilter across word-boundary, leader, and edge-case
+scenarios; each demo logs 6 lines: 3 warmup, then 3 compressed
 """
 
 import sys
@@ -79,6 +79,29 @@ run_demo(
     [
         "csum sha256"
         ":9f8e7d6c5b4a39281706f5e4d3c2b1a09f8e7d6c5b4a3928{:02x}".format(i)
+        for i in range(1, 7)
+    ],
+)
+
+# short leader  ################################################################
+# run start sits < 4 columns before a tab stop: leader becomes a bare tab
+# jump (leader width depends on the rendered prefix, here len("pump") works)
+run_demo(
+    "short leader — bare tab jump",
+    "pump",
+    [
+        "pump pressure stable flow steady cycle {}".format(i)
+        for i in range(1, 7)
+    ],
+)
+
+# long leader  #################################################################
+# run start sits >= 4 columns before a tab stop: leader earns its own marker
+run_demo(
+    "long leader — leading marker",
+    "telemetry",
+    [
+        "telemetry uplink nominal signal clear frame {}".format(i)
         for i in range(1, 7)
     ],
 )

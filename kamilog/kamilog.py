@@ -516,6 +516,7 @@ class _DiffOnlyEngine:  # ******************************************************
     _COMPRESSION_MARKER = "〃\t"
     _MARKER_CHAR = "〃"
     _MARKER_WIDTH = 2  # rendered columns of _MARKER_CHAR
+    _LEADER_MARKER_MIN = 4  # leader shorter than this becomes bare "\t"
 
     def __init__(self, formatter, threshold=3):
         self._formatter = formatter
@@ -620,7 +621,17 @@ class _DiffOnlyEngine:  # ******************************************************
                     result.append(message[run_s:run_e])
                 else:
                     gap = replaceable - block * k
-                    result.append(message[run_s:tab_s])
+                    # leader: common chars before the first tab stop are
+                    # never printed; short ones become a bare tab jump,
+                    # longer ones earn their own marker
+                    if padding >= self._LEADER_MARKER_MIN:
+                        result.append(
+                            self._formatter.palette.color_grey(
+                                self._COMPRESSION_MARKER
+                            )
+                        )
+                    elif padding > 0:
+                        result.append("\t")
                     result.append(
                         self._formatter.palette.color_grey(
                             self._COMPRESSION_MARKER * k
