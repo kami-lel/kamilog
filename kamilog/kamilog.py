@@ -651,8 +651,10 @@ def getLogger(name=None, *, datefmt=DATEFMT_TIME, relative_to=None):
 
     :param name: logger name
     :type name: str, optional
-    :param datefmt: strftime format for timestamps; ignored when ``relative_to`` is set;
-            defaults to ``DATEFMT_TIME`` (``HH:MM:SS``); pass ``None`` to disable timestamps
+    :param datefmt: strftime format for timestamps;
+            default=``DATEFMT_TIME`` (``HH:MM:SS``);
+            pass ``None`` to disable timestamps
+            ignored when ``relative_to`` is set;
     :type datefmt: str or None, optional
     :param relative_to: Unix timestamp to use as epoch for relative time display;
             mutually exclusive with ``datefmt``

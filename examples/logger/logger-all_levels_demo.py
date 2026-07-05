@@ -9,7 +9,7 @@ import sys
 import kamilog
 from kamilog.kamilog import AnsiRenderer, gen_comment_banner_centered
 
-log = kamilog.getLogger()
+log = kamilog.getLogger(datefmt=None)
 log.setLevel(kamilog.DEBUG)
 
 # repeated calls share one renderer instead of re-detecting TTY state
@@ -33,9 +33,9 @@ log.fail("Test case failed")
 
 
 print()
-print(gen_comment_banner_centered(
-    "all levels (in order)", "#", renderer=renderer
-))
+print(
+    gen_comment_banner_centered("all levels (in order)", "#", renderer=renderer)
+)
 log.debug("Debugging information shown only during development")
 log.enter("Marks start of a routine")
 log.skip("Marks skipped portion of routine")
