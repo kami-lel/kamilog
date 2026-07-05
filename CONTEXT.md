@@ -1,6 +1,6 @@
 # kamilog CONTEXT
 
-*Last updated: 2026-07-02 (v2.2.0)*
+*Last updated: 2026-07-06 (v2.2.0)*
 
 ## Project Overview
 
@@ -140,16 +140,19 @@ Methods:
 
 ### `_DiffOnlyMsgFilter`
 
-Automatically attached to every logger by `getLogger()`. Compresses repeated log lines by replacing characters shared across the last `window` (default 3) messages with `〃\t` markers.
+Automatically attached to every logger by `getLogger()`. Compresses repeated log lines by replacing characters shared across the last `threshold` (default 3) messages with `〃\t` markers.
 
 `getLogger()` passes a dedicated `_LogFormatter(sys.stdout, …)` as the first positional argument so the filter's palette inherits the same TTY state as the stdout handler. The filter wraps a `_DiffOnlyEngine` which holds all compression state.
 
 Algorithm (`_DiffOnlyEngine`):
 
-1. **Warmup**: the first `window` messages pass through unchanged (history fills).
-2. **`_common` cache**: after each message, `_update_common()` recomputes a per-position list of characters common to *all* history messages in O(n × window).
+1. **Warmup**: the first `threshold` messages pass through unchanged (history fills).
+2. **`_common` cache**: after each message, `_update_common()` recomputes a per-position list of characters common to *all* history messages in O(n × threshold).
 3. **Run detection**: on each incoming message, `_compress()` marks positions where the message matches `_common` in O(n).
-4. **Tab-aligned compression**: contiguous common runs compress in multiples of `_COMPRESSION_BLOCK_SIZE` (8). Each `_COMPRESSION_MARKER` (`〃\t`) is placed at the next column that is a multiple of 8 measured from the rendered line start (`formatter.engine.count_prefix_chars` + message offset), so `〃` (2 wide) + `\t` spans exactly 8 visible columns. At least `_PRESERVED_TRAILING_CHARS` (2) original chars are kept at the trailing end of each run.
+4. **Word-boundary cut**: for each contiguous common run, `_find_cut()` scans backward from the run end for the nearest word-boundary character, where a *word* character is `0-9A-Za-z` plus `-` and `_` (`_is_word_char`; any other symbol or whitespace is a boundary). The cut lands **on** the boundary character itself, so the symbol prints intact and the changing token keeps its word stem attached (e.g. `/batch_002.csv` — `export` compressed, `/` preserved).
+5. **2-tab fallback**: the backward scan reaches back at most `_FALLBACK_TAB_SPAN` (2) tab stops from the run end, measured in rendered columns and floored to a tab-aligned column. When no boundary exists within that span (long unbroken tokens: hashes, URLs), the cut falls back to that tab-aligned floor — a mid-word cut, guaranteeing compression never vanishes on long runs.
+6. **Tab-aligned compression**: the region between the run start and the cut compresses into `_COMPRESSION_MARKER`s (`〃\t`). Each marker is placed at the next column that is a multiple of `_COMPRESSION_BLOCK_SIZE` (8) measured from the rendered line start (`formatter.engine.count_prefix_chars` + message offset), so `〃` (2 wide) + `\t` spans exactly 8 visible columns. After the last full marker, the remaining partial block renders as one `_MARKER_CHAR` (`〃`) plus spaces padding exactly to the cut column (spaces only when the gap is narrower than `_MARKER_WIDTH`), so every compressed stretch shows a marker and the kept tail always starts at its original rendered column with no leaked common-character fragments. Runs too short for at least one full marker block are printed untouched.
+7. **Leader replacement**: the common characters between the run start and the first tab stop (the *leader*, 0-7 columns) are never printed. A leader of `_LEADER_MARKER_MIN` (4) columns or more renders as its own `〃\t` marker; a shorter non-empty leader becomes a bare `\t` jump, letting the tab occupy the space.
 
 The original (uncompressed) message is stored in `_history` so compression decisions are always based on the raw text, not prior compressed output.
 
