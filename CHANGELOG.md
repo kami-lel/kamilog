@@ -20,7 +20,16 @@
 
 ### Added
 
+- `set_logging_level_by_verbosity()` sets a logger's level directly from a
+  verbosity integer, without needing a parsed `argparse` namespace
+
 ### Changed
+
+- Renamed `set_logging_level_by_verbosity()` to `set_logging_level_by_namespace()`
+  to reflect that it takes a parsed namespace; the new `set_logging_level_by_verbosity()`
+  now takes the integer instead
+- Reorganized the "Verbosity and Logging Level" usage doc section into
+  subheadings (CLI Flags, Verbosity Integer, Verbosity-to-Level Mapping)
 
 ### Deprecated
 

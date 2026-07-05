@@ -10,7 +10,6 @@ todo allows to use only -V, dont add -v (v.v.)
 Todo smart time print
 Todo default time shown
 Fixme diff only smartly break at word boundary
-Todo provide set logger by verbosity value
 Fixme enter & debug should have different colors
 bug using different logger to print & diff only can produce confusing result
 -->
