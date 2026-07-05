@@ -219,7 +219,7 @@ Both `cb` and `cb0` follow the Unix pipe pattern: text content is read from stdi
 
 ```python
 # logger factory
-kamilog.getLogger(name=None, *, datefmt=None, relative_to=None) -> KamiLogger
+kamilog.getLogger(name=None, *, datefmt=DATEFMT_TIME, relative_to=None) -> KamiLogger
 kamilog.KamiLogger                              # logger class (subclass of logging.Logger)
 
 # ANSI color
