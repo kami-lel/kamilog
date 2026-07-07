@@ -8,8 +8,9 @@ todo comprehensive unit tests for logger
 todo allows use -V being equivalent to -vvv (v.v.)
 todo allows to use only -V, dont add -v (v.v.)
 todo smart time print
-todo logger as bash CLI
+Todo logger as bash CLI
 bug using different logger to print & diff only can produce confusing result
+Bug parser need to private
 -->
 
 ## Features
