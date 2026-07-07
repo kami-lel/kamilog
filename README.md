@@ -11,6 +11,7 @@ todo smart time print
 Todo logger as bash CLI
 bug using different logger to print & diff only can produce confusing result
 Bug parser need to private
+Bug operate not correctly if message contains \t already
 -->
 
 ## Features
