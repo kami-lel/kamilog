@@ -120,6 +120,9 @@ class AnsiRenderer:  # =========================================================
     :param stream: output stream used for TTY detection;
             ``None`` disables color unconditionally
     :type stream: IO or None
+    :param is_disabled: when ``True``, disable color unconditionally,
+            regardless of ``stream``; defaults to ``False``
+    :type is_disabled: bool
     """
 
     _LEVEL_COLORS = {
@@ -136,9 +139,12 @@ class AnsiRenderer:  # =========================================================
         logging.CRITICAL: AnsiColor.BRIGHT_MAGENTA,
     }
 
-    def __init__(self, stream=None):
+    def __init__(self, stream=None, *, is_disabled=False):
         self._enabled = (
-            stream is not None and hasattr(stream, "isatty") and stream.isatty()
+            not is_disabled
+            and stream is not None
+            and hasattr(stream, "isatty")
+            and stream.isatty()
         )
 
     # Public API  **************************************************************
@@ -449,11 +455,20 @@ class _LogFormatter(Formatter):  # *********************************************
     :type datefmt: str or None
     :param relative_to: forwarded to ``_LogFormatEngine``
     :type relative_to: float or None
+    :param disable_color: disable color regardless of ``stream``
+    :type disable_color: bool
     """
 
-    def __init__(self, stream=None, *, datefmt=None, relative_to=None):
+    def __init__(
+        self,
+        stream=None,
+        *,
+        datefmt=None,
+        relative_to=None,
+        disable_color=False,
+    ):
         super().__init__(datefmt=datefmt)
-        self.palette = AnsiRenderer(stream)
+        self.palette = AnsiRenderer(stream, is_disabled=disable_color)
         self.engine = _LogFormatEngine(
             self.palette, datefmt=datefmt, relative_to=relative_to
         )
@@ -683,11 +698,20 @@ class _DiffOnlyMsgFilter(logging.Filter):  # ***********************************
     :param threshold: forwarded to ``_DiffOnlyEngine`` as the history
             depth before compression activates
     :type threshold: int
+    :param disable_diff_only_compression: whether turn off diff-ony compression
+            and pass records through untouched
+    :type disable_diff_only_compression: bool
     """
 
-    def __init__(self, formatter, threshold=3):
+    def __init__(
+        self, formatter, threshold=3, *, disable_diff_only_compression=False
+    ):
         super().__init__()
-        self._engine = _DiffOnlyEngine(formatter, threshold)
+        self._engine = (
+            None
+            if disable_diff_only_compression
+            else _DiffOnlyEngine(formatter, threshold)
+        )
 
     def filter(self, record):
         """
@@ -699,6 +723,8 @@ class _DiffOnlyMsgFilter(logging.Filter):  # ***********************************
         :return: always ``True``; this filter never drops records
         :rtype: bool
         """
+        if self._engine is None:  # compression disabled, pass through
+            return True
         record.msg = self._engine.process(record)
         record.args = ()
         return True
@@ -706,12 +732,16 @@ class _DiffOnlyMsgFilter(logging.Filter):  # ***********************************
 
 # Logger Public API  ===========================================================
 
-# Todo add no diff only
-# Todo add no color setting
-
 
 # pylint: disable-next=invalid-name
-def getLogger(name=None, *, datefmt=DATEFMT_TIME, relative_to=None):
+def getLogger(
+    name=None,
+    *,
+    datefmt=DATEFMT_TIME,
+    relative_to=None,
+    disable_color=False,
+    disable_diff_only_compression=False,
+):
     """
     return a configured :class:`KamiLogger` for ``name``, creating it if needed.
 
@@ -726,6 +756,12 @@ def getLogger(name=None, *, datefmt=DATEFMT_TIME, relative_to=None):
     :param relative_to: Unix timestamp to use as epoch for relative time display;
             mutually exclusive with ``datefmt``
     :type relative_to: float, optional
+    :param disable_color: disable ANSI color on all handlers
+            and the diff-only filter
+    :type disable_color: bool, optional
+    :param disable_diff_only_compression: whether turn off diff-ony compression
+            and pass records through untouched
+    :type disable_diff_only_compression: bool, optional
     :return: a logger with the `name`, create if non-existence;
             root logger if `name` is `None`
     :rtype: KamiLogger
@@ -739,21 +775,35 @@ def getLogger(name=None, *, datefmt=DATEFMT_TIME, relative_to=None):
         logger.addFilter(
             _DiffOnlyMsgFilter(
                 _LogFormatter(
-                    sys.stdout, datefmt=datefmt, relative_to=relative_to
-                )
+                    sys.stdout,
+                    datefmt=datefmt,
+                    relative_to=relative_to,
+                    disable_color=disable_color,
+                ),
+                disable_diff_only_compression=disable_diff_only_compression,
             )
         )
 
     if not logger.handlers:
         stdout_handler = StreamHandler(sys.stdout)
         stdout_handler.setFormatter(
-            _LogFormatter(sys.stdout, datefmt=datefmt, relative_to=relative_to)
+            _LogFormatter(
+                sys.stdout,
+                datefmt=datefmt,
+                relative_to=relative_to,
+                disable_color=disable_color,
+            )
         )
         stdout_handler.addFilter(lambda r: r.levelno < logging.WARNING)
 
         stderr_handler = StreamHandler(sys.stderr)
         stderr_handler.setFormatter(
-            _LogFormatter(sys.stderr, datefmt=datefmt, relative_to=relative_to)
+            _LogFormatter(
+                sys.stderr,
+                datefmt=datefmt,
+                relative_to=relative_to,
+                disable_color=disable_color,
+            )
         )
         stderr_handler.addFilter(lambda r: r.levelno >= logging.WARNING)
 
@@ -928,7 +978,11 @@ _LOGGER_TIME_FORMAT_MAP = {
 def _logger_parser_main(args):
     level = _LOGGER_LEVEL_MAP[args.level.lower()]  # resolve Level name
     datefmt = _LOGGER_TIME_FORMAT_MAP[args.time_format]  # resolve Time fmt
-    logger = getLogger(datefmt=datefmt)
+    logger = getLogger(
+        datefmt=datefmt,
+        disable_color=args.no_color,
+        disable_diff_only_compression=args.no_diff_only,
+    )
     set_logging_level_by_namespace(
         args, verbosity=args.verbosity, logger=logger
     )
@@ -954,35 +1008,34 @@ def _register_logger_parser(cli_subparser):
         help="log level name",
     )
     logger_parser.add_argument(
-        "--verbosity",
-        type=int,
-        default=3,
-        metavar="VERBOSITY",
-        help="base verbosity offset for level threshold; default=3",
-    )
-    logger_parser.add_argument(
         "-t",
         "--time-format",
         choices=list(_LOGGER_TIME_FORMAT_MAP),
         default="time",
         help="timestamp format; default=time",
     )
-    # Todo make no color functional
+
+    logger_parser.add_argument(
+        "--verbosity",
+        type=int,
+        default=3,
+        metavar="VERBOSITY",
+        help="base verbosity offset for level threshold; default=3",
+    )
+    add_verbose_arguments(logger_parser)
+
     logger_parser.add_argument(
         "-C",
         "--no-color",
         action="store_true",
         help="disable ANSI color output",
     )
-    # Todo make no diff only functional
     logger_parser.add_argument(
         "-D",
         "--no-diff-only",
         action="store_true",
         help="disable diff-only message compression",
     )
-
-    add_verbose_arguments(logger_parser)
 
     logger_parser.set_defaults(func=_logger_parser_main)
 
@@ -1241,8 +1294,7 @@ def _register_comment_banner_parser(cli_subparser):
         "mode",
         choices=["c", "l", "r", "center", "left", "right"],
         help=(
-            "text alignment: c/center, l/left(-justified), "
-            "r/right(-justified)"
+            "text alignment: c/center, l/left(-justified), r/right(-justified)"
         ),
     )
     comment_banner_parser.add_argument(

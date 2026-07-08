@@ -27,8 +27,17 @@
   `-v`/`-q` counts adjust from; default `3`
 - `logger` option `-t`/`--time-format` — timestamp format, one of `time`,
   `time-ms`, `datetime`, `datetime-ms`, `no-time`; default `time`
-- `logger` flags `-C`/`--no-color` and `-D`/`--no-diff-only` — accepted in the
-  parser but not yet wired to behavior
+- `logger` flag `-C`/`--no-color` — force plain output, disabling ANSI color
+  even when stdout is a TTY
+- `logger` flag `-D`/`--no-diff-only` — skip diff-only message compression,
+  emitting every line in full
+- `getLogger()` — new `disable_color` and `disable_diff_only_compression`
+  keyword arguments; `disable_color` suppresses ANSI color on every handler
+  and the diff-only filter regardless of TTY state, and
+  `disable_diff_only_compression` skips building the compression engine so
+  records pass through untouched
+- `AnsiRenderer` — new `is_disabled` keyword argument that turns color off
+  unconditionally, regardless of the stream's TTY state
 
 ### Changed
 
