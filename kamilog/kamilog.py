@@ -114,6 +114,7 @@ class AnsiStyle(Flag):  # =====================================================
     MAGENTA = auto()
     BRIGHT_MAGENTA = auto()
 
+    BG_GREY = auto()
     BG_CYAN = auto()
     BG_BRIGHT_CYAN = auto()
     BG_BLUE = auto()
@@ -159,6 +160,7 @@ class AnsiRenderer:  # =========================================================
         AnsiStyle.BRIGHT_RED: "91",
         AnsiStyle.MAGENTA: "35",
         AnsiStyle.BRIGHT_MAGENTA: "95",
+        AnsiStyle.BG_GREY: "100",
         AnsiStyle.BG_CYAN: "46",
         AnsiStyle.BG_BRIGHT_CYAN: "106",
         AnsiStyle.BG_BLUE: "44",
