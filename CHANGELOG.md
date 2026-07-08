@@ -42,6 +42,79 @@
 
 
 
+## [2.4.0] - 2026-07-08
+
+### Added
+
+New `logger` CLI subcommand (alias `l`) — pipe lines into stdin and log each
+one at a chosen `LEVEL`, gated by a verbosity threshold:
+
+- run it as `python kamilog/kamilog.py logger LEVEL`; each stdin line becomes
+  one log record
+- `--verbosity` — base verbosity the subcommand's `-v`/`-q` counts adjust
+  from (default `3`)
+- `-t`/`--time-format` — timestamp style: `time`, `time-ms`, `datetime`,
+  `datetime-ms`, or `no-time` (default `time`)
+- `-C`/`--no-color` — force plain output, disabling ANSI color even on a TTY
+- `-D`/`--no-diff-only` — emit every line in full, skipping diff-only
+  compression
+
+Two new `getLogger()` toggles, both propagating through every handler and the
+diff-only filter:
+
+- `disable_color` — suppress ANSI color regardless of TTY state
+- `disable_diff_only_compression` — skip the compression engine so records
+  pass through untouched
+
+Other additions:
+
+- `AnsiRenderer` — new `is_disabled` keyword that turns color off
+  unconditionally, regardless of the stream's TTY state
+- golden-output tests for every `examples/` demo script, asserting exact
+  captured stdout/stderr so future changes can't silently alter demo output
+  (`tests/cb/demo/`, `tests/dof/demo/`, `tests/logger/demo/`)
+- `logger-diff_only_stress_demo.py` — new "embedded tab" scenario, showing
+  compression when message content already contains a literal `\t`
+
+### Changed
+
+CLI internals (no public-surface change):
+
+- the root parser and subparser are now private (`_cli_parser`,
+  `_cli_subparser`), so the module's public surface matches `__all__` exactly
+- every subcommand is built by a `_register_*_parser(cli_subparser)` function
+  (`comment_banner`, `comment_banner_zero`, `logger`) instead of a
+  module-level parser object
+
+Diff-only compression:
+
+- `_DiffOnlyEngine._compress` now splits the replaceable span into
+  `_TabAlignedLine` blocks — an internal `list` subclass that breaks a line
+  into 8-wide tab-stop blocks and expands any literal `\t` before splitting —
+  instead of computing boundaries inline; `_COMPRESSION_BLOCK_SIZE` gives way
+  to `_TabAlignedLine.TAB_SIZE`
+
+### Fixed
+
+- CLI help and usage now show the program name as `kamilog`, not `__main__`
+- diff-only compression restored to a character-precise cut, preserving word
+  boundaries — a lone `=` between fields no longer gets swallowed by the
+  compressed run
+- message content containing a literal `\t` no longer misaligns diff-only
+  compression; embedded tabs are expanded before the block split
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## [2.3.1] - 2026-07-06
 
 ### Changed
@@ -157,7 +230,8 @@ Documentation:
 
 - CLI `cb` subcommand padding conversion — numeric arguments (1-5) now correctly convert to integer for preset characters
 
-[unreleased]: https://github.com/kami-lel/kamilog/compare/v2.3.1...dev
+[unreleased]: https://github.com/kami-lel/kamilog/compare/v2.4.0...dev
+[2.4.0]: https://github.com/kami-lel/kamilog/compare/v2.3.1...v2.4.0
 [2.3.1]: https://github.com/kami-lel/kamilog/compare/v2.3.0...v2.3.1
 [2.3.0]: https://github.com/kami-lel/kamilog/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/kami-lel/kamilog/compare/v2.1.1...v2.2.0

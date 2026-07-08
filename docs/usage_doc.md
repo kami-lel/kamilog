@@ -137,6 +137,13 @@ Formatting:
 - **Colon separator** (`:`) : bright black (grey)
 - **Message**: uncolored
 
+Pass `disable_color=True` to force plain output on every handler and the
+diff-only filter, regardless of TTY state:
+
+```python
+log = kamilog.getLogger("myapp", disable_color=True)
+```
+
 
 
 
@@ -219,6 +226,13 @@ INFO  sensor: te〃    ture=21.9 humidity=55% status=OK
 ```
 
 The filter is invisible during a warmup period (first 3 messages) and resets automatically when the message pattern changes.
+
+Pass `disable_diff_only_compression=True` to turn compression off entirely, so
+every record prints in full:
+
+```python
+log = kamilog.getLogger("myapp", disable_diff_only_compression=True)
+```
 
 
 

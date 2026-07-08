@@ -1,6 +1,6 @@
 # kamilog CONTEXT
 
-*Last updated: 2026-07-06 (v2.2.0)*
+*Last updated: 2026-07-08 - v2.4.0*
 
 ## Project Overview
 
@@ -14,18 +14,26 @@ Repository: <https://github.com/kami-lel/kamilog>
 kamilog/
 ├── kamilog/
 │   ├── __init__.py          # re-exports all public symbols from kamilog.py
-│   └── kamilog.py           # entire implementation (~990 lines)
+│   └── kamilog.py           # entire implementation (~1320 lines)
 ├── tests/
 │   ├── cb/                          # comment-banner test suite
 │   │   ├── cb-centered_test.py
 │   │   ├── cb-left_just_test.py
 │   │   ├── cb-right_just_test.py
-│   │   └── cb-validation_test.py
+│   │   ├── cb-validation_test.py
+│   │   └── demo/                    # golden-output tests for examples/cb/*
 │   ├── v/                           # verbosity helper test suite
 │   │   ├── v-add_verbose_arguments_test.py
 │   │   ├── v-calc_logging_level_test.py
 │   │   ├── v-calc_logging_level_namespace_test.py
 │   │   └── v-set_logging_level_by_namespace_test.py
+│   ├── ansi/                        # AnsiRenderer / TTY detection test suite
+│   ├── lf/                          # _LogFormatter / _LogFormatEngine test suite
+│   ├── logger/                      # KamiLogger behavior test suite
+│   │   └── demo/                    # golden-output tests for examples/logger/*
+│   ├── dof/                         # _DiffOnlyEngine / _DiffOnlyMsgFilter test suite
+│   │   └── demo/                    # golden-output tests for examples/logger/*diff_only*
+│   ├── tal/                         # _TabAlignedLine test suite
 │   └── source_quality_test.py       # banned-marker scan (no TODO/FIXME/HACK/BUG)
 ├── examples/
 │   ├── cb/
@@ -37,7 +45,8 @@ kamilog/
 │       ├── logger-all_levels_demo.py        # all eleven log levels with descriptions
 │       ├── logger-timestamps_demo.py        # all four DATEFMT_* formats and relative_to
 │       ├── logger-diff_only_demo.py         # _DiffOnlyMsgFilter compression walkthrough
-│       └── logger-diff_only_stress_demo.py  # short vs. long message compression contrast
+│       └── logger-diff_only_stress_demo.py  # word-boundary, leader, and embedded-tab
+│                                             # compression scenarios
 ├── docs/
 │   ├── usage_doc.md         # public API reference with examples
 │   └── install_guide.md     # installation methods
@@ -87,17 +96,23 @@ Public `Enum` of ANSI escape code constants keyed by descriptive color names. Ea
 Public class that centralizes ANSI color detection and application. Instantiated by `_LogFormatter` and exposed via its `palette` attribute; also reachable from `_DiffOnlyEngine` as `formatter.palette`.
 
 - Detects TTY status once at construction via `stream.isatty()`; when `stream` is `None` or not a TTY, all methods return their input unchanged.
+- `is_disabled=False` (keyword-only) forces color off unconditionally at construction, regardless of the stream's TTY state.
 - `color(text, color, *, use_bold=False)` — generic color applier; wraps `text` in the given `AnsiColor` code, optionally with bold.
 - `color_level(text, levelno)` — wraps `text` in bold + per-level ANSI color codes via the internal `_LEVEL_COLORS` map.
 - `color_grey(text)` — wraps `text` in grey codes; used for timestamps, source labels, and compression markers.
 
-### `getLogger(name, *, datefmt, relative_to)`
+### `getLogger(name, *, datefmt, relative_to, disable_color, disable_diff_only_compression)`
 
 The sole public entry point. Every call:
 
 1. Retrieves or creates a stdlib logger and upgrades it to `KamiLogger` via `__class__` assignment.
 2. Attaches a `_DiffOnlyMsgFilter` instance if one is not already present.
 3. Adds stdout and stderr `StreamHandler`s (with `_LogFormatter`) if no handlers exist yet — stdout for `< WARNING`, stderr for `>= WARNING`.
+
+Two keyword-only toggles propagate to those parts:
+
+- `disable_color=False` — forwarded to every `_LogFormatter` (as `disable_color`) and on to `AnsiRenderer(is_disabled=…)`, so all handlers and the diff-only filter emit plain text regardless of TTY state.
+- `disable_diff_only_compression=False` — forwarded to `_DiffOnlyMsgFilter`; when `True` the filter skips building its `_DiffOnlyEngine` and passes records through untouched.
 
 ### `KamiLogger`
 
@@ -138,11 +153,29 @@ Methods:
 - `formatTime(record, datefmt)` — delegates to `engine.format_time`.
 - `format(record)` — copies the record, calls `engine.build_line`, then appends `exc_info` and `stack_info` via `Formatter.formatException`/`formatStack`.
 
+### `_TabAlignedLine`
+
+Private `list` subclass representing a line split into `TAB_SIZE`-wide (8)
+blocks aligned to tab stops. Used by `_DiffOnlyEngine._compress` to find
+leader/full-block/gap boundaries without recomputing tab-stop arithmetic
+inline.
+
+- `parse(line, *, start_offset=0)` (classmethod) — expands any literal `\t`
+  already present in `line` into spaces (honoring `start_offset` so column
+  math stays correct), then splits the expanded line into blocks: the first
+  block is shortened by `start_offset` so later blocks land on `TAB_SIZE`
+  boundaries, the last block holds the remainder and may be shorter than
+  `TAB_SIZE`.
+- `block_starts()` — returns the message-index each block begins at.
+- `render(*, insert_prefix=False, prefix_symbol=" ")` — joins the blocks
+  back into a single string; `insert_prefix=True` prepends `start_offset`
+  copies of `prefix_symbol`. `__str__` delegates to `render()` with defaults.
+
 ### `_DiffOnlyMsgFilter`
 
 Automatically attached to every logger by `getLogger()`. Compresses repeated log lines by replacing characters shared across the last `threshold` (default 3) messages with `〃\t` markers.
 
-`getLogger()` passes a dedicated `_LogFormatter(sys.stdout, …)` as the first positional argument so the filter's palette inherits the same TTY state as the stdout handler. The filter wraps a `_DiffOnlyEngine` which holds all compression state.
+`getLogger()` passes a dedicated `_LogFormatter(sys.stdout, …)` as the first positional argument so the filter's palette inherits the same TTY state as the stdout handler. The filter wraps a `_DiffOnlyEngine` which holds all compression state — unless constructed with `disable_diff_only_compression=True`, in which case `_engine` stays `None` and `filter()` returns immediately, leaving each record's message untouched.
 
 Algorithm (`_DiffOnlyEngine`):
 
@@ -151,7 +184,7 @@ Algorithm (`_DiffOnlyEngine`):
 3. **Run detection**: on each incoming message, `_compress()` marks positions where the message matches `_common` in O(n).
 4. **Word-boundary cut**: for each contiguous common run, `_find_cut()` scans backward from the run end for the nearest word-boundary character, where a *word* character is `0-9A-Za-z` plus `-` and `_` (`_is_word_char`; any other symbol or whitespace is a boundary). The cut lands **on** the boundary character itself, so the symbol prints intact and the changing token keeps its word stem attached (e.g. `/batch_002.csv` — `export` compressed, `/` preserved).
 5. **2-tab fallback**: the backward scan reaches back at most `_FALLBACK_TAB_SPAN` (2) tab stops from the run end, measured in rendered columns and floored to a tab-aligned column. When no boundary exists within that span (long unbroken tokens: hashes, URLs), the cut falls back to that tab-aligned floor — a mid-word cut, guaranteeing compression never vanishes on long runs.
-6. **Tab-aligned compression**: the region between the run start and the cut compresses into `_COMPRESSION_MARKER`s (`〃\t`). Each marker is placed at the next column that is a multiple of `_COMPRESSION_BLOCK_SIZE` (8) measured from the rendered line start (`formatter.engine.count_prefix_chars` + message offset), so `〃` (2 wide) + `\t` spans exactly 8 visible columns. After the last full marker, the remaining partial block renders as one `_MARKER_CHAR` (`〃`) plus spaces padding exactly to the cut column (spaces only when the gap is narrower than `_MARKER_WIDTH`), so every compressed stretch shows a marker and the kept tail always starts at its original rendered column with no leaked common-character fragments. Runs too short for at least one full marker block are printed untouched.
+6. **Tab-aligned compression**: the replaceable span (`run_s` to `cut`) is split via `_TabAlignedLine.parse(message[run_s:cut], start_offset=prefix_len + run_s)`. A short leading block becomes the *leader* (below), a short trailing block becomes the *gap*, and every full-width block in between compresses into one `_COMPRESSION_MARKER` (`〃\t`) — `〃` (2 wide) + `\t` spans exactly `_TabAlignedLine.TAB_SIZE` (8) visible columns. The gap block (if any) renders as one `_MARKER_CHAR` (`〃`) plus spaces padding exactly to the cut column (spaces only when narrower than `_MARKER_WIDTH`), so every compressed stretch shows a marker and the kept tail always starts at its original rendered column with no leaked common-character fragments. Runs too short for at least one full marker block are printed untouched. Message content that already contains a literal `\t` is expanded to spaces by `_TabAlignedLine.parse` before this split, so embedded tabs never throw off block alignment.
 7. **Leader replacement**: the common characters between the run start and the first tab stop (the *leader*, 0-7 columns) are never printed. A leader of `_LEADER_MARKER_MIN` (4) columns or more renders as its own `〃\t` marker; a shorter non-empty leader becomes a bare `\t` jump, letting the tab occupy the space.
 
 The original (uncompressed) message is stored in `_history` so compression decisions are always based on the raw text, not prior compressed output.
@@ -199,11 +232,17 @@ Note: `python -m kamilog` does not work — the package has no `kamilog/__main__
 Both `cb` and `cb0` follow the Unix pipe pattern: text content is read from stdin rather than passed as a positional argument, so each subcommand's remaining positionals are formatting-only (mode, padding, width).
 
 **CLI module organization**:
-- `cli_parser` — root ArgumentParser with `cli_subparser` for subcommands
+- `_cli_parser` — root ArgumentParser; only it and `_cli_subparser` are module-level CLI objects, both private under the `_cli_` prefix so they stay off the public surface
+- every subcommand is attached by a `_register_*_parser(cli_subparser)` function called on `_cli_subparser` at the bottom of the module; each builds its parser as a local, so no parser object leaks to module scope
 - `_comment_banner_parser_main(args)` — handler that reads `content` from stdin (single line), maps CLI modes to `_gen_comment_banner_generic`, then prints the returned line to stdout or stderr
+- `_register_comment_banner_parser(cli_subparser)` — builds and attaches the `comment_banner` / `cb` subcommand
 - `_COMMENT_BANNER_HELP` — shared help/description string for the subcommand
 - `_comment_banner_zero_parser_main(args)` — handler that reads `lines` from stdin (one banner line per stdin line), calls `gen_comment_banner_zero`, then prints the returned banner
+- `_register_comment_banner_zero_parser(cli_subparser)` — builds and attaches the `comment_banner_zero` / `cb0` subcommand
 - `_CB0_HELP` — shared help/description string for the CB0 subcommand
+- `_register_logger_parser(cli_subparser)` — builds and attaches the `logger` / `l` subcommand
+- `_logger_parser_main(args)` — handler that resolves `LEVEL` and `--time-format` through `_LOGGER_LEVEL_MAP` / `_LOGGER_TIME_FORMAT_MAP`, calls `getLogger(datefmt=…)`, applies the verbosity threshold, then logs each stdin line at the resolved level
+- `_LOGGER_HELP` / `_LOGGER_DESCRIPTION` — shared help and description strings for the subcommand
 
 **Comment Banner subcommand (`comment_banner` / `cb`)**:
 - Stdin: `CONTENT` — single line of text, read via `sys.stdin.readline()`
@@ -218,16 +257,27 @@ Both `cb` and `cb0` follow the Unix pipe pattern: text content is read from stdi
 - Option: `-e, --stderr` (output to stderr)
 - Example: `printf 'Title\nSubtitle\n' | python kamilog/kamilog.py cb0 -w 40`
 
+**Logger subcommand (`logger` / `l`)**:
+- Stdin: `LINES` — one or more lines, read via `sys.stdin.read().splitlines()`; each is emitted as one log record
+- Positional: `LEVEL` — a level name from `_LOGGER_LEVEL_MAP` (`notset`, `debug`, `enter`, `skip`, `succ`, `info`, `pass`, `done`, `warning`, `error`, `fail`, `critical`)
+- Option: `--verbosity VERBOSITY` — base verbosity offset the `-v`/`-q` counts adjust from (default 3); the resolved level acts as the print threshold, so records below it are dropped
+- Option: `-t, --time-format` — one of `time`, `time-ms`, `datetime`, `datetime-ms`, `no-time` (default `time`), mapped through `_LOGGER_TIME_FORMAT_MAP` to a `datefmt` passed into `getLogger()`; `no-time` maps to `None`
+- Option: `-C, --no-color` — force plain output; forwarded to `getLogger(disable_color=True)`
+- Option: `-D, --no-diff-only` — skip diff-only compression; forwarded to `getLogger(disable_diff_only_compression=True)`
+- Option: `-v`/`-q` via `add_verbose_arguments`
+- Example: `echo 'disk full' | python kamilog/kamilog.py logger error`
+
 ## Public API Surface
 
 ```python
 # logger factory
-kamilog.getLogger(name=None, *, datefmt=DATEFMT_TIME, relative_to=None) -> KamiLogger
+kamilog.getLogger(name=None, *, datefmt=DATEFMT_TIME, relative_to=None,
+                  disable_color=False, disable_diff_only_compression=False) -> KamiLogger
 kamilog.KamiLogger                              # logger class (subclass of logging.Logger)
 
 # ANSI color
 kamilog.AnsiColor                               # Enum of ANSI escape codes
-kamilog.AnsiRenderer                            # TTY-detecting color applier
+kamilog.AnsiRenderer(stream=None, *, is_disabled=False)  # TTY-detecting color applier
 
 # comment banner
 kamilog.gen_comment_banner_centered(content, padding, *, line_width=80, file, renderer=None) -> str
@@ -269,4 +319,4 @@ Verbosity mapping (default level is `DONE` = 25):
 ## Known Limitations and Future Work
 
 - No file handler option on `getLogger()` — stdout/stderr only.
-- Test coverage spans verbosity helpers and comment-banner functions; no unit tests for `_LogFormatter` or `_DiffOnlyMsgFilter`.
+- Test coverage now spans verbosity helpers, comment-banner functions, `AnsiRenderer`/TTY detection (`tests/ansi/`), `_LogFormatter`/`_LogFormatEngine` (`tests/lf/`), `KamiLogger` (`tests/logger/`), `_DiffOnlyEngine`/`_DiffOnlyMsgFilter` (`tests/dof/`), and `_TabAlignedLine` (`tests/tal/`), plus golden-output tests for every `examples/` demo script; the CLI subcommands (`cb`, `cb0`, `logger`) still have no dedicated tests.
