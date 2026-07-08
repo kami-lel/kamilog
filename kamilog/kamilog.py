@@ -89,6 +89,8 @@ for _lvl in _CustomLogLevel:
 
 # ANSI Color   #################################################################
 
+# TODO order color
+
 
 class AnsiStyle(Flag):  # =====================================================
     """
@@ -150,6 +152,7 @@ class AnsiRenderer:  # =========================================================
 
     _RESET = "\033[0m"
 
+    # TODO order color
     _ANSI_STYLE2CODE = {
         AnsiStyle.BOLD: "1",
         AnsiStyle.UNDERLINE: "4",
@@ -201,9 +204,7 @@ class AnsiRenderer:  # =========================================================
         logging.CRITICAL: AnsiStyle.BRIGHT_MAGENTA,
     }
 
-    # fg hue identifies the tag type across tiers;
-    # bg uses a contrasting hue, brighter/bolder for louder tiers;
-    # quiet tier carries no background
+    # FIXME redo
     _TRIAGE_TAG2ANSI_STYLE = {
         "BUG": AnsiStyle.RED | AnsiStyle.BG_BRIGHT_CYAN | AnsiStyle.BOLD,
         "Bug": AnsiStyle.BRIGHT_RED | AnsiStyle.BG_CYAN,
@@ -214,9 +215,7 @@ class AnsiRenderer:  # =========================================================
         "TODO": AnsiStyle.BLUE | AnsiStyle.BG_BRIGHT_YELLOW | AnsiStyle.BOLD,
         "Todo": AnsiStyle.BRIGHT_BLUE | AnsiStyle.BG_YELLOW,
         "todo": AnsiStyle.BLUE,
-        "HACK": (
-            AnsiStyle.MAGENTA | AnsiStyle.BG_BRIGHT_GREEN | AnsiStyle.BOLD
-        ),
+        "HACK": AnsiStyle.MAGENTA | AnsiStyle.BG_BRIGHT_GREEN | AnsiStyle.BOLD,
         "Hack": AnsiStyle.BRIGHT_MAGENTA | AnsiStyle.BG_GREEN,
         "hack": AnsiStyle.MAGENTA,
     }
