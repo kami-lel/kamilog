@@ -4,14 +4,12 @@ A lightweight Python logging wrapper with structured output, custom log levels, 
 
 <!--
 todo add file handler option for getLogger
-todo comprehensive unit tests for logger
 todo allows use -V being equivalent to -vvv (v.v.)
 todo allows to use only -V, dont add -v (v.v.)
 todo smart time print
 todo cli logger: implement relative time
 todo cli logger: allow to use already set up logger
 bug using different logger to print & diff only can produce confusing result
-Bug operate not correctly if message contains \t already
 -->
 
 ## Features

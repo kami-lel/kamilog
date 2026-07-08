@@ -514,6 +514,89 @@ class _LogFormatter(Formatter):  # *********************************************
 # diff only message   ==========================================================
 
 
+class _TabAlignedLine(list):  # ************************************************
+    """
+    a line of text split into tab-stop-aligned string blocks.
+    """
+
+    @classmethod
+    def parse(cls, line, *, start_offset=0):  # ++++++++++++++++++++++++++++++++
+        """
+        split a regular text line into ``TAB_SIZE``-wide blocks.
+
+        the first block is shortened by ``start_offset`` so later blocks
+        still land on ``TAB_SIZE`` column boundaries; the last block
+        holds whatever remains and may be shorter than ``TAB_SIZE``;
+        any literal ``\\t`` chars already in ``line`` are expanded to
+        spaces first, so alignment stays correct
+
+
+        :param line: source line to split
+        :type line: str
+        :param start_offset: column the line begins at; default=0
+        :type start_offset: int, optional
+        :return: new instance holding the split blocks
+        :rtype: TabAlignedLine
+        """
+        # expand tabs  ---------------------------------------------------------
+        expanded = []
+        col = start_offset
+        for ch in line:
+            if ch == "\t":
+                n_spaces = cls.TAB_SIZE - (col % cls.TAB_SIZE)
+                expanded.append(" " * n_spaces)
+                col += n_spaces
+            else:
+                expanded.append(ch)
+                col += 1
+        line = "".join(expanded)
+
+        # split blocks  --------------------------------------------------------
+        n = len(line)
+        blocks = []
+
+        first_len = cls.TAB_SIZE - (start_offset % cls.TAB_SIZE)
+        first_len = min(first_len, n)
+        pos = first_len
+        blocks.append(line[:pos])
+
+        while pos < n:
+            end = min(pos + cls.TAB_SIZE, n)
+            blocks.append(line[pos:end])
+            pos = end
+
+        return cls(blocks, start_offset=start_offset)
+
+    TAB_SIZE = 8
+
+    def __init__(self, blocks, *, start_offset=0):
+        super().__init__(blocks)
+        self.start_offset = start_offset
+
+    def render(self, *, insert_prefix=False, prefix_symbol=" "):
+        """
+        join the blocks back into a single normal string.
+
+
+        :param insert_prefix: whether to prepend ``start_offset`` copies
+                of ``prefix_symbol`` before the joined blocks;
+                default=False
+        :type insert_prefix: bool, optional
+        :param prefix_symbol: character repeated to build the prefix;
+                default=" "
+        :type prefix_symbol: str, optional
+        :return: the reassembled line
+        :rtype: str
+        """
+        line = "".join(self)
+        if insert_prefix:
+            return prefix_symbol * self.start_offset + line
+        return line
+
+    def __str__(self):
+        return self.render()
+
+
 class _DiffOnlyEngine:  # ******************************************************
     """
     engine for diff-only compression of log message text.
@@ -526,9 +609,8 @@ class _DiffOnlyEngine:  # ******************************************************
     :type threshold: int
     """
 
-    _COMPRESSION_BLOCK_SIZE = 8
     _FALLBACK_TAB_SPAN = 2
-    _COMPRESSION_MARKER = "〃\t"
+    _COMPRESSION_MARKER = "〃\t"  # visual width matches one TAB_SIZE block
     _MARKER_CHAR = "〃"
     _MARKER_WIDTH = 2  # rendered columns of _MARKER_CHAR
     _LEADER_MARKER_MIN = 4  # leader shorter than this becomes bare "\t"
@@ -592,7 +674,7 @@ class _DiffOnlyEngine:  # ******************************************************
                 replaceable, text from it stays printed
         :rtype: int
         """
-        block = self._COMPRESSION_BLOCK_SIZE
+        block = _TabAlignedLine.TAB_SIZE
         col_e = prefix_len + run_e
         floor_col = (col_e // block - self._FALLBACK_TAB_SPAN) * block
         cut_min = max(run_s, floor_col - prefix_len)
@@ -604,8 +686,14 @@ class _DiffOnlyEngine:  # ******************************************************
     def _compress(self, record, message):
         """
         compress positions matching ``_common`` into ``〃\\t`` markers.
+
+        the replaceable span (``run_s`` to ``cut``) is split into
+        ``_TabAlignedLine`` blocks anchored at its absolute column, so
+        a short leading block (if any) is the leader, a short trailing
+        block (if any) is the gap, and everything between is a whole
+        replaceable tab stop.
         """
-        block = self._COMPRESSION_BLOCK_SIZE
+        block = _TabAlignedLine.TAB_SIZE
         prefix_len = self._formatter.engine.count_prefix_chars(record)
         n_common = len(self._common)
         is_common = [
@@ -627,25 +715,35 @@ class _DiffOnlyEngine:  # ******************************************************
                     i += 1
                 run_e = i
                 cut = self._find_cut(message, run_s, run_e, prefix_len)
-                col_offset = (prefix_len + run_s) % block
-                padding = (block - col_offset) % block
-                tab_s = run_s + padding
-                replaceable = cut - tab_s
-                k = replaceable // block if replaceable > 0 else 0
+
+                tal_blocks = list(
+                    _TabAlignedLine.parse(
+                        message[run_s:cut], start_offset=prefix_len + run_s
+                    )
+                )
+                leader = ""
+                if tal_blocks and len(tal_blocks[0]) < block:
+                    leader = tal_blocks.pop(0)
+                if tal_blocks and len(tal_blocks[-1]) < block:
+                    gap_block = tal_blocks.pop()
+                else:
+                    gap_block = ""
+                k = len(tal_blocks)  # remaining blocks are all full-width
+
                 if k == 0:
                     result.append(message[run_s:run_e])
                 else:
-                    gap = replaceable - block * k
+                    gap = len(gap_block)
                     # leader: common chars before the first tab stop are
                     # never printed; short ones become a bare tab jump,
                     # longer ones earn their own marker
-                    if padding >= self._LEADER_MARKER_MIN:
+                    if len(leader) >= self._LEADER_MARKER_MIN:
                         result.append(
                             self._formatter.palette.color_grey(
                                 self._COMPRESSION_MARKER
                             )
                         )
-                    elif padding > 0:
+                    elif leader:
                         result.append("\t")
                     result.append(
                         self._formatter.palette.color_grey(
