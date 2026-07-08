@@ -14,27 +14,27 @@ S = kamilog.AnsiStyle
 # colors  ########################################################
 print(kamilog.gen_comment_banner_centered("colors", 1, renderer=renderer))
 print(
-    renderer.color("CYAN", S.CYAN)
+    renderer.color("RED", S.RED)
     + "\t\t"
-    + renderer.color("BRIGHT_CYAN", S.BRIGHT_CYAN)
-    + "\t\t"
-    + renderer.color("BLUE", S.BLUE)
-    + "\t\t"
-    + renderer.color("BRIGHT_BLUE", S.BRIGHT_BLUE)
-)
-print(
-    renderer.color("GREEN", S.GREEN)
-    + "\t\t"
-    + renderer.color("BRIGHT_GREEN", S.BRIGHT_GREEN)
+    + renderer.color("BRIGHT_RED", S.BRIGHT_RED)
     + "\t\t"
     + renderer.color("YELLOW", S.YELLOW)
     + "\t\t"
     + renderer.color("BRIGHT_YELLOW", S.BRIGHT_YELLOW)
 )
 print(
-    renderer.color("RED", S.RED)
+    renderer.color("GREEN", S.GREEN)
     + "\t\t"
-    + renderer.color("BRIGHT_RED", S.BRIGHT_RED)
+    + renderer.color("BRIGHT_GREEN", S.BRIGHT_GREEN)
+    + "\t\t"
+    + renderer.color("CYAN", S.CYAN)
+    + "\t\t"
+    + renderer.color("BRIGHT_CYAN", S.BRIGHT_CYAN)
+)
+print(
+    renderer.color("BLUE", S.BLUE)
+    + "\t\t"
+    + renderer.color("BRIGHT_BLUE", S.BRIGHT_BLUE)
     + "\t\t"
     + renderer.color("MAGENTA", S.MAGENTA)
     + "\t\t"
@@ -44,7 +44,7 @@ print(
     renderer.color("BLACK", S.BLACK)
     + "\t\t"
     + renderer.color("GREY", S.GREY)
-    + "\t\t"
+    + "\t\t\t"
     + renderer.color("WHITE", S.WHITE)
     + "\t\t"
     + renderer.color("BRIGHT_WHITE", S.BRIGHT_WHITE)
@@ -53,27 +53,27 @@ print(
 # backgrounds  ###################################################
 print(kamilog.gen_comment_banner_centered("backgrounds", 1, renderer=renderer))
 print(
-    renderer.color("BG_CYAN", S.BG_CYAN)
+    renderer.color("BG_RED", S.BG_RED)
     + "\t\t"
-    + renderer.color("BG_BRIGHT_CYAN", S.BG_BRIGHT_CYAN)
-    + "\t\t"
-    + renderer.color("BG_BLUE", S.BG_BLUE)
-    + "\t\t"
-    + renderer.color("BG_BRIGHT_BLUE", S.BG_BRIGHT_BLUE)
-)
-print(
-    renderer.color("BG_GREEN", S.BG_GREEN)
-    + "\t"
-    + renderer.color("BG_BRIGHT_GREEN", S.BG_BRIGHT_GREEN)
+    + renderer.color("BG_BRIGHT_RED", S.BG_BRIGHT_RED)
     + "\t\t"
     + renderer.color("BG_YELLOW", S.BG_YELLOW)
     + "\t"
     + renderer.color("BG_BRIGHT_YELLOW", S.BG_BRIGHT_YELLOW)
 )
 print(
-    renderer.color("BG_RED", S.BG_RED)
+    renderer.color("BG_GREEN", S.BG_GREEN)
+    + "\t"
+    + renderer.color("BG_BRIGHT_GREEN", S.BG_BRIGHT_GREEN)
     + "\t\t"
-    + renderer.color("BG_BRIGHT_RED", S.BG_BRIGHT_RED)
+    + renderer.color("BG_CYAN", S.BG_CYAN)
+    + "\t\t"
+    + renderer.color("BG_BRIGHT_CYAN", S.BG_BRIGHT_CYAN)
+)
+print(
+    renderer.color("BG_BLUE", S.BG_BLUE)
+    + "\t\t"
+    + renderer.color("BG_BRIGHT_BLUE", S.BG_BRIGHT_BLUE)
     + "\t\t"
     + renderer.color("BG_MAGENTA", S.BG_MAGENTA)
     + "\t"
@@ -81,11 +81,11 @@ print(
 )
 print(
     renderer.color("BG_BLACK", S.BG_BLACK)
-    + "\t\t"
+    + "\t"
     + renderer.color("BG_GREY", S.BG_GREY)
-    + "\t\t"
+    + "\t\t\t"
     + renderer.color("BG_WHITE", S.BG_WHITE)
-    + "\t\t"
+    + "\t"
     + renderer.color("BG_BRIGHT_WHITE", S.BG_BRIGHT_WHITE)
 )
 

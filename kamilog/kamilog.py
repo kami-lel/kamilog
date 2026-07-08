@@ -89,8 +89,6 @@ for _lvl in _CustomLogLevel:
 
 # ANSI Color   #################################################################
 
-# FIXME order color
-
 
 class AnsiStyle(Flag):  # =====================================================
     """
@@ -99,42 +97,50 @@ class AnsiStyle(Flag):  # =====================================================
     for the code lookup
     """
 
-    BOLD = auto()
-    UNDERLINE = auto()
+    # foreground color  --------------------------------------------------------
+
+    RED = auto()
+    BRIGHT_RED = auto()
+    YELLOW = auto()
+    BRIGHT_YELLOW = auto()
+    GREEN = auto()
+    BRIGHT_GREEN = auto()
+    CYAN = auto()
+    BRIGHT_CYAN = auto()
+    BLUE = auto()
+    BRIGHT_BLUE = auto()
+    MAGENTA = auto()
+    BRIGHT_MAGENTA = auto()
 
     BLACK = auto()
     GREY = auto()
     WHITE = auto()
     BRIGHT_WHITE = auto()
-    CYAN = auto()
-    BRIGHT_CYAN = auto()
-    BLUE = auto()
-    GREEN = auto()
-    BRIGHT_BLUE = auto()
-    BRIGHT_GREEN = auto()
-    BRIGHT_YELLOW = auto()
-    YELLOW = auto()
-    RED = auto()
-    BRIGHT_RED = auto()
-    MAGENTA = auto()
-    BRIGHT_MAGENTA = auto()
+
+    # background color  --------------------------------------------------------
+
+    BG_RED = auto()
+    BG_BRIGHT_RED = auto()
+    BG_YELLOW = auto()
+    BG_BRIGHT_YELLOW = auto()
+    BG_GREEN = auto()
+    BG_BRIGHT_GREEN = auto()
+    BG_CYAN = auto()
+    BG_BRIGHT_CYAN = auto()
+    BG_BLUE = auto()
+    BG_BRIGHT_BLUE = auto()
+    BG_MAGENTA = auto()
+    BG_BRIGHT_MAGENTA = auto()
 
     BG_BLACK = auto()
     BG_GREY = auto()
     BG_WHITE = auto()
     BG_BRIGHT_WHITE = auto()
-    BG_CYAN = auto()
-    BG_BRIGHT_CYAN = auto()
-    BG_BLUE = auto()
-    BG_GREEN = auto()
-    BG_BRIGHT_BLUE = auto()
-    BG_BRIGHT_GREEN = auto()
-    BG_BRIGHT_YELLOW = auto()
-    BG_YELLOW = auto()
-    BG_RED = auto()
-    BG_BRIGHT_RED = auto()
-    BG_MAGENTA = auto()
-    BG_BRIGHT_MAGENTA = auto()
+
+    # style  -------------------------------------------------------------------
+
+    BOLD = auto()
+    UNDERLINE = auto()
 
 
 class AnsiRenderer:  # =========================================================
@@ -153,40 +159,40 @@ class AnsiRenderer:  # =========================================================
     _RESET = "\033[0m"
 
     _ANSI_STYLE2CODE = {
-        AnsiStyle.BOLD: "1",
-        AnsiStyle.UNDERLINE: "4",
+        AnsiStyle.RED: "31",
+        AnsiStyle.BRIGHT_RED: "91",
+        AnsiStyle.YELLOW: "33",
+        AnsiStyle.BRIGHT_YELLOW: "93",
+        AnsiStyle.GREEN: "32",
+        AnsiStyle.BRIGHT_GREEN: "92",
+        AnsiStyle.CYAN: "36",
+        AnsiStyle.BRIGHT_CYAN: "96",
+        AnsiStyle.BLUE: "34",
+        AnsiStyle.BRIGHT_BLUE: "94",
+        AnsiStyle.MAGENTA: "35",
+        AnsiStyle.BRIGHT_MAGENTA: "95",
         AnsiStyle.BLACK: "30",
         AnsiStyle.GREY: "90",
         AnsiStyle.WHITE: "37",
         AnsiStyle.BRIGHT_WHITE: "97",
-        AnsiStyle.CYAN: "36",
-        AnsiStyle.BRIGHT_CYAN: "96",
-        AnsiStyle.BLUE: "34",
-        AnsiStyle.GREEN: "32",
-        AnsiStyle.BRIGHT_BLUE: "94",
-        AnsiStyle.BRIGHT_GREEN: "92",
-        AnsiStyle.BRIGHT_YELLOW: "93",
-        AnsiStyle.YELLOW: "33",
-        AnsiStyle.RED: "31",
-        AnsiStyle.BRIGHT_RED: "91",
-        AnsiStyle.MAGENTA: "35",
-        AnsiStyle.BRIGHT_MAGENTA: "95",
+        AnsiStyle.BG_RED: "41",
+        AnsiStyle.BG_BRIGHT_RED: "101",
+        AnsiStyle.BG_YELLOW: "43",
+        AnsiStyle.BG_BRIGHT_YELLOW: "103",
+        AnsiStyle.BG_GREEN: "42",
+        AnsiStyle.BG_BRIGHT_GREEN: "102",
+        AnsiStyle.BG_CYAN: "46",
+        AnsiStyle.BG_BRIGHT_CYAN: "106",
+        AnsiStyle.BG_BLUE: "44",
+        AnsiStyle.BG_BRIGHT_BLUE: "104",
+        AnsiStyle.BG_MAGENTA: "45",
+        AnsiStyle.BG_BRIGHT_MAGENTA: "105",
         AnsiStyle.BG_BLACK: "40",
         AnsiStyle.BG_GREY: "100",
         AnsiStyle.BG_WHITE: "47",
         AnsiStyle.BG_BRIGHT_WHITE: "107",
-        AnsiStyle.BG_CYAN: "46",
-        AnsiStyle.BG_BRIGHT_CYAN: "106",
-        AnsiStyle.BG_BLUE: "44",
-        AnsiStyle.BG_GREEN: "42",
-        AnsiStyle.BG_BRIGHT_BLUE: "104",
-        AnsiStyle.BG_BRIGHT_GREEN: "102",
-        AnsiStyle.BG_BRIGHT_YELLOW: "103",
-        AnsiStyle.BG_YELLOW: "43",
-        AnsiStyle.BG_RED: "41",
-        AnsiStyle.BG_BRIGHT_RED: "101",
-        AnsiStyle.BG_MAGENTA: "45",
-        AnsiStyle.BG_BRIGHT_MAGENTA: "105",
+        AnsiStyle.BOLD: "1",
+        AnsiStyle.UNDERLINE: "4",
     }
 
     _LEVEL2ANSI_COLOR = {
