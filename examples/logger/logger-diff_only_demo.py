@@ -22,12 +22,12 @@ log = kamilog.getLogger("sensor")
 log.setLevel(kamilog.DEBUG)
 log.propagate = False
 
-log.info("sensor=cpu  load= 45.2%  temp=61C  ok")
-log.info("sensor=cpu  load= 47.8%  temp=62C  ok")
-log.info("sensor=cpu  load= 44.1%  temp=60C  ok")
-log.info("sensor=cpu  load= 51.3%  temp=63C  ok")
-log.info("sensor=cpu  load= 49.7%  temp=62C  ok")
-log.info("sensor=cpu  load= 53.0%  temp=64C  ok")
+log.info("sensor=cpu  load=45.2%  temp=61C  ok")
+log.info("sensor=cpu  load=47.8%  temp=62C  ok")
+log.info("sensor=cpu  load=44.1%  temp=60C  ok")
+log.info("sensor=cpu  load=51.3%  temp=63C  ok")
+log.info("sensor=cpu  load=49.7%  temp=62C  ok")
+log.info("sensor=cpu  load=53.0%  temp=64C  ok")
 
 
 print()

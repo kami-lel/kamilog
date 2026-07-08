@@ -5,7 +5,6 @@ exercise _DiffOnlyMsgFilter across word-boundary, leader, and edge-case
 scenarios; each demo logs 6 lines: 3 warmup, then 3 compressed
 """
 
-# BUG refactor break behavior
 # TODO add demos into UT
 
 import sys
