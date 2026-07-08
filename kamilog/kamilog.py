@@ -558,6 +558,21 @@ class _TabAlignedLine(list):  # ************************************************
 
         return cls(blocks, start_offset=start_offset)
 
+    def block_starts(self):
+        """
+        return the message-index each block begins at.
+
+
+        :return: one start index per block, in block order
+        :rtype: list[int]
+        """
+        starts = []
+        pos = 0
+        for blk in self:
+            starts.append(pos)
+            pos += len(blk)
+        return starts
+
     def render(self, *, insert_prefix=False, prefix_symbol=" "):
         """
         join the blocks back into a single normal string.
@@ -594,12 +609,8 @@ class _DiffOnlyEngine:  # ******************************************************
     :type threshold: int
     """
 
-    _COMPRESSION_BLOCK_SIZE = 8
     _FALLBACK_TAB_SPAN = 2
-    _COMPRESSION_MARKER = "〃\t"
-    _MARKER_CHAR = "〃"
-    _MARKER_WIDTH = 2  # rendered columns of _MARKER_CHAR
-    _LEADER_MARKER_MIN = 4  # leader shorter than this becomes bare "\t"
+    _COMPRESSION_MARKER = "〃\t"  # visual width matches one TAB_SIZE block
 
     def __init__(self, formatter, threshold=3):
         self._formatter = formatter
@@ -636,118 +647,62 @@ class _DiffOnlyEngine:  # ******************************************************
         """
         return (ch.isascii() and ch.isalnum()) or ch in "-_"
 
-    def _find_cut(self, message, run_s, run_e, prefix_len):
+    def _block_is_common(self, tal, starts, block_i):
         """
-        find cut position ending the replaceable part of a common run.
-
-        scans backward from the run end for the nearest word-boundary
-        character (any non-word char); the cut lands on that character
-        itself, so the boundary symbol prints intact with the tail.
-        the scan reaches back at most ``_FALLBACK_TAB_SPAN`` tab stops,
-        falling back to that tab-aligned floor when no boundary exists
-        within the span
-
-
-        :param message: full message text being compressed
-        :type message: str
-        :param run_s: start index of the common run
-        :type run_s: int
-        :param run_e: end index (exclusive) of the common run
-        :type run_e: int
-        :param prefix_len: printable prefix width before the message
-        :type prefix_len: int
-        :return: cut index in ``[run_s, run_e]``; text before it is
-                replaceable, text from it stays printed
-        :rtype: int
+        report whether block ``block_i`` is full-width and all-common
         """
-        block = self._COMPRESSION_BLOCK_SIZE
-        col_e = prefix_len + run_e
-        floor_col = (col_e // block - self._FALLBACK_TAB_SPAN) * block
-        cut_min = max(run_s, floor_col - prefix_len)
-        for b in range(run_e - 1, cut_min - 1, -1):
-            if not self._is_word_char(message[b]):
-                return b
-        return cut_min
+        blk = tal[block_i]
+        if len(blk) != _TabAlignedLine.TAB_SIZE:
+            return False
+        n_common = len(self._common)
+        start = starts[block_i]
+        return all(
+            start + j < n_common
+            and self._common[start + j] is not None
+            and self._common[start + j] == ch
+            for j, ch in enumerate(blk)
+        )
+
+    def _find_block_cut(self, message, starts, run_bs, run_be):
+        """
+        find last safe block to replace, scanning back from ``run_be``
+        for a word-boundary char, within ``_FALLBACK_TAB_SPAN`` blocks
+        """
+        floor = max(run_bs, run_be - self._FALLBACK_TAB_SPAN)
+        msg_len = len(message)
+        for block_i in range(run_be, floor, -1):
+            boundary = starts[block_i] if block_i < len(starts) else msg_len
+            if boundary >= msg_len or not self._is_word_char(message[boundary]):
+                return block_i
+        return floor
 
     def _compress(self, record, message):
         """
-        compress positions matching ``_common`` into ``〃\\t`` markers.
-
-        the replaceable span (``run_s`` to ``cut``) is split into
-        ``_TabAlignedLine`` blocks anchored at its absolute column, so
-        a short leading block (if any) is the leader, a short trailing
-        block (if any) is the gap, and everything between is a whole
-        replaceable tab stop.
+        compress fully-common ``TAL`` blocks into ``〃\\t`` markers.
         """
-        block = self._COMPRESSION_BLOCK_SIZE
         prefix_len = self._formatter.engine.count_prefix_chars(record)
-        n_common = len(self._common)
-        is_common = [
-            i < n_common
-            and self._common[i] is not None
-            and self._common[i] == ch
-            for i, ch in enumerate(message)
-        ]
-        result = []
-        i = 0
-        msg_len = len(message)
-        while i < msg_len:
-            if not is_common[i]:
-                result.append(message[i])
-                i += 1
-            else:
-                run_s = i
-                while i < msg_len and is_common[i]:
-                    i += 1
-                run_e = i
-                cut = self._find_cut(message, run_s, run_e, prefix_len)
+        tal = _TabAlignedLine.parse(message, start_offset=prefix_len)
+        starts = tal.block_starts()
 
-                tal_blocks = list(
-                    _TabAlignedLine.parse(
-                        message[run_s:cut], start_offset=prefix_len + run_s
-                    )
+        n_blocks = len(tal)
+        block_i = 0
+        while block_i < n_blocks:
+            if not self._block_is_common(tal, starts, block_i):
+                block_i += 1
+                continue
+            run_bs = block_i
+            while block_i < n_blocks and self._block_is_common(
+                tal, starts, block_i
+            ):
+                block_i += 1
+            run_be = block_i
+
+            cut = self._find_block_cut(message, starts, run_bs, run_be)
+            for j in range(run_bs, cut):
+                tal[j] = self._formatter.palette.color_grey(
+                    self._COMPRESSION_MARKER
                 )
-                leader = ""
-                if tal_blocks and len(tal_blocks[0]) < block:
-                    leader = tal_blocks.pop(0)
-                if tal_blocks and len(tal_blocks[-1]) < block:
-                    gap_block = tal_blocks.pop()
-                else:
-                    gap_block = ""
-                k = len(tal_blocks)  # remaining blocks are all full-width
-
-                if k == 0:
-                    result.append(message[run_s:run_e])
-                else:
-                    gap = len(gap_block)
-                    # leader: common chars before the first tab stop are
-                    # never printed; short ones become a bare tab jump,
-                    # longer ones earn their own marker
-                    if len(leader) >= self._LEADER_MARKER_MIN:
-                        result.append(
-                            self._formatter.palette.color_grey(
-                                self._COMPRESSION_MARKER
-                            )
-                        )
-                    elif leader:
-                        result.append("\t")
-                    result.append(
-                        self._formatter.palette.color_grey(
-                            self._COMPRESSION_MARKER * k
-                        )
-                    )
-                    # partial block: marker + spaces padding to the cut
-                    if gap >= self._MARKER_WIDTH:
-                        result.append(
-                            self._formatter.palette.color_grey(
-                                self._MARKER_CHAR
-                            )
-                        )
-                        result.append(" " * (gap - self._MARKER_WIDTH))
-                    else:
-                        result.append(" " * gap)
-                    result.append(message[cut:run_e])
-        return "".join(result)
+        return tal.render()
 
     def process(self, record):
         """

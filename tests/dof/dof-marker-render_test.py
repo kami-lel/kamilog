@@ -1,7 +1,8 @@
 """
 dof-marker-render_test.py
 
-tests for `_DiffOnlyEngine._compress` marker rendering in `kamilog.py`
+tests for `_DiffOnlyEngine._compress` block-level marker rendering in
+`kamilog.py`
 """
 
 from kamilog.kamilog import _DiffOnlyEngine
@@ -40,41 +41,55 @@ def _compress_second(first, second, *, prefix_len=0):
     return engine.process(_StubRecord(second))
 
 
-class TestExactBlockMultiple:
-    def test_padding_zero_and_gap_zero_emit_bare_markers(_):
+class TestWholeBlockReplacement:
+    def test_two_full_common_blocks_each_get_their_own_marker(_):
         a = "a" * 16 + "/bbb" + "X"
         b = "a" * 16 + "/bbb" + "Y"
-        assert _compress_second(a, b) == "<〃\t〃\t>/bbbY"
+        assert _compress_second(a, b) == "<〃\t><〃\t>/bbbY"
+
+    def test_run_reaching_message_end_replaces_every_full_block(_):
+        a = "a" * 16
+        b = "a" * 16
+        assert _compress_second(a, b) == "<〃\t><〃\t>"
 
 
-class TestShortLeaderBecomesBareTab:
-    def test_padding_below_minimum_emits_bare_tab_leader(_):
+class TestSubBlockRunsStayLiteral:
+    def test_run_shorter_than_one_block_is_never_compressed(_):
+        assert _compress_second("abc", "abd") == "abd"
+
+    def test_block_straddling_a_divergence_stays_fully_literal(_):
+        # only the last 11 of the first 16 chars are common, so the
+        # block containing the divergence can never be a whole-block
+        # candidate, even though most of it matches
         a = "abc12" + "a" * 11 + "/ccc" + "X"
         b = "xyz34" + "a" * 11 + "/ccc" + "Y"
-        assert _compress_second(a, b) == "xyz34\t<〃\t>/cccY"
+        assert _compress_second(a, b) == "xyz34aaa<〃\t>/cccY"
 
 
-class TestLongLeaderEarnsMarker:
-    def test_padding_at_minimum_emits_colored_leader_marker(_):
-        a = "abcd" + "a" * 12 + "/ddd" + "X"
-        b = "wxyz" + "a" * 12 + "/ddd" + "Y"
-        assert _compress_second(a, b) == "wxyz<〃\t><〃\t>/dddY"
+class TestFallbackWhenNoSafeBoundary:
+    def test_falls_back_to_span_floor_leaving_trailing_blocks_literal(_):
+        a = "a" * 40 + "X"
+        b = "a" * 40 + "Y"
+        assert (
+            _compress_second(a, b)
+            == "<〃\t><〃\t><〃\t>aaaaaaaaaaaaaaaaY"
+        )
 
 
-class TestPartialBlockGap:
-    def test_gap_at_or_above_marker_width_adds_marker_and_spaces(_):
-        a = "a" * 11 + "/eee" + "X"
-        b = "a" * 11 + "/eee" + "Y"
-        assert _compress_second(a, b) == "<〃\t><〃> /eeeY"
-
-    def test_gap_below_marker_width_adds_spaces_only(_):
-        a = "a" * 9 + "/ff" + "X"
-        b = "a" * 9 + "/ff" + "Y"
-        assert _compress_second(a, b) == "<〃\t> /ffY"
+class TestBoundaryWithinSpanStopsCompression:
+    def test_safe_boundary_one_block_back_is_used(_):
+        a = "a" * 16 + ":" + "a" * 7 + "X"
+        b = "a" * 16 + ":" + "a" * 7 + "Y"
+        assert _compress_second(a, b) == "<〃\t><〃\t>:aaaaaaaY"
 
 
-class TestUnreplaceableShortRun:
-    def test_run_shorter_than_one_block_stays_literal(_):
-        a = "abc"
-        b = "abd"
-        assert _compress_second(a, b) == "abd"
+class TestPrefixOffsetShiftsBlockBoundaries:
+    def test_boundary_inside_a_block_is_not_detected(_):
+        # the safe '/' sits at the end of the third block rather than
+        # at a block boundary, so the coarser block-level scan can't
+        # see it and the whole run stays literal
+        a = "a" * 20 + "/eee" + "X"
+        b = "a" * 20 + "/eee" + "Y"
+        assert _compress_second(a, b, prefix_len=3) == (
+            "aaaaaaaaaaaaaaaaaaaa/eeeY"
+        )
