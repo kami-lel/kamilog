@@ -32,10 +32,11 @@
 
 ### Changed
 
-- module-level CLI objects are now private under a `_cli_` prefix
-  (`_cli_parser`, `_cli_subparser`, `_cli_comment_banner_parser`,
-  `_cli_comment_banner_zero_parser`), so the module's public surface matches
-  `__all__` exactly
+- the root CLI parser and subparser are now private (`_cli_parser`,
+  `_cli_subparser`), so the module's public surface matches `__all__` exactly
+- every subcommand is now built by a `_register_*_parser(cli_subparser)`
+  function (`comment_banner`, `comment_banner_zero`, `logger`) instead of
+  module-level parser objects
 
 ### Deprecated
 

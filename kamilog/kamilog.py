@@ -939,10 +939,6 @@ def _logger_parser_main(args):
 def _register_logger_parser(cli_subparser):
     """
     register the ``logger`` subcommand on ``cli_subparser``
-
-
-    :param cli_subparser: subparser action to attach the parser to
-    :type cli_subparser: argparse._SubParsersAction
     """
     logger_parser = cli_subparser.add_parser(
         "logger",
@@ -1192,7 +1188,6 @@ def gen_comment_banner_zero(
 
 
 # CLI  #########################################################################
-# Fixme refactor for register like pattern
 
 # main parser  =================================================================
 
@@ -1202,6 +1197,7 @@ _cli_parser = ArgumentParser(
 )
 _cli_parser.set_defaults(func=lambda _: _cli_parser.print_help())
 _cli_subparser = _cli_parser.add_subparsers(title="subcommands")
+
 
 # comment banner parser  =======================================================
 
@@ -1224,46 +1220,52 @@ def _comment_banner_parser_main(args):
     print(line, file=file)
 
 
-_cli_comment_banner_parser = _cli_subparser.add_parser(
-    "comment_banner",
-    help=_COMMENT_BANNER_HELP,
-    description=(
-        _COMMENT_BANNER_HELP
-        + "\n\ncontent is read from stdin, as a single line\n\n"
-        "example:\n"
-        "  echo 'hello world' | python kamilog.py cb c '=' -w 20"
-    ),
-    formatter_class=RawDescriptionHelpFormatter,
-    aliases=["cb"],
-)
+def _register_comment_banner_parser(cli_subparser):
+    """
+    register the ``comment_banner`` subcommand on ``cli_subparser``
+    """
+    comment_banner_parser = cli_subparser.add_parser(
+        "comment_banner",
+        help=_COMMENT_BANNER_HELP,
+        description=(
+            _COMMENT_BANNER_HELP
+            + "\n\ncontent is read from stdin, as a single line\n\n"
+            "example:\n"
+            "  echo 'hello world' | python kamilog.py cb c '=' -w 20"
+        ),
+        formatter_class=RawDescriptionHelpFormatter,
+        aliases=["cb"],
+    )
 
-_cli_comment_banner_parser.add_argument(
-    "mode",
-    choices=["c", "l", "r", "center", "left", "right"],
-    help="text alignment: c/center, l/left(-justified), r/right(-justified)",
-)
+    comment_banner_parser.add_argument(
+        "mode",
+        choices=["c", "l", "r", "center", "left", "right"],
+        help=(
+            "text alignment: c/center, l/left(-justified), "
+            "r/right(-justified)"
+        ),
+    )
+    comment_banner_parser.add_argument(
+        "padding",
+        metavar="PADDING",
+        help="fill char, or int 1~5 for CB1~CB5 preset (1:#/2:=/3:*/4:+/5:-)",
+    )
+    comment_banner_parser.add_argument(
+        "-w",
+        "--line-width",
+        type=int,
+        default=80,
+        metavar="LINE_WIDTH",
+        help="total character width of output line; default 80",
+    )
+    comment_banner_parser.add_argument(
+        "-e",
+        "--stderr",
+        action="store_true",
+        help="print to stderr (instead of stdout)",
+    )
 
-_cli_comment_banner_parser.add_argument(
-    "padding",
-    metavar="PADDING",
-    help="fill char, or int 1~5 for CB1~CB5 preset (1:#/2:=/3:*/4:+/5:-)",
-)
-_cli_comment_banner_parser.add_argument(
-    "-w",
-    "--line-width",
-    type=int,
-    default=80,
-    metavar="LINE_WIDTH",
-    help="total character width of output line; default 80",
-)
-_cli_comment_banner_parser.add_argument(
-    "-e",
-    "--stderr",
-    action="store_true",
-    help="print to stderr (instead of stdout)",
-)
-
-_cli_comment_banner_parser.set_defaults(func=_comment_banner_parser_main)
+    comment_banner_parser.set_defaults(func=_comment_banner_parser_main)
 
 
 # cb0 parser  ==================================================================
@@ -1282,37 +1284,47 @@ def _comment_banner_zero_parser_main(args):
     print(banner, file=file)
 
 
-_cli_comment_banner_zero_parser = _cli_subparser.add_parser(
-    "comment_banner_zero",
-    help=_CB0_HELP,
-    description=(
-        _CB0_HELP
-        + "\n\nlines are read from stdin, one banner line per stdin line\n\n"
-        "example:\n"
-        "  printf 'line 1\\nline 2\\n' | python kamilog.py cb0 -w 20"
-    ),
-    formatter_class=RawDescriptionHelpFormatter,
-    aliases=["cb0"],
-)
+def _register_comment_banner_zero_parser(cli_subparser):
+    """
+    register the ``comment_banner_zero`` subcommand on ``cli_subparser``
+    """
+    comment_banner_zero_parser = cli_subparser.add_parser(
+        "comment_banner_zero",
+        help=_CB0_HELP,
+        description=(
+            _CB0_HELP
+            + "\n\nlines are read from stdin, one banner line per stdin line"
+            "\n\nexample:\n"
+            "  printf 'line 1\\nline 2\\n' | python kamilog.py cb0 -w 20"
+        ),
+        formatter_class=RawDescriptionHelpFormatter,
+        aliases=["cb0"],
+    )
 
-_cli_comment_banner_zero_parser.add_argument(
-    "-w",
-    "--line-width",
-    type=int,
-    default=80,
-    metavar="LINE_WIDTH",
-    help="total character width of output line; default 80",
-)
-_cli_comment_banner_zero_parser.add_argument(
-    "-e",
-    "--stderr",
-    action="store_true",
-    help="print to stderr (instead of stdout)",
-)
+    comment_banner_zero_parser.add_argument(
+        "-w",
+        "--line-width",
+        type=int,
+        default=80,
+        metavar="LINE_WIDTH",
+        help="total character width of output line; default 80",
+    )
+    comment_banner_zero_parser.add_argument(
+        "-e",
+        "--stderr",
+        action="store_true",
+        help="print to stderr (instead of stdout)",
+    )
 
-_cli_comment_banner_zero_parser.set_defaults(func=_comment_banner_zero_parser_main)
+    comment_banner_zero_parser.set_defaults(
+        func=_comment_banner_zero_parser_main
+    )
 
 
+# register subcommands  ========================================================
+
+_register_comment_banner_parser(_cli_subparser)
+_register_comment_banner_zero_parser(_cli_subparser)
 _register_logger_parser(_cli_subparser)
 
 

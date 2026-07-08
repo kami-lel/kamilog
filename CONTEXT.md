@@ -199,12 +199,15 @@ Note: `python -m kamilog` does not work — the package has no `kamilog/__main__
 Both `cb` and `cb0` follow the Unix pipe pattern: text content is read from stdin rather than passed as a positional argument, so each subcommand's remaining positionals are formatting-only (mode, padding, width).
 
 **CLI module organization**:
-- `_cli_parser` — root ArgumentParser with `_cli_subparser` for subcommands; all module-level CLI objects carry a private `_cli_` prefix (`_cli_comment_banner_parser`, `_cli_comment_banner_zero_parser`) so they stay off the public surface
+- `_cli_parser` — root ArgumentParser; only it and `_cli_subparser` are module-level CLI objects, both private under the `_cli_` prefix so they stay off the public surface
+- every subcommand is attached by a `_register_*_parser(cli_subparser)` function called on `_cli_subparser` at the bottom of the module; each builds its parser as a local, so no parser object leaks to module scope
 - `_comment_banner_parser_main(args)` — handler that reads `content` from stdin (single line), maps CLI modes to `_gen_comment_banner_generic`, then prints the returned line to stdout or stderr
+- `_register_comment_banner_parser(cli_subparser)` — builds and attaches the `comment_banner` / `cb` subcommand
 - `_COMMENT_BANNER_HELP` — shared help/description string for the subcommand
 - `_comment_banner_zero_parser_main(args)` — handler that reads `lines` from stdin (one banner line per stdin line), calls `gen_comment_banner_zero`, then prints the returned banner
+- `_register_comment_banner_zero_parser(cli_subparser)` — builds and attaches the `comment_banner_zero` / `cb0` subcommand
 - `_CB0_HELP` — shared help/description string for the CB0 subcommand
-- `_register_logger_parser(cli_subparser)` — attaches the `logger` subcommand to the passed subparser action; the root CLI block calls it with `_cli_subparser` after building it. The `cb`/`cb0` parsers are still built inline (a `Fixme` in the source flags them for the same register-function pattern)
+- `_register_logger_parser(cli_subparser)` — builds and attaches the `logger` / `l` subcommand
 - `_logger_parser_main(args)` — handler that resolves `LEVEL` and `--time-format` through `_LOGGER_LEVEL_MAP` / `_LOGGER_TIME_FORMAT_MAP`, calls `getLogger(datefmt=…)`, applies the verbosity threshold, then logs each stdin line at the resolved level
 - `_LOGGER_HELP` / `_LOGGER_DESCRIPTION` — shared help and description strings for the subcommand
 
