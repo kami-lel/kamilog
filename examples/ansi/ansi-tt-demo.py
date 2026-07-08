@@ -10,6 +10,8 @@ import kamilog
 
 renderer = kamilog.AnsiRenderer(sys.stdout)
 
+# triage tags  ####################################################
+print(kamilog.gen_comment_banner_centered("triage tags", 1, renderer=renderer))
 print(
     renderer.color_triage_tag("BUG"),
     renderer.color_triage_tag("FIXME"),
@@ -30,4 +32,14 @@ print(
     renderer.color_triage_tag("todo"),
     renderer.color_triage_tag("hack"),
     sep="\t",
+)
+
+# mock comments  ###################################################
+print(kamilog.gen_comment_banner_centered("mock comments", 1, renderer=renderer))
+print("# " + renderer.color_triage_tag("TODO") + " implement data fetching")
+print("// " + renderer.color_triage_tag("Fixme") + " re-check array bounds")
+print(
+    "<!-- "
+    + renderer.color_triage_tag("hack")
+    + " workaround for old browsers -->"
 )
