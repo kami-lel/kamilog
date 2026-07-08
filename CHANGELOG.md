@@ -32,6 +32,11 @@
 
 ### Changed
 
+- module-level CLI objects are now private under a `_cli_` prefix
+  (`_cli_parser`, `_cli_subparser`, `_cli_comment_banner_parser`,
+  `_cli_comment_banner_zero_parser`), so the module's public surface matches
+  `__all__` exactly
+
 ### Deprecated
 
 ### Removed
