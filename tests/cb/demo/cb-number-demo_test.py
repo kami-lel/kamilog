@@ -1,46 +1,39 @@
 """
 cb-number-demo_test.py
 
-golden test for `examples/cb/cb-number-demo.py`; locks in its exact
-stdout so future changes to numeric padding shortcuts can't silently
-drift
+tests for `gen_comment_banner_centered`'s numeric padding shortcuts
+(1-5) in `kamilog.py`
 """
 
-import subprocess
-import sys
-from pathlib import Path
+import pytest
 
-_SCRIPT = (
-    Path(__file__).parent.parent.parent.parent
-    / "examples"
-    / "cb"
-    / "cb-number-demo.py"
-)
+from kamilog.kamilog import gen_comment_banner_centered
 
-_EXPECTED = """\
-###################################  title  ####################################
-===================================  title  ====================================
-***********************************  title  ************************************
-+++++++++++++++++++++++++++++++++++  title  ++++++++++++++++++++++++++++++++++++
------------------------------------  title  ------------------------------------
-"""
+_PADDING_CASES = [
+    (
+        1,
+        "###################################  title  ####################################",
+    ),
+    (
+        2,
+        "===================================  title  ====================================",
+    ),
+    (
+        3,
+        "***********************************  title  ************************************",
+    ),
+    (
+        4,
+        "+++++++++++++++++++++++++++++++++++  title  ++++++++++++++++++++++++++++++++++++",
+    ),
+    (
+        5,
+        "-----------------------------------  title  ------------------------------------",
+    ),
+]
 
 
-def _run_script():
-    return subprocess.run(
-        [sys.executable, str(_SCRIPT)], capture_output=True, text=True
-    )
-
-
-class TestCbNumberDemoOutput:
-    def test_stdout_matches_exactly(_):
-        result = _run_script()
-        assert result.stdout == _EXPECTED
-
-    def test_no_stderr_output(_):
-        result = _run_script()
-        assert result.stderr == ""
-
-    def test_exits_successfully(_):
-        result = _run_script()
-        assert result.returncode == 0
+class TestNumericPaddingShortcuts:
+    @pytest.mark.parametrize("padding, expected", _PADDING_CASES)
+    def test_line(_, padding, expected):
+        assert gen_comment_banner_centered("title", padding) == expected

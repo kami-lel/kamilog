@@ -1,58 +1,67 @@
 """
 cb-zero-demo_test.py
 
-golden test for `examples/cb/cb-zero_demo.py`; locks in its exact
-stdout so future changes to CB0 rendering can't silently drift
+tests for `gen_comment_banner_zero` (CB0 multi-line boxed banner) in
+`kamilog.py`
 """
 
-import subprocess
-import sys
-from pathlib import Path
+import pytest
 
-_SCRIPT = (
-    Path(__file__).parent.parent.parent.parent
-    / "examples"
-    / "cb"
-    / "cb-zero_demo.py"
-)
-
-_EXPECTED = """\
-Simple CB0:
-####################
-# Title
-####################
-
-Multi-line CB0:
-##############################
-# Section Title
-# description line 1
-# description line 2
-##############################
-
-Wide CB0 (custom width):
-##################################################
-# Feature Implementation
-# Author: Development Team
-# Status: In Progress
-##################################################
-"""
+from kamilog.kamilog import gen_comment_banner_zero
 
 
-def _run_script():
-    return subprocess.run(
-        [sys.executable, str(_SCRIPT)], capture_output=True, text=True
-    )
+class TestSimpleBanner:
+    _lines = gen_comment_banner_zero(["Title"], line_width=20).split("\n")
+    _expected = [
+        "####################",
+        "# Title",
+        "####################",
+    ]
+
+    @pytest.mark.parametrize("i", range(len(_expected)))
+    def test_line(_, i):
+        assert TestSimpleBanner._lines[i] == TestSimpleBanner._expected[i]
 
 
-class TestCbZeroDemoOutput:
-    def test_stdout_matches_exactly(_):
-        result = _run_script()
-        assert result.stdout == _EXPECTED
+class TestMultiLineBanner:
+    _lines = gen_comment_banner_zero(
+        [
+            "Section Title",
+            "description line 1",
+            "description line 2",
+        ],
+        line_width=30,
+    ).split("\n")
+    _expected = [
+        "##############################",
+        "# Section Title",
+        "# description line 1",
+        "# description line 2",
+        "##############################",
+    ]
 
-    def test_no_stderr_output(_):
-        result = _run_script()
-        assert result.stderr == ""
+    @pytest.mark.parametrize("i", range(len(_expected)))
+    def test_line(_, i):
+        assert TestMultiLineBanner._lines[i] == TestMultiLineBanner._expected[i]
 
-    def test_exits_successfully(_):
-        result = _run_script()
-        assert result.returncode == 0
+
+class TestWideBanner:
+    _lines = gen_comment_banner_zero(
+        [
+            "Feature Implementation",
+            "Author: Development Team",
+            "Status: In Progress",
+        ],
+        line_width=50,
+    ).split("\n")
+    _expected = [
+        "##################################################",
+        "# Feature Implementation",
+        "# Author: Development Team",
+        "# Status: In Progress",
+        "##################################################",
+    ]
+
+    @pytest.mark.parametrize("i", range(len(_expected)))
+    def test_line(_, i):
+        assert TestWideBanner._lines[i] == TestWideBanner._expected[i]

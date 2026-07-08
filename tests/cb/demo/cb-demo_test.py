@@ -1,52 +1,89 @@
 """
 cb-demo_test.py
 
-golden test for `examples/cb/cb-demo.py`; locks in its exact stdout so
-future changes to the comment-banner functions can't silently drift
+tests for `gen_comment_banner_centered`, `gen_comment_banner_left_just`,
+and `gen_comment_banner_right_just` in `kamilog.py`
 """
 
-import subprocess
-import sys
-from pathlib import Path
+import pytest
 
-_SCRIPT = (
-    Path(__file__).parent.parent.parent.parent / "examples" / "cb" / "cb-demo.py"
+from kamilog.kamilog import (
+    gen_comment_banner_centered,
+    gen_comment_banner_left_just,
+    gen_comment_banner_right_just,
 )
 
-_EXPECTED = """\
-CENTERED
-===================================  hello  ====================================
-************  release v2.0  ************
---------  done  --------
+_CENTERED_CASES = [
+    (
+        "hello",
+        "=",
+        80,
+        "===================================  hello  ====================================",
+    ),
+    (
+        "release v2.0",
+        "*",
+        40,
+        "************  release v2.0  ************",
+    ),
+    ("done", "-", 24, "--------  done  --------"),
+]
 
-LEFT JUSTIFIED
-hello  =========================================================================
-release v2.0  ..........................
-done  ------------------
+_LEFT_JUST_CASES = [
+    (
+        "hello",
+        "=",
+        80,
+        "hello  =========================================================================",
+    ),
+    (
+        "release v2.0",
+        ".",
+        40,
+        "release v2.0  ..........................",
+    ),
+    ("done", "-", 24, "done  ------------------"),
+]
 
-RIGHT JUSTIFIED
-=========================================================================  hello
-..........................  release v2.0
-------------------  done
-"""
+_RIGHT_JUST_CASES = [
+    (
+        "hello",
+        "=",
+        80,
+        "=========================================================================  hello",
+    ),
+    (
+        "release v2.0",
+        ".",
+        40,
+        "..........................  release v2.0",
+    ),
+    ("done", "-", 24, "------------------  done"),
+]
 
 
-def _run_script():
-    result = subprocess.run(
-        [sys.executable, str(_SCRIPT)], capture_output=True, text=True
-    )
-    return result
+class TestCommentBannerCentered:
+    @pytest.mark.parametrize("content, padding, line_width, expected", _CENTERED_CASES)
+    def test_line(_, content, padding, line_width, expected):
+        assert (
+            gen_comment_banner_centered(content, padding, line_width=line_width)
+            == expected
+        )
 
 
-class TestCbDemoOutput:
-    def test_stdout_matches_exactly(_):
-        result = _run_script()
-        assert result.stdout == _EXPECTED
+class TestCommentBannerLeftJustified:
+    @pytest.mark.parametrize("content, padding, line_width, expected", _LEFT_JUST_CASES)
+    def test_line(_, content, padding, line_width, expected):
+        assert (
+            gen_comment_banner_left_just(content, padding, line_width=line_width)
+            == expected
+        )
 
-    def test_no_stderr_output(_):
-        result = _run_script()
-        assert result.stderr == ""
 
-    def test_exits_successfully(_):
-        result = _run_script()
-        assert result.returncode == 0
+class TestCommentBannerRightJustified:
+    @pytest.mark.parametrize("content, padding, line_width, expected", _RIGHT_JUST_CASES)
+    def test_line(_, content, padding, line_width, expected):
+        assert (
+            gen_comment_banner_right_just(content, padding, line_width=line_width)
+            == expected
+        )
