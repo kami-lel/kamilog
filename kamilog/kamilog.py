@@ -170,6 +170,7 @@ class AnsiRenderer:  # =========================================================
         AnsiStyle.BG_BRIGHT_YELLOW: "103",
         AnsiStyle.BG_YELLOW: "43",
         AnsiStyle.BG_RED: "41",
+        AnsiStyle.BG_BRIGHT_RED: "101",
         AnsiStyle.BG_MAGENTA: "45",
         AnsiStyle.BG_BRIGHT_MAGENTA: "105",
     }
