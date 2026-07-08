@@ -1201,7 +1201,73 @@ comment_banner_zero_parser.add_argument(
 comment_banner_zero_parser.set_defaults(func=_comment_banner_zero_parser_main)
 
 
+# logger parser  ===============================================================
+
+# FIXME rewrite
+
+_LOGGER_HELP = "log stdin lines at LEVEL, honoring verbosity threshold"
+
+
+_LOGGER_DESCRIPTION = _LOGGER_HELP + """
+
+lines are read from stdin, one log record per stdin line
+
+echo 'disk full' | python kamilog.py logger error -v"""
+
+# level Name to numeric level, keyed lowercase
+_LOGGER_LEVEL_MAP = {
+    "notset": NOTSET,
+    "debug": DEBUG,
+    "enter": ENTER,
+    "skip": SKIP,
+    "succ": SUCC,
+    "info": INFO,
+    "pass": PASS,
+    "done": DONE,
+    "warning": WARNING,
+    "error": ERROR,
+    "fail": FAIL,
+    "critical": CRITICAL,
+}
+
+
+def _logger_parser_main(args):
+    level = _LOGGER_LEVEL_MAP[args.level.lower()]  # resolve Level name
+    logger = getLogger()
+    set_logging_level_by_namespace(
+        args, verbosity=args.verbosity, logger=logger
+    )
+    for line in sys.stdin.read().splitlines():  # log each stdin Line
+        logger.log(level, line)
+
+
+logger_parser = cli_subparser.add_parser(
+    "logger",
+    help=_LOGGER_HELP,
+    description=_LOGGER_DESCRIPTION,
+    formatter_class=RawDescriptionHelpFormatter,
+    aliases=["l"],
+)
+
+logger_parser.add_argument(
+    "level",
+    choices=list(_LOGGER_LEVEL_MAP),
+    help="log level name",
+)
+logger_parser.add_argument(
+    "--verbosity",
+    type=int,
+    default=3,
+    metavar="VERBOSITY",
+    help="base verbosity offset for level threshold; default=3",
+)
+add_verbose_arguments(logger_parser)
+
+logger_parser.set_defaults(func=_logger_parser_main)
+
+
 # Entry Point  =================================================================
 if __name__ == "__main__":
+    # BUG usage shown __main__
     parsed_args = cli_parser.parse_args()
     parsed_args.func(parsed_args)
