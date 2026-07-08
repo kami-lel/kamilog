@@ -978,7 +978,11 @@ _LOGGER_TIME_FORMAT_MAP = {
 def _logger_parser_main(args):
     level = _LOGGER_LEVEL_MAP[args.level.lower()]  # resolve Level name
     datefmt = _LOGGER_TIME_FORMAT_MAP[args.time_format]  # resolve Time fmt
-    logger = getLogger(datefmt=datefmt, disable_color=args.no_color)
+    logger = getLogger(
+        datefmt=datefmt,
+        disable_color=args.no_color,
+        disable_diff_only_compression=args.no_diff_only,
+    )
     set_logging_level_by_namespace(
         args, verbosity=args.verbosity, logger=logger
     )
@@ -1023,7 +1027,6 @@ def _register_logger_parser(cli_subparser):
         action="store_true",
         help="disable ANSI color output",
     )
-    # TODO make no diff only functional
     logger_parser.add_argument(
         "-D",
         "--no-diff-only",
