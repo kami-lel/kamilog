@@ -120,6 +120,9 @@ class AnsiRenderer:  # =========================================================
     :param stream: output stream used for TTY detection;
             ``None`` disables color unconditionally
     :type stream: IO or None
+    :param is_disabled: when ``True``, disable color unconditionally,
+            regardless of ``stream``; defaults to ``False``
+    :type is_disabled: bool
     """
 
     _LEVEL_COLORS = {
@@ -136,9 +139,12 @@ class AnsiRenderer:  # =========================================================
         logging.CRITICAL: AnsiColor.BRIGHT_MAGENTA,
     }
 
-    def __init__(self, stream=None):
+    def __init__(self, stream=None, *, is_disabled=False):
         self._enabled = (
-            stream is not None and hasattr(stream, "isatty") and stream.isatty()
+            not is_disabled
+            and stream is not None
+            and hasattr(stream, "isatty")
+            and stream.isatty()
         )
 
     # Public API  **************************************************************
@@ -449,11 +455,20 @@ class _LogFormatter(Formatter):  # *********************************************
     :type datefmt: str or None
     :param relative_to: forwarded to ``_LogFormatEngine``
     :type relative_to: float or None
+    :param disable_color: disable color regardless of ``stream``
+    :type disable_color: bool
     """
 
-    def __init__(self, stream=None, *, datefmt=None, relative_to=None):
+    def __init__(
+        self,
+        stream=None,
+        *,
+        datefmt=None,
+        relative_to=None,
+        disable_color=False,
+    ):
         super().__init__(datefmt=datefmt)
-        self.palette = AnsiRenderer(stream)
+        self.palette = AnsiRenderer(stream, is_disabled=disable_color)
         self.engine = _LogFormatEngine(
             self.palette, datefmt=datefmt, relative_to=relative_to
         )
@@ -707,11 +722,12 @@ class _DiffOnlyMsgFilter(logging.Filter):  # ***********************************
 # Logger Public API  ===========================================================
 
 # TODO add no diff only
-# TODO add no color setting
 
 
 # pylint: disable-next=invalid-name
-def getLogger(name=None, *, datefmt=DATEFMT_TIME, relative_to=None):
+def getLogger(
+    name=None, *, datefmt=DATEFMT_TIME, relative_to=None, disable_color=False
+):
     """
     return a configured :class:`KamiLogger` for ``name``, creating it if needed.
 
@@ -726,6 +742,9 @@ def getLogger(name=None, *, datefmt=DATEFMT_TIME, relative_to=None):
     :param relative_to: Unix timestamp to use as epoch for relative time display;
             mutually exclusive with ``datefmt``
     :type relative_to: float, optional
+    :param disable_color: disable ANSI color on all handlers
+            and the diff-only filter
+    :type disable_color: bool, optional
     :return: a logger with the `name`, create if non-existence;
             root logger if `name` is `None`
     :rtype: KamiLogger
@@ -739,7 +758,10 @@ def getLogger(name=None, *, datefmt=DATEFMT_TIME, relative_to=None):
         logger.addFilter(
             _DiffOnlyMsgFilter(
                 _LogFormatter(
-                    sys.stdout, datefmt=datefmt, relative_to=relative_to
+                    sys.stdout,
+                    datefmt=datefmt,
+                    relative_to=relative_to,
+                    disable_color=disable_color,
                 )
             )
         )
@@ -747,13 +769,23 @@ def getLogger(name=None, *, datefmt=DATEFMT_TIME, relative_to=None):
     if not logger.handlers:
         stdout_handler = StreamHandler(sys.stdout)
         stdout_handler.setFormatter(
-            _LogFormatter(sys.stdout, datefmt=datefmt, relative_to=relative_to)
+            _LogFormatter(
+                sys.stdout,
+                datefmt=datefmt,
+                relative_to=relative_to,
+                disable_color=disable_color,
+            )
         )
         stdout_handler.addFilter(lambda r: r.levelno < logging.WARNING)
 
         stderr_handler = StreamHandler(sys.stderr)
         stderr_handler.setFormatter(
-            _LogFormatter(sys.stderr, datefmt=datefmt, relative_to=relative_to)
+            _LogFormatter(
+                sys.stderr,
+                datefmt=datefmt,
+                relative_to=relative_to,
+                disable_color=disable_color,
+            )
         )
         stderr_handler.addFilter(lambda r: r.levelno >= logging.WARNING)
 
@@ -981,6 +1013,8 @@ def _register_logger_parser(cli_subparser):
         action="store_true",
         help="disable diff-only message compression",
     )
+
+    # TODO missing relative time
 
     add_verbose_arguments(logger_parser)
 
