@@ -1236,12 +1236,20 @@ _LOGGER_LEVEL_MAP = {
 }
 
 
-# TODO time format
+# time format Name to strftime string, None disables timestamps
+_LOGGER_TIME_FORMAT_MAP = {
+    "time": DATEFMT_TIME,
+    "time-ms": DATEFMT_TIME_MS,
+    "datetime": DATEFMT_DATETIME,
+    "datetime-ms": DATEFMT_DATETIME_MS,
+    "no-time": None,
+}
 
 
 def _logger_parser_main(args):
     level = _LOGGER_LEVEL_MAP[args.level.lower()]  # resolve Level name
-    logger = getLogger()
+    datefmt = _LOGGER_TIME_FORMAT_MAP[args.time_format]  # resolve Time fmt
+    logger = getLogger(datefmt=datefmt)
     set_logging_level_by_namespace(
         args, verbosity=args.verbosity, logger=logger
     )
@@ -1269,6 +1277,13 @@ logger_parser.add_argument(
     metavar="VERBOSITY",
     help="base verbosity offset for level threshold; default=3",
 )
+logger_parser.add_argument(
+    "-t",
+    "--time-format",
+    choices=list(_LOGGER_TIME_FORMAT_MAP),
+    default="time",
+    help="timestamp format; default=time",
+)
 # Todo make no color functional
 logger_parser.add_argument(
     "-C",
@@ -1283,6 +1298,7 @@ logger_parser.add_argument(
     action="store_true",
     help="disable diff-only message compression",
 )
+
 add_verbose_arguments(logger_parser)
 
 logger_parser.set_defaults(func=_logger_parser_main)
