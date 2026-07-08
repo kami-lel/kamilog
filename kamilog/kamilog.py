@@ -514,6 +514,74 @@ class _LogFormatter(Formatter):  # *********************************************
 # diff only message   ==========================================================
 
 
+class _TabAlignedLine(list):  # ************************************************
+    """
+    a line of text split into tab-stop-aligned string blocks.
+    """
+
+    TAB_SIZE = 8
+
+    def __init__(self, blocks, *, start_offset=0):
+        super().__init__(blocks)
+        self.start_offset = start_offset
+
+    @classmethod
+    def parse(cls, line, *, start_offset=0):
+        """
+        split a regular text line into ``TAB_SIZE``-wide blocks.
+
+        the first block is shortened by ``start_offset`` so later blocks
+        still land on ``TAB_SIZE`` column boundaries; the last block
+        holds whatever remains and may be shorter than ``TAB_SIZE``
+
+
+        :param line: source line to split
+        :type line: str
+        :param start_offset: column the line begins at; default=0
+        :type start_offset: int, optional
+        :return: new instance holding the split blocks
+        :rtype: TabAlignedLine
+        """
+        # BUG operate not correctly if message contains \t already
+        n = len(line)
+        blocks = []
+
+        first_len = cls.TAB_SIZE - (start_offset % cls.TAB_SIZE)
+        first_len = min(first_len, n)
+        pos = first_len
+        blocks.append(line[:pos])
+
+        while pos < n:
+            end = min(pos + cls.TAB_SIZE, n)
+            blocks.append(line[pos:end])
+            pos = end
+
+        return cls(blocks, start_offset=start_offset)
+
+    def render(self, *, insert_prefix=False, prefix_symbol=" "):
+        """
+        join the blocks back into a single normal string.
+
+
+        :param insert_prefix: whether to prepend ``start_offset`` copies
+                of ``prefix_symbol`` before the joined blocks;
+                default=False
+        :type insert_prefix: bool, optional
+        :param prefix_symbol: character repeated to build the prefix;
+                default=" "
+        :type prefix_symbol: str, optional
+        :return: the reassembled line
+        :rtype: str
+        """
+        line = "".join(self)
+        if insert_prefix:
+            return prefix_symbol * self.start_offset + line
+        return line
+
+    def __str__(self):
+        return self.render()
+
+
 class _DiffOnlyEngine:  # ******************************************************
     """
     engine for diff-only compression of log message text.
