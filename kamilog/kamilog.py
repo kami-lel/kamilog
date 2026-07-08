@@ -1034,8 +1034,6 @@ def _register_logger_parser(cli_subparser):
         help="disable diff-only message compression",
     )
 
-    # TODO missing relative time
-
     add_verbose_arguments(logger_parser)
 
     logger_parser.set_defaults(func=_logger_parser_main)
