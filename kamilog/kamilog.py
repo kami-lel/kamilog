@@ -1197,7 +1197,7 @@ def gen_comment_banner_zero(
 # main parser  =================================================================
 
 cli_parser = ArgumentParser(
-    prog=__name__,
+    prog="kamilog",
     description="kamilog CLI: utilities for formatted output and logging",
 )
 cli_parser.set_defaults(func=lambda _: cli_parser.print_help())
@@ -1318,6 +1318,5 @@ _register_logger_parser(cli_subparser)
 
 # Entry Point  =================================================================
 if __name__ == "__main__":
-    # BUG usage shown __main__
     parsed_args = cli_parser.parse_args()
     parsed_args.func(parsed_args)
