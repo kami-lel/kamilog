@@ -100,7 +100,10 @@ class AnsiStyle(Flag):  # =====================================================
     BOLD = auto()
     UNDERLINE = auto()
 
+    BLACK = auto()
     GREY = auto()
+    WHITE = auto()
+    BRIGHT_WHITE = auto()
     CYAN = auto()
     BRIGHT_CYAN = auto()
     BLUE = auto()
@@ -114,7 +117,10 @@ class AnsiStyle(Flag):  # =====================================================
     MAGENTA = auto()
     BRIGHT_MAGENTA = auto()
 
+    BG_BLACK = auto()
     BG_GREY = auto()
+    BG_WHITE = auto()
+    BG_BRIGHT_WHITE = auto()
     BG_CYAN = auto()
     BG_BRIGHT_CYAN = auto()
     BG_BLUE = auto()
@@ -147,7 +153,10 @@ class AnsiRenderer:  # =========================================================
     _ANSI_STYLE2CODE = {
         AnsiStyle.BOLD: "1",
         AnsiStyle.UNDERLINE: "4",
+        AnsiStyle.BLACK: "30",
         AnsiStyle.GREY: "90",
+        AnsiStyle.WHITE: "37",
+        AnsiStyle.BRIGHT_WHITE: "97",
         AnsiStyle.CYAN: "36",
         AnsiStyle.BRIGHT_CYAN: "96",
         AnsiStyle.BLUE: "34",
@@ -160,7 +169,10 @@ class AnsiRenderer:  # =========================================================
         AnsiStyle.BRIGHT_RED: "91",
         AnsiStyle.MAGENTA: "35",
         AnsiStyle.BRIGHT_MAGENTA: "95",
+        AnsiStyle.BG_BLACK: "40",
         AnsiStyle.BG_GREY: "100",
+        AnsiStyle.BG_WHITE: "47",
+        AnsiStyle.BG_BRIGHT_WHITE: "107",
         AnsiStyle.BG_CYAN: "46",
         AnsiStyle.BG_BRIGHT_CYAN: "106",
         AnsiStyle.BG_BLUE: "44",

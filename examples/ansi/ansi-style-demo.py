@@ -40,7 +40,15 @@ print(
     + "\t\t"
     + renderer.color("BRIGHT_MAGENTA", S.BRIGHT_MAGENTA)
 )
-print(renderer.color("GREY", S.GREY))
+print(
+    renderer.color("BLACK", S.BLACK)
+    + "\t\t"
+    + renderer.color("GREY", S.GREY)
+    + "\t\t"
+    + renderer.color("WHITE", S.WHITE)
+    + "\t\t"
+    + renderer.color("BRIGHT_WHITE", S.BRIGHT_WHITE)
+)
 
 # backgrounds  ###################################################
 print(kamilog.gen_comment_banner_centered("backgrounds", 1, renderer=renderer))
@@ -71,7 +79,15 @@ print(
     + "\t"
     + renderer.color("BG_BRIGHT_MAGENTA", S.BG_BRIGHT_MAGENTA)
 )
-print(renderer.color("BG_GREY", S.BG_GREY))
+print(
+    renderer.color("BG_BLACK", S.BG_BLACK)
+    + "\t\t"
+    + renderer.color("BG_GREY", S.BG_GREY)
+    + "\t\t"
+    + renderer.color("BG_WHITE", S.BG_WHITE)
+    + "\t\t"
+    + renderer.color("BG_BRIGHT_WHITE", S.BG_BRIGHT_WHITE)
+)
 
 # styles  #########################################################
 print(kamilog.gen_comment_banner_centered("styles", 1, renderer=renderer))
