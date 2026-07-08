@@ -1,6 +1,6 @@
 # kamilog CONTEXT
 
-*Last updated: 2026-07-08 (unreleased) - mpv-tab-logic branch*
+*Last updated: 2026-07-08 - v2.4.0*
 
 ## Project Overview
 
