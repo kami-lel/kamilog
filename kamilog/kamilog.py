@@ -189,20 +189,23 @@ class AnsiRenderer:  # =========================================================
         logging.CRITICAL: AnsiStyle.BRIGHT_MAGENTA,
     }
 
+    # fg hue identifies the tag type across tiers;
+    # bg uses a contrasting hue, brighter/bolder for louder tiers;
+    # quiet tier carries no background
     _TRIAGE_TAG2ANSI_STYLE = {
-        "BUG": AnsiStyle.RED | AnsiStyle.BG_BRIGHT_RED | AnsiStyle.BOLD,
-        "Bug": AnsiStyle.BRIGHT_RED | AnsiStyle.BG_RED,
+        "BUG": AnsiStyle.RED | AnsiStyle.BG_BRIGHT_CYAN | AnsiStyle.BOLD,
+        "Bug": AnsiStyle.BRIGHT_RED | AnsiStyle.BG_CYAN,
         "bug": AnsiStyle.RED,
-        "FIXME": AnsiStyle.YELLOW | AnsiStyle.BG_BRIGHT_YELLOW | AnsiStyle.BOLD,
-        "Fixme": AnsiStyle.BRIGHT_YELLOW | AnsiStyle.BG_YELLOW,
+        "FIXME": AnsiStyle.YELLOW | AnsiStyle.BG_BRIGHT_BLUE | AnsiStyle.BOLD,
+        "Fixme": AnsiStyle.BRIGHT_YELLOW | AnsiStyle.BG_BLUE,
         "fixme": AnsiStyle.YELLOW,
-        "TODO": AnsiStyle.BLUE | AnsiStyle.BG_BRIGHT_BLUE | AnsiStyle.BOLD,
-        "Todo": AnsiStyle.BRIGHT_BLUE | AnsiStyle.BG_BLUE,
+        "TODO": AnsiStyle.BLUE | AnsiStyle.BG_BRIGHT_YELLOW | AnsiStyle.BOLD,
+        "Todo": AnsiStyle.BRIGHT_BLUE | AnsiStyle.BG_YELLOW,
         "todo": AnsiStyle.BLUE,
         "HACK": (
-            AnsiStyle.MAGENTA | AnsiStyle.BG_BRIGHT_MAGENTA | AnsiStyle.BOLD
+            AnsiStyle.MAGENTA | AnsiStyle.BG_BRIGHT_GREEN | AnsiStyle.BOLD
         ),
-        "Hack": AnsiStyle.BRIGHT_MAGENTA | AnsiStyle.BG_MAGENTA,
+        "Hack": AnsiStyle.BRIGHT_MAGENTA | AnsiStyle.BG_GREEN,
         "hack": AnsiStyle.MAGENTA,
     }
 
