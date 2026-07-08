@@ -1,6 +1,6 @@
 # kamilog CONTEXT
 
-*Last updated: 2026-07-06 (v2.2.0)*
+*Last updated: 2026-07-08 (unreleased)*
 
 ## Project Overview
 
@@ -14,7 +14,7 @@ Repository: <https://github.com/kami-lel/kamilog>
 kamilog/
 ├── kamilog/
 │   ├── __init__.py          # re-exports all public symbols from kamilog.py
-│   └── kamilog.py           # entire implementation (~990 lines)
+│   └── kamilog.py           # entire implementation (~1320 lines)
 ├── tests/
 │   ├── cb/                          # comment-banner test suite
 │   │   ├── cb-centered_test.py
@@ -204,6 +204,9 @@ Both `cb` and `cb0` follow the Unix pipe pattern: text content is read from stdi
 - `_COMMENT_BANNER_HELP` — shared help/description string for the subcommand
 - `_comment_banner_zero_parser_main(args)` — handler that reads `lines` from stdin (one banner line per stdin line), calls `gen_comment_banner_zero`, then prints the returned banner
 - `_CB0_HELP` — shared help/description string for the CB0 subcommand
+- `_register_logger_parser(cli_subparser)` — attaches the `logger` subcommand to the passed subparser action; the root CLI block calls it after building `cli_subparser`. The `cb`/`cb0` parsers are still built inline (a `Fixme` in the source flags them for the same register-function pattern)
+- `_logger_parser_main(args)` — handler that resolves `LEVEL` and `--time-format` through `_LOGGER_LEVEL_MAP` / `_LOGGER_TIME_FORMAT_MAP`, calls `getLogger(datefmt=…)`, applies the verbosity threshold, then logs each stdin line at the resolved level
+- `_LOGGER_HELP` / `_LOGGER_DESCRIPTION` — shared help and description strings for the subcommand
 
 **Comment Banner subcommand (`comment_banner` / `cb`)**:
 - Stdin: `CONTENT` — single line of text, read via `sys.stdin.readline()`
@@ -217,6 +220,15 @@ Both `cb` and `cb0` follow the Unix pipe pattern: text content is read from stdi
 - Option: `-w, --line-width LINE_WIDTH` (default 80)
 - Option: `-e, --stderr` (output to stderr)
 - Example: `printf 'Title\nSubtitle\n' | python kamilog/kamilog.py cb0 -w 40`
+
+**Logger subcommand (`logger` / `l`)**:
+- Stdin: `LINES` — one or more lines, read via `sys.stdin.read().splitlines()`; each is emitted as one log record
+- Positional: `LEVEL` — a level name from `_LOGGER_LEVEL_MAP` (`notset`, `debug`, `enter`, `skip`, `succ`, `info`, `pass`, `done`, `warning`, `error`, `fail`, `critical`)
+- Option: `--verbosity VERBOSITY` — base verbosity offset the `-v`/`-q` counts adjust from (default 3); the resolved level acts as the print threshold, so records below it are dropped
+- Option: `-t, --time-format` — one of `time`, `time-ms`, `datetime`, `datetime-ms`, `no-time` (default `time`), mapped through `_LOGGER_TIME_FORMAT_MAP` to a `datefmt` passed into `getLogger()`; `no-time` maps to `None`
+- Option: `-C, --no-color` and `-D, --no-diff-only` — parsed but not yet functional
+- Option: `-v`/`-q` via `add_verbose_arguments`
+- Example: `echo 'disk full' | python kamilog/kamilog.py logger error`
 
 ## Public API Surface
 
@@ -269,4 +281,5 @@ Verbosity mapping (default level is `DONE` = 25):
 ## Known Limitations and Future Work
 
 - No file handler option on `getLogger()` — stdout/stderr only.
-- Test coverage spans verbosity helpers and comment-banner functions; no unit tests for `_LogFormatter` or `_DiffOnlyMsgFilter`.
+- Test coverage spans verbosity helpers and comment-banner functions; no unit tests for `_LogFormatter`, `_DiffOnlyMsgFilter`, or the CLI subcommands.
+- The `logger` subcommand's `-C`/`--no-color` and `-D`/`--no-diff-only` flags are placeholders — parsed but not yet wired to behavior.

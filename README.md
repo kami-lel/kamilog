@@ -8,7 +8,6 @@ todo comprehensive unit tests for logger
 todo allows use -V being equivalent to -vvv (v.v.)
 todo allows to use only -V, dont add -v (v.v.)
 todo smart time print
-Todo logger as bash CLI
 bug using different logger to print & diff only can produce confusing result
 Bug parser need to private
 Bug operate not correctly if message contains \t already
@@ -42,9 +41,9 @@ Bug operate not correctly if message contains \t already
 
 #### 💻 Command-Line Interface
 
-- Built-in CLI for comment banner via `python kamilog/kamilog.py cb`
-- Support for short and long mode aliases
-- Customizable output width and destination (stdout/stderr)
+- Subcommands for comment banners (`cb`, `cb0`) and logging (`logger`)
+- Each subcommand carries comprehensive `-h`/`--help` text — the de facto CLI reference
+- Run `python kamilog/kamilog.py -h` to list subcommands, then `python kamilog/kamilog.py <subcommand> -h` for its full options
 
 ---
 
