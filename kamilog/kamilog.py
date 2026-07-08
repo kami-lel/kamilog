@@ -706,6 +706,9 @@ class _DiffOnlyMsgFilter(logging.Filter):  # ***********************************
 
 # Logger Public API  ===========================================================
 
+# Todo add no diff only
+# Todo add no color setting
+
 
 # pylint: disable-next=invalid-name
 def getLogger(name=None, *, datefmt=DATEFMT_TIME, relative_to=None):
@@ -1265,6 +1268,20 @@ logger_parser.add_argument(
     default=3,
     metavar="VERBOSITY",
     help="base verbosity offset for level threshold; default=3",
+)
+# Todo make no color functional
+logger_parser.add_argument(
+    "-C",
+    "--no-color",
+    action="store_true",
+    help="disable ANSI color output",
+)
+# Todo make no diff only functional
+logger_parser.add_argument(
+    "-D",
+    "--no-diff-only",
+    action="store_true",
+    help="disable diff-only message compression",
 )
 add_verbose_arguments(logger_parser)
 
