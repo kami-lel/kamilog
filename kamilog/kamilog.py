@@ -204,20 +204,19 @@ class AnsiRenderer:  # =========================================================
         logging.CRITICAL: AnsiStyle.BRIGHT_MAGENTA,
     }
 
-    # FIXME redo
     _TRIAGE_TAG2ANSI_STYLE = {
-        "BUG": AnsiStyle.RED | AnsiStyle.BG_BRIGHT_CYAN | AnsiStyle.BOLD,
-        "Bug": AnsiStyle.BRIGHT_RED | AnsiStyle.BG_CYAN,
-        "bug": AnsiStyle.RED,
-        "FIXME": AnsiStyle.YELLOW | AnsiStyle.BG_BRIGHT_BLUE | AnsiStyle.BOLD,
-        "Fixme": AnsiStyle.BRIGHT_YELLOW | AnsiStyle.BG_BLUE,
-        "fixme": AnsiStyle.YELLOW,
-        "TODO": AnsiStyle.BLUE | AnsiStyle.BG_BRIGHT_YELLOW | AnsiStyle.BOLD,
-        "Todo": AnsiStyle.BRIGHT_BLUE | AnsiStyle.BG_YELLOW,
-        "todo": AnsiStyle.BLUE,
-        "HACK": AnsiStyle.MAGENTA | AnsiStyle.BG_BRIGHT_GREEN | AnsiStyle.BOLD,
-        "Hack": AnsiStyle.BRIGHT_MAGENTA | AnsiStyle.BG_GREEN,
-        "hack": AnsiStyle.MAGENTA,
+        "BUG": AnsiStyle.WHITE | AnsiStyle.BG_MAGENTA | AnsiStyle.BOLD,
+        "Bug": AnsiStyle.BLACK | AnsiStyle.BG_BRIGHT_MAGENTA,
+        "bug": AnsiStyle.MAGENTA,
+        "FIXME": AnsiStyle.BLACK | AnsiStyle.BG_CYAN | AnsiStyle.BOLD,
+        "Fixme": AnsiStyle.BLACK | AnsiStyle.BG_BRIGHT_CYAN,
+        "fixme": AnsiStyle.CYAN,
+        "TODO": AnsiStyle.BLACK | AnsiStyle.BG_YELLOW | AnsiStyle.BOLD,
+        "Todo": AnsiStyle.BLACK | AnsiStyle.BG_BRIGHT_YELLOW,
+        "todo": AnsiStyle.YELLOW,
+        "HACK": AnsiStyle.WHITE | AnsiStyle.BG_BLUE | AnsiStyle.BOLD,
+        "Hack": AnsiStyle.BLACK | AnsiStyle.BG_BRIGHT_BLUE,
+        "hack": AnsiStyle.BLUE,
     }
 
     def __init__(self, stream=None, *, is_disabled=False):
