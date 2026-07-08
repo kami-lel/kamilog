@@ -16,8 +16,6 @@ renderer = AnsiRenderer(sys.stdout)
 
 print(gen_comment_banner_centered("basic compression", "#", renderer=renderer))
 
-# TODO add demos into UT
-
 log = kamilog.getLogger("sensor")
 log.setLevel(kamilog.DEBUG)
 log.propagate = False
