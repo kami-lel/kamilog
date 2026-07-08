@@ -189,21 +189,21 @@ class AnsiRenderer:  # =========================================================
         logging.CRITICAL: AnsiStyle.BRIGHT_MAGENTA,
     }
 
-    # TODO decide style
-
     _TRIAGE_TAG2ANSI_STYLE = {
-        "BUG": AnsiStyle.RED,
-        "FIXME": AnsiStyle.RED,
-        "TODO": AnsiStyle.RED,
-        "HACK": AnsiStyle.RED,
-        "Bug": AnsiStyle.RED,
-        "Fixme": AnsiStyle.RED,
-        "Todo": AnsiStyle.RED,
-        "Hack": AnsiStyle.RED,
+        "BUG": AnsiStyle.RED | AnsiStyle.BG_BRIGHT_RED | AnsiStyle.BOLD,
+        "Bug": AnsiStyle.BRIGHT_RED | AnsiStyle.BG_RED,
         "bug": AnsiStyle.RED,
-        "fixme": AnsiStyle.RED,
-        "todo": AnsiStyle.RED,
-        "hack": AnsiStyle.RED,
+        "FIXME": AnsiStyle.YELLOW | AnsiStyle.BG_BRIGHT_YELLOW | AnsiStyle.BOLD,
+        "Fixme": AnsiStyle.BRIGHT_YELLOW | AnsiStyle.BG_YELLOW,
+        "fixme": AnsiStyle.YELLOW,
+        "TODO": AnsiStyle.BLUE | AnsiStyle.BG_BRIGHT_BLUE | AnsiStyle.BOLD,
+        "Todo": AnsiStyle.BRIGHT_BLUE | AnsiStyle.BG_BLUE,
+        "todo": AnsiStyle.BLUE,
+        "HACK": (
+            AnsiStyle.MAGENTA | AnsiStyle.BG_BRIGHT_MAGENTA | AnsiStyle.BOLD
+        ),
+        "Hack": AnsiStyle.BRIGHT_MAGENTA | AnsiStyle.BG_MAGENTA,
+        "hack": AnsiStyle.MAGENTA,
     }
 
     def __init__(self, stream=None, *, is_disabled=False):
