@@ -706,8 +706,8 @@ class _DiffOnlyMsgFilter(logging.Filter):  # ***********************************
 
 # Logger Public API  ===========================================================
 
-# Todo add no diff only
-# Todo add no color setting
+# TODO add no diff only
+# TODO add no color setting
 
 
 # pylint: disable-next=invalid-name
@@ -967,14 +967,14 @@ def _register_logger_parser(cli_subparser):
         default="time",
         help="timestamp format; default=time",
     )
-    # Todo make no color functional
+    # TODO make no color functional
     logger_parser.add_argument(
         "-C",
         "--no-color",
         action="store_true",
         help="disable ANSI color output",
     )
-    # Todo make no diff only functional
+    # TODO make no diff only functional
     logger_parser.add_argument(
         "-D",
         "--no-diff-only",
@@ -1241,8 +1241,7 @@ def _register_comment_banner_parser(cli_subparser):
         "mode",
         choices=["c", "l", "r", "center", "left", "right"],
         help=(
-            "text alignment: c/center, l/left(-justified), "
-            "r/right(-justified)"
+            "text alignment: c/center, l/left(-justified), r/right(-justified)"
         ),
     )
     comment_banner_parser.add_argument(
