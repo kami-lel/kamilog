@@ -594,6 +594,8 @@ class _DiffOnlyEngine:  # ******************************************************
     :type threshold: int
     """
 
+    # FIXME utilize TAL
+
     _COMPRESSION_BLOCK_SIZE = 8
     _FALLBACK_TAB_SPAN = 2
     _COMPRESSION_MARKER = "〃\t"
