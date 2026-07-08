@@ -20,6 +20,16 @@
 
 ### Added
 
+- `logger` CLI subcommand (alias `l`) — reads lines from stdin and logs each
+  at a chosen `LEVEL`, gated by a verbosity threshold; run as
+  `python kamilog/kamilog.py logger LEVEL`
+- `logger` option `--verbosity` — base verbosity offset the subcommand's
+  `-v`/`-q` counts adjust from; default `3`
+- `logger` option `-t`/`--time-format` — timestamp format, one of `time`,
+  `time-ms`, `datetime`, `datetime-ms`, `no-time`; default `time`
+- `logger` flags `-C`/`--no-color` and `-D`/`--no-diff-only` — accepted in the
+  parser but not yet wired to behavior
+
 ### Changed
 
 ### Deprecated
@@ -27,6 +37,9 @@
 ### Removed
 
 ### Fixed
+
+- CLI help and usage now show the program name as `kamilog` instead of
+  `__main__`
 
 ### Security
 

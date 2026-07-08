@@ -41,9 +41,9 @@ Bug operate not correctly if message contains \t already
 
 #### 💻 Command-Line Interface
 
-- Built-in CLI for comment banner via `python kamilog/kamilog.py cb`
-- Support for short and long mode aliases
-- Customizable output width and destination (stdout/stderr)
+- Subcommands for comment banners (`cb`, `cb0`) and logging (`logger`)
+- Each subcommand carries comprehensive `-h`/`--help` text — the de facto CLI reference
+- Run `python kamilog/kamilog.py -h` to list subcommands, then `python kamilog/kamilog.py <subcommand> -h` for its full options
 
 ---
 
