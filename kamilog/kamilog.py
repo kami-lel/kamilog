@@ -594,8 +594,6 @@ class _DiffOnlyEngine:  # ******************************************************
     :type threshold: int
     """
 
-    # FIXME utilize TAL
-
     _COMPRESSION_BLOCK_SIZE = 8
     _FALLBACK_TAB_SPAN = 2
     _COMPRESSION_MARKER = "〃\t"
@@ -674,6 +672,12 @@ class _DiffOnlyEngine:  # ******************************************************
     def _compress(self, record, message):
         """
         compress positions matching ``_common`` into ``〃\\t`` markers.
+
+        the replaceable span (``run_s`` to ``cut``) is split into
+        ``_TabAlignedLine`` blocks anchored at its absolute column, so
+        a short leading block (if any) is the leader, a short trailing
+        block (if any) is the gap, and everything between is a whole
+        replaceable tab stop.
         """
         block = self._COMPRESSION_BLOCK_SIZE
         prefix_len = self._formatter.engine.count_prefix_chars(record)
@@ -697,25 +701,35 @@ class _DiffOnlyEngine:  # ******************************************************
                     i += 1
                 run_e = i
                 cut = self._find_cut(message, run_s, run_e, prefix_len)
-                col_offset = (prefix_len + run_s) % block
-                padding = (block - col_offset) % block
-                tab_s = run_s + padding
-                replaceable = cut - tab_s
-                k = replaceable // block if replaceable > 0 else 0
+
+                tal_blocks = list(
+                    _TabAlignedLine.parse(
+                        message[run_s:cut], start_offset=prefix_len + run_s
+                    )
+                )
+                leader = ""
+                if tal_blocks and len(tal_blocks[0]) < block:
+                    leader = tal_blocks.pop(0)
+                if tal_blocks and len(tal_blocks[-1]) < block:
+                    gap_block = tal_blocks.pop()
+                else:
+                    gap_block = ""
+                k = len(tal_blocks)  # remaining blocks are all full-width
+
                 if k == 0:
                     result.append(message[run_s:run_e])
                 else:
-                    gap = replaceable - block * k
+                    gap = len(gap_block)
                     # leader: common chars before the first tab stop are
                     # never printed; short ones become a bare tab jump,
                     # longer ones earn their own marker
-                    if padding >= self._LEADER_MARKER_MIN:
+                    if len(leader) >= self._LEADER_MARKER_MIN:
                         result.append(
                             self._formatter.palette.color_grey(
                                 self._COMPRESSION_MARKER
                             )
                         )
-                    elif padding > 0:
+                    elif leader:
                         result.append("\t")
                     result.append(
                         self._formatter.palette.color_grey(
