@@ -1203,16 +1203,18 @@ comment_banner_zero_parser.set_defaults(func=_comment_banner_zero_parser_main)
 
 # logger parser  ===============================================================
 
-# FIXME rewrite
 
 _LOGGER_HELP = "log stdin lines at LEVEL, honoring verbosity threshold"
 
 
 _LOGGER_DESCRIPTION = _LOGGER_HELP + """
 
-lines are read from stdin, one log record per stdin line
+lines are read from stdin, one log record per stdin line;
+verbosity threshold decides which records actually print
 
-echo 'disk full' | python kamilog.py logger error -v"""
+
+example:
+  echo 'disk full' | python kamilog.py logger error"""
 
 # level Name to numeric level, keyed lowercase
 _LOGGER_LEVEL_MAP = {
@@ -1229,6 +1231,9 @@ _LOGGER_LEVEL_MAP = {
     "fail": FAIL,
     "critical": CRITICAL,
 }
+
+
+# TODO time format
 
 
 def _logger_parser_main(args):
