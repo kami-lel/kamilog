@@ -189,6 +189,8 @@ class AnsiRenderer:  # =========================================================
         logging.CRITICAL: AnsiStyle.BRIGHT_MAGENTA,
     }
 
+    # TODO decide style
+
     _TRIAGE_TAG2ANSI_STYLE = {
         "BUG": AnsiStyle.RED,
         "FIXME": AnsiStyle.RED,
