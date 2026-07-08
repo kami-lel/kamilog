@@ -883,7 +883,115 @@ def set_logging_level_by_verbosity(verbosity, *, logger=None, logger_name=None):
     )
 
 
-# Comment Banner  #############################################################
+# logger CLI  ==================================================================
+
+
+_LOGGER_HELP = "log stdin lines at LEVEL, honoring verbosity threshold"
+
+
+_LOGGER_DESCRIPTION = _LOGGER_HELP + """
+
+lines are read from stdin, one log record per stdin line;
+verbosity threshold decides which records actually print
+
+
+example:
+  echo 'disk full' | python kamilog.py logger error"""
+
+# level Name to numeric level, keyed lowercase
+_LOGGER_LEVEL_MAP = {
+    "notset": NOTSET,
+    "debug": DEBUG,
+    "enter": ENTER,
+    "skip": SKIP,
+    "succ": SUCC,
+    "info": INFO,
+    "pass": PASS,
+    "done": DONE,
+    "warning": WARNING,
+    "error": ERROR,
+    "fail": FAIL,
+    "critical": CRITICAL,
+}
+
+
+# time format Name to strftime string, None disables timestamps
+_LOGGER_TIME_FORMAT_MAP = {
+    "time": DATEFMT_TIME,
+    "time-ms": DATEFMT_TIME_MS,
+    "datetime": DATEFMT_DATETIME,
+    "datetime-ms": DATEFMT_DATETIME_MS,
+    "no-time": None,
+}
+
+
+def _logger_parser_main(args):
+    level = _LOGGER_LEVEL_MAP[args.level.lower()]  # resolve Level name
+    datefmt = _LOGGER_TIME_FORMAT_MAP[args.time_format]  # resolve Time fmt
+    logger = getLogger(datefmt=datefmt)
+    set_logging_level_by_namespace(
+        args, verbosity=args.verbosity, logger=logger
+    )
+    for line in sys.stdin.read().splitlines():  # log each stdin Line
+        logger.log(level, line)
+
+
+def _register_logger_parser(cli_subparser):
+    """
+    register the ``logger`` subcommand on ``cli_subparser``
+
+
+    :param cli_subparser: subparser action to attach the parser to
+    :type cli_subparser: argparse._SubParsersAction
+    """
+    logger_parser = cli_subparser.add_parser(
+        "logger",
+        help=_LOGGER_HELP,
+        description=_LOGGER_DESCRIPTION,
+        formatter_class=RawDescriptionHelpFormatter,
+        aliases=["l"],
+    )
+
+    logger_parser.add_argument(
+        "level",
+        choices=list(_LOGGER_LEVEL_MAP),
+        help="log level name",
+    )
+    logger_parser.add_argument(
+        "--verbosity",
+        type=int,
+        default=3,
+        metavar="VERBOSITY",
+        help="base verbosity offset for level threshold; default=3",
+    )
+    logger_parser.add_argument(
+        "-t",
+        "--time-format",
+        choices=list(_LOGGER_TIME_FORMAT_MAP),
+        default="time",
+        help="timestamp format; default=time",
+    )
+    # Todo make no color functional
+    logger_parser.add_argument(
+        "-C",
+        "--no-color",
+        action="store_true",
+        help="disable ANSI color output",
+    )
+    # Todo make no diff only functional
+    logger_parser.add_argument(
+        "-D",
+        "--no-diff-only",
+        action="store_true",
+        help="disable diff-only message compression",
+    )
+
+    add_verbose_arguments(logger_parser)
+
+    logger_parser.set_defaults(func=_logger_parser_main)
+
+
+# Comment Banner  ##############################################################
 
 
 _CONTENT_SPACING = "  "
@@ -957,7 +1065,7 @@ def _gen_comment_banner_generic(
     return padded_content
 
 
-# Comment Banner Public API  ==================================================
+# Comment Banner Public API  ===================================================
 
 
 def gen_comment_banner_centered(*args, **kwargs):
@@ -1084,6 +1192,7 @@ def gen_comment_banner_zero(
 
 
 # CLI  #########################################################################
+# Fixme refactor for register like pattern
 
 # main parser  =================================================================
 
@@ -1204,104 +1313,7 @@ comment_banner_zero_parser.add_argument(
 comment_banner_zero_parser.set_defaults(func=_comment_banner_zero_parser_main)
 
 
-# logger parser  ===============================================================
-
-
-_LOGGER_HELP = "log stdin lines at LEVEL, honoring verbosity threshold"
-
-
-_LOGGER_DESCRIPTION = _LOGGER_HELP + """
-
-lines are read from stdin, one log record per stdin line;
-verbosity threshold decides which records actually print
-
-
-example:
-  echo 'disk full' | python kamilog.py logger error"""
-
-# level Name to numeric level, keyed lowercase
-_LOGGER_LEVEL_MAP = {
-    "notset": NOTSET,
-    "debug": DEBUG,
-    "enter": ENTER,
-    "skip": SKIP,
-    "succ": SUCC,
-    "info": INFO,
-    "pass": PASS,
-    "done": DONE,
-    "warning": WARNING,
-    "error": ERROR,
-    "fail": FAIL,
-    "critical": CRITICAL,
-}
-
-
-# time format Name to strftime string, None disables timestamps
-_LOGGER_TIME_FORMAT_MAP = {
-    "time": DATEFMT_TIME,
-    "time-ms": DATEFMT_TIME_MS,
-    "datetime": DATEFMT_DATETIME,
-    "datetime-ms": DATEFMT_DATETIME_MS,
-    "no-time": None,
-}
-
-
-def _logger_parser_main(args):
-    level = _LOGGER_LEVEL_MAP[args.level.lower()]  # resolve Level name
-    datefmt = _LOGGER_TIME_FORMAT_MAP[args.time_format]  # resolve Time fmt
-    logger = getLogger(datefmt=datefmt)
-    set_logging_level_by_namespace(
-        args, verbosity=args.verbosity, logger=logger
-    )
-    for line in sys.stdin.read().splitlines():  # log each stdin Line
-        logger.log(level, line)
-
-
-logger_parser = cli_subparser.add_parser(
-    "logger",
-    help=_LOGGER_HELP,
-    description=_LOGGER_DESCRIPTION,
-    formatter_class=RawDescriptionHelpFormatter,
-    aliases=["l"],
-)
-
-logger_parser.add_argument(
-    "level",
-    choices=list(_LOGGER_LEVEL_MAP),
-    help="log level name",
-)
-logger_parser.add_argument(
-    "--verbosity",
-    type=int,
-    default=3,
-    metavar="VERBOSITY",
-    help="base verbosity offset for level threshold; default=3",
-)
-logger_parser.add_argument(
-    "-t",
-    "--time-format",
-    choices=list(_LOGGER_TIME_FORMAT_MAP),
-    default="time",
-    help="timestamp format; default=time",
-)
-# Todo make no color functional
-logger_parser.add_argument(
-    "-C",
-    "--no-color",
-    action="store_true",
-    help="disable ANSI color output",
-)
-# Todo make no diff only functional
-logger_parser.add_argument(
-    "-D",
-    "--no-diff-only",
-    action="store_true",
-    help="disable diff-only message compression",
-)
-
-add_verbose_arguments(logger_parser)
-
-logger_parser.set_defaults(func=_logger_parser_main)
+_register_logger_parser(cli_subparser)
 
 
 # Entry Point  =================================================================
