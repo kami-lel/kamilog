@@ -33,6 +33,29 @@
 
 
 
+## [2.5.0] - 2026-07-09
+
+### Added
+
+- `AnsiStyle` — foreground/background colors and text attributes are now combinable `Flag` members
+  (mix with `|`, e.g. `AnsiStyle.BOLD | AnsiStyle.RED | AnsiStyle.BG_YELLOW`),
+  replacing the old fixed `AnsiColor` enum
+- New `AnsiStyle` colors: `BLACK`, `WHITE`, `BRIGHT_WHITE`, and background counterparts for every foreground hue (`BG_RED`, `BG_BRIGHT_CYAN`, etc.)
+- `AnsiRenderer.color_triage_tag(triage_tag)`:
+  colors a triage-tag string by tag type, with contrast escalating for louder case tiers
+- `examples/ansi/ansi-tt-demo.py`: demonstrates `color_triage_tag` across all 12 triage-tag variants
+
+### Changed
+
+- `AnsiRenderer.color(text, style)` now takes a single combined `AnsiStyle`
+  value instead of a color plus a `use_bold` flag
+- moved `ansi-style-demo.py` into `examples/ansi/`
+
+[2.5.0]: https://github.com/kami-lel/kamilog/compare/v2.4.0...v2.5.0
+
+
+
+
 
 
 
@@ -230,7 +253,7 @@ Documentation:
 
 - CLI `cb` subcommand padding conversion — numeric arguments (1-5) now correctly convert to integer for preset characters
 
-[unreleased]: https://github.com/kami-lel/kamilog/compare/v2.4.0...dev
+[unreleased]: https://github.com/kami-lel/kamilog/compare/v2.5.0...dev
 [2.4.0]: https://github.com/kami-lel/kamilog/compare/v2.3.1...v2.4.0
 [2.3.1]: https://github.com/kami-lel/kamilog/compare/v2.3.0...v2.3.1
 [2.3.0]: https://github.com/kami-lel/kamilog/compare/v2.2.0...v2.3.0

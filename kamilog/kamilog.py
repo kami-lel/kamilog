@@ -13,7 +13,7 @@ import logging
 import sys
 import time
 from collections import deque
-from enum import Enum, IntEnum
+from enum import Flag, IntEnum, auto
 from logging import Formatter, StreamHandler
 
 __all__ = (
@@ -22,8 +22,8 @@ __all__ = (
     "add_verbose_arguments",
     "set_logging_level_by_namespace",
     "set_logging_level_by_verbosity",
-    # ANSI color
-    "AnsiColor",
+    # ANSI style
+    "AnsiStyle",
     "AnsiRenderer",
     # log levels
     "NOTSET",
@@ -52,7 +52,7 @@ __all__ = (
 
 
 # metadata  ####################################################################
-__version__ = "2.4.0"
+__version__ = "2.5.0"
 __author__ = "kamiLeL"
 
 
@@ -90,26 +90,57 @@ for _lvl in _CustomLogLevel:
 # ANSI Color   #################################################################
 
 
-class AnsiColor(Enum):  # =====================================================
+class AnsiStyle(Flag):  # =====================================================
     """
-    ANSI escape code values keyed by color name.
+    style/foreground/background flags, combinable via ``|``;
+    values carry no ANSI meaning, q.v. ``AnsiRenderer._ANSI_STYLE2CODE``
+    for the code lookup
     """
 
-    GREY = "\033[90m"
-    CYAN = "\033[36m"
-    BRIGHT_CYAN = "\033[96m"
-    BLUE = "\033[34m"
-    GREEN = "\033[32m"
-    BRIGHT_BLUE = "\033[94m"
-    BRIGHT_GREEN = "\033[92m"
-    BRIGHT_YELLOW = "\033[93m"
-    YELLOW = "\033[33m"
-    RED = "\033[31m"
-    BRIGHT_RED = "\033[91m"
-    BRIGHT_MAGENTA = "\033[95m"
+    # foreground color  --------------------------------------------------------
 
-    RESET = "\033[0m"
-    BOLD = "\033[1m"
+    RED = auto()
+    BRIGHT_RED = auto()
+    YELLOW = auto()
+    BRIGHT_YELLOW = auto()
+    GREEN = auto()
+    BRIGHT_GREEN = auto()
+    CYAN = auto()
+    BRIGHT_CYAN = auto()
+    BLUE = auto()
+    BRIGHT_BLUE = auto()
+    MAGENTA = auto()
+    BRIGHT_MAGENTA = auto()
+
+    BLACK = auto()
+    GREY = auto()
+    WHITE = auto()
+    BRIGHT_WHITE = auto()
+
+    # background color  --------------------------------------------------------
+
+    BG_RED = auto()
+    BG_BRIGHT_RED = auto()
+    BG_YELLOW = auto()
+    BG_BRIGHT_YELLOW = auto()
+    BG_GREEN = auto()
+    BG_BRIGHT_GREEN = auto()
+    BG_CYAN = auto()
+    BG_BRIGHT_CYAN = auto()
+    BG_BLUE = auto()
+    BG_BRIGHT_BLUE = auto()
+    BG_MAGENTA = auto()
+    BG_BRIGHT_MAGENTA = auto()
+
+    BG_BLACK = auto()
+    BG_GREY = auto()
+    BG_WHITE = auto()
+    BG_BRIGHT_WHITE = auto()
+
+    # style  -------------------------------------------------------------------
+
+    BOLD = auto()
+    UNDERLINE = auto()
 
 
 class AnsiRenderer:  # =========================================================
@@ -125,18 +156,72 @@ class AnsiRenderer:  # =========================================================
     :type is_disabled: bool
     """
 
-    _LEVEL_COLORS = {
-        logging.DEBUG: AnsiColor.CYAN,
-        _CustomLogLevel.ENTER: AnsiColor.BRIGHT_CYAN,
-        _CustomLogLevel.SKIP: AnsiColor.BLUE,
-        _CustomLogLevel.SUCC: AnsiColor.GREEN,
-        logging.INFO: AnsiColor.BRIGHT_BLUE,
-        _CustomLogLevel.PASS: AnsiColor.BRIGHT_GREEN,
-        _CustomLogLevel.DONE: AnsiColor.BRIGHT_YELLOW,
-        logging.WARNING: AnsiColor.YELLOW,
-        logging.ERROR: AnsiColor.RED,
-        _CustomLogLevel.FAIL: AnsiColor.BRIGHT_RED,
-        logging.CRITICAL: AnsiColor.BRIGHT_MAGENTA,
+    _RESET = "\033[0m"
+
+    _ANSI_STYLE2CODE = {
+        AnsiStyle.RED: "31",
+        AnsiStyle.BRIGHT_RED: "91",
+        AnsiStyle.YELLOW: "33",
+        AnsiStyle.BRIGHT_YELLOW: "93",
+        AnsiStyle.GREEN: "32",
+        AnsiStyle.BRIGHT_GREEN: "92",
+        AnsiStyle.CYAN: "36",
+        AnsiStyle.BRIGHT_CYAN: "96",
+        AnsiStyle.BLUE: "34",
+        AnsiStyle.BRIGHT_BLUE: "94",
+        AnsiStyle.MAGENTA: "35",
+        AnsiStyle.BRIGHT_MAGENTA: "95",
+        AnsiStyle.BLACK: "30",
+        AnsiStyle.GREY: "90",
+        AnsiStyle.WHITE: "37",
+        AnsiStyle.BRIGHT_WHITE: "97",
+        AnsiStyle.BG_RED: "41",
+        AnsiStyle.BG_BRIGHT_RED: "101",
+        AnsiStyle.BG_YELLOW: "43",
+        AnsiStyle.BG_BRIGHT_YELLOW: "103",
+        AnsiStyle.BG_GREEN: "42",
+        AnsiStyle.BG_BRIGHT_GREEN: "102",
+        AnsiStyle.BG_CYAN: "46",
+        AnsiStyle.BG_BRIGHT_CYAN: "106",
+        AnsiStyle.BG_BLUE: "44",
+        AnsiStyle.BG_BRIGHT_BLUE: "104",
+        AnsiStyle.BG_MAGENTA: "45",
+        AnsiStyle.BG_BRIGHT_MAGENTA: "105",
+        AnsiStyle.BG_BLACK: "40",
+        AnsiStyle.BG_GREY: "100",
+        AnsiStyle.BG_WHITE: "47",
+        AnsiStyle.BG_BRIGHT_WHITE: "107",
+        AnsiStyle.BOLD: "1",
+        AnsiStyle.UNDERLINE: "4",
+    }
+
+    _LEVEL2ANSI_COLOR = {
+        logging.DEBUG: AnsiStyle.CYAN,
+        _CustomLogLevel.ENTER: AnsiStyle.BRIGHT_CYAN,
+        _CustomLogLevel.SKIP: AnsiStyle.BLUE,
+        _CustomLogLevel.SUCC: AnsiStyle.GREEN,
+        logging.INFO: AnsiStyle.BRIGHT_BLUE,
+        _CustomLogLevel.PASS: AnsiStyle.BRIGHT_GREEN,
+        _CustomLogLevel.DONE: AnsiStyle.BRIGHT_YELLOW,
+        logging.WARNING: AnsiStyle.YELLOW,
+        logging.ERROR: AnsiStyle.RED,
+        _CustomLogLevel.FAIL: AnsiStyle.BRIGHT_RED,
+        logging.CRITICAL: AnsiStyle.BRIGHT_MAGENTA,
+    }
+
+    _TRIAGE_TAG2ANSI_STYLE = {
+        "BUG": AnsiStyle.BRIGHT_WHITE | AnsiStyle.BG_MAGENTA | AnsiStyle.BOLD,
+        "Bug": AnsiStyle.BLACK | AnsiStyle.BG_BRIGHT_MAGENTA,
+        "bug": AnsiStyle.MAGENTA,
+        "FIXME": AnsiStyle.BRIGHT_WHITE | AnsiStyle.BG_BLUE | AnsiStyle.BOLD,
+        "Fixme": AnsiStyle.BLACK | AnsiStyle.BG_BRIGHT_BLUE,
+        "fixme": AnsiStyle.BLUE,
+        "HACK": AnsiStyle.BLACK | AnsiStyle.BG_CYAN | AnsiStyle.BOLD,
+        "Hack": AnsiStyle.BLACK | AnsiStyle.BG_BRIGHT_CYAN,
+        "hack": AnsiStyle.CYAN,
+        "TODO": AnsiStyle.BLACK | AnsiStyle.BG_YELLOW | AnsiStyle.BOLD,
+        "Todo": AnsiStyle.BLACK | AnsiStyle.BG_BRIGHT_YELLOW,
+        "todo": AnsiStyle.YELLOW,
     }
 
     def __init__(self, stream=None, *, is_disabled=False):
@@ -149,32 +234,35 @@ class AnsiRenderer:  # =========================================================
 
     # Public API  **************************************************************
 
-    def color(self, text, color, *, use_bold=False):
+    def color(self, text, style):
         """
-        apply ANSI color code to text, optionally with bold.
+        apply ANSI style codes to text.
 
 
         :param text: text to colorize
         :type text: str
-        :param color: ANSI color to apply
-        :type color: AnsiColor
-        :param use_bold: whether to apply bold formatting;
-                defaults to ``False``
-        :type use_bold: bool
-        :return: ``text`` with color applied if color is enabled;
+        :param style: ANSI style to apply, combine flags with ``|``,
+                eg ``AnsiStyle.BOLD | AnsiStyle.RED | AnsiStyle.BG_YELLOW``
+        :type style: AnsiStyle
+        :return: ``text`` with style applied if color is enabled;
                 otherwise ``text`` unchanged
         :rtype: str
         """
         if not self._enabled:
             return text
 
-        parts = []
-        if use_bold:
-            parts.append(AnsiColor.BOLD.value)
-        parts.append(color.value)
-        parts.append(text)
-        parts.append(AnsiColor.RESET.value)
-        return "".join(parts)
+        codes = [
+            code
+            for flag, code in self._ANSI_STYLE2CODE.items()
+            if flag in style
+        ]
+        return "\033[{}m{}{}".format(";".join(codes), text, self._RESET)
+
+    def color_grey(self, text):
+        """
+        apply bright-black (grey) ANSI color to ``text``
+        """
+        return self.color(text, AnsiStyle.GREY)
 
     def color_level(self, text, levelno):
         """
@@ -184,16 +272,30 @@ class AnsiRenderer:  # =========================================================
         :param levelno: numeric log level used to select the color
         :type levelno: int
         """
-        color = self._LEVEL_COLORS.get(levelno)
+        color = self._LEVEL2ANSI_COLOR.get(levelno)
         if color is None:
             return text
-        return self.color(text, color, use_bold=True)
+        return self.color(text, color | AnsiStyle.BOLD)
 
-    def color_grey(self, text):
+    def color_triage_tag(self, triage_tag):
         """
-        apply bright-black (grey) ANSI color to ``text``
+        apply tag-specific ANSI color to ``triage_tag``
+
+
+        :param triage_tag: triage tag text, eg ``"BUG"``, ``"Fixme"``, ``"todo"``
+        :type triage_tag: str
+        :return: ``triage_tag`` with style applied
+        :rtype: str
+        :raises ValueError: if ``triage_tag`` is not a recognized triage tag
         """
-        return self.color(text, AnsiColor.GREY)
+        style = self._TRIAGE_TAG2ANSI_STYLE.get(triage_tag)
+        if style is None:
+            raise ValueError(
+                "param triage_tag {!r} is not a recognized triage tag".format(
+                    triage_tag
+                )
+            )
+        return self.color(triage_tag, style)
 
 
 # Custom Logging  ##############################################################
