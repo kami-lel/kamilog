@@ -89,7 +89,7 @@ for _lvl in _CustomLogLevel:
 
 # ANSI Color   #################################################################
 
-# TODO order color
+# FIXME order color
 
 
 class AnsiStyle(Flag):  # =====================================================
@@ -152,7 +152,6 @@ class AnsiRenderer:  # =========================================================
 
     _RESET = "\033[0m"
 
-    # TODO order color
     _ANSI_STYLE2CODE = {
         AnsiStyle.BOLD: "1",
         AnsiStyle.UNDERLINE: "4",
@@ -205,18 +204,18 @@ class AnsiRenderer:  # =========================================================
     }
 
     _TRIAGE_TAG2ANSI_STYLE = {
-        "BUG": AnsiStyle.WHITE | AnsiStyle.BG_MAGENTA | AnsiStyle.BOLD,
+        "BUG": AnsiStyle.BRIGHT_WHITE | AnsiStyle.BG_MAGENTA | AnsiStyle.BOLD,
         "Bug": AnsiStyle.BLACK | AnsiStyle.BG_BRIGHT_MAGENTA,
         "bug": AnsiStyle.MAGENTA,
-        "FIXME": AnsiStyle.BLACK | AnsiStyle.BG_CYAN | AnsiStyle.BOLD,
-        "Fixme": AnsiStyle.BLACK | AnsiStyle.BG_BRIGHT_CYAN,
-        "fixme": AnsiStyle.CYAN,
+        "FIXME": AnsiStyle.BRIGHT_WHITE | AnsiStyle.BG_BLUE | AnsiStyle.BOLD,
+        "Fixme": AnsiStyle.BLACK | AnsiStyle.BG_BRIGHT_BLUE,
+        "fixme": AnsiStyle.BLUE,
+        "HACK": AnsiStyle.BLACK | AnsiStyle.BG_CYAN | AnsiStyle.BOLD,
+        "Hack": AnsiStyle.BLACK | AnsiStyle.BG_BRIGHT_CYAN,
+        "hack": AnsiStyle.CYAN,
         "TODO": AnsiStyle.BLACK | AnsiStyle.BG_YELLOW | AnsiStyle.BOLD,
         "Todo": AnsiStyle.BLACK | AnsiStyle.BG_BRIGHT_YELLOW,
         "todo": AnsiStyle.YELLOW,
-        "HACK": AnsiStyle.WHITE | AnsiStyle.BG_BLUE | AnsiStyle.BOLD,
-        "Hack": AnsiStyle.BLACK | AnsiStyle.BG_BRIGHT_BLUE,
-        "hack": AnsiStyle.BLUE,
     }
 
     def __init__(self, stream=None, *, is_disabled=False):
