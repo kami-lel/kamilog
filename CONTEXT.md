@@ -87,17 +87,23 @@ Public `Enum` of ANSI escape code constants keyed by descriptive color names. Ea
 Public class that centralizes ANSI color detection and application. Instantiated by `_LogFormatter` and exposed via its `palette` attribute; also reachable from `_DiffOnlyEngine` as `formatter.palette`.
 
 - Detects TTY status once at construction via `stream.isatty()`; when `stream` is `None` or not a TTY, all methods return their input unchanged.
+- `is_disabled=False` (keyword-only) forces color off unconditionally at construction, regardless of the stream's TTY state.
 - `color(text, color, *, use_bold=False)` — generic color applier; wraps `text` in the given `AnsiColor` code, optionally with bold.
 - `color_level(text, levelno)` — wraps `text` in bold + per-level ANSI color codes via the internal `_LEVEL_COLORS` map.
 - `color_grey(text)` — wraps `text` in grey codes; used for timestamps, source labels, and compression markers.
 
-### `getLogger(name, *, datefmt, relative_to)`
+### `getLogger(name, *, datefmt, relative_to, disable_color, disable_diff_only_compression)`
 
 The sole public entry point. Every call:
 
 1. Retrieves or creates a stdlib logger and upgrades it to `KamiLogger` via `__class__` assignment.
 2. Attaches a `_DiffOnlyMsgFilter` instance if one is not already present.
 3. Adds stdout and stderr `StreamHandler`s (with `_LogFormatter`) if no handlers exist yet — stdout for `< WARNING`, stderr for `>= WARNING`.
+
+Two keyword-only toggles propagate to those parts:
+
+- `disable_color=False` — forwarded to every `_LogFormatter` (as `disable_color`) and on to `AnsiRenderer(is_disabled=…)`, so all handlers and the diff-only filter emit plain text regardless of TTY state.
+- `disable_diff_only_compression=False` — forwarded to `_DiffOnlyMsgFilter`; when `True` the filter skips building its `_DiffOnlyEngine` and passes records through untouched.
 
 ### `KamiLogger`
 
@@ -142,7 +148,7 @@ Methods:
 
 Automatically attached to every logger by `getLogger()`. Compresses repeated log lines by replacing characters shared across the last `threshold` (default 3) messages with `〃\t` markers.
 
-`getLogger()` passes a dedicated `_LogFormatter(sys.stdout, …)` as the first positional argument so the filter's palette inherits the same TTY state as the stdout handler. The filter wraps a `_DiffOnlyEngine` which holds all compression state.
+`getLogger()` passes a dedicated `_LogFormatter(sys.stdout, …)` as the first positional argument so the filter's palette inherits the same TTY state as the stdout handler. The filter wraps a `_DiffOnlyEngine` which holds all compression state — unless constructed with `disable_diff_only_compression=True`, in which case `_engine` stays `None` and `filter()` returns immediately, leaving each record's message untouched.
 
 Algorithm (`_DiffOnlyEngine`):
 
@@ -229,7 +235,8 @@ Both `cb` and `cb0` follow the Unix pipe pattern: text content is read from stdi
 - Positional: `LEVEL` — a level name from `_LOGGER_LEVEL_MAP` (`notset`, `debug`, `enter`, `skip`, `succ`, `info`, `pass`, `done`, `warning`, `error`, `fail`, `critical`)
 - Option: `--verbosity VERBOSITY` — base verbosity offset the `-v`/`-q` counts adjust from (default 3); the resolved level acts as the print threshold, so records below it are dropped
 - Option: `-t, --time-format` — one of `time`, `time-ms`, `datetime`, `datetime-ms`, `no-time` (default `time`), mapped through `_LOGGER_TIME_FORMAT_MAP` to a `datefmt` passed into `getLogger()`; `no-time` maps to `None`
-- Option: `-C, --no-color` and `-D, --no-diff-only` — parsed but not yet functional
+- Option: `-C, --no-color` — force plain output; forwarded to `getLogger(disable_color=True)`
+- Option: `-D, --no-diff-only` — skip diff-only compression; forwarded to `getLogger(disable_diff_only_compression=True)`
 - Option: `-v`/`-q` via `add_verbose_arguments`
 - Example: `echo 'disk full' | python kamilog/kamilog.py logger error`
 
@@ -237,12 +244,13 @@ Both `cb` and `cb0` follow the Unix pipe pattern: text content is read from stdi
 
 ```python
 # logger factory
-kamilog.getLogger(name=None, *, datefmt=DATEFMT_TIME, relative_to=None) -> KamiLogger
+kamilog.getLogger(name=None, *, datefmt=DATEFMT_TIME, relative_to=None,
+                  disable_color=False, disable_diff_only_compression=False) -> KamiLogger
 kamilog.KamiLogger                              # logger class (subclass of logging.Logger)
 
 # ANSI color
 kamilog.AnsiColor                               # Enum of ANSI escape codes
-kamilog.AnsiRenderer                            # TTY-detecting color applier
+kamilog.AnsiRenderer(stream=None, *, is_disabled=False)  # TTY-detecting color applier
 
 # comment banner
 kamilog.gen_comment_banner_centered(content, padding, *, line_width=80, file, renderer=None) -> str
@@ -284,5 +292,4 @@ Verbosity mapping (default level is `DONE` = 25):
 ## Known Limitations and Future Work
 
 - No file handler option on `getLogger()` — stdout/stderr only.
-- Test coverage spans verbosity helpers and comment-banner functions; no unit tests for `_LogFormatter`, `_DiffOnlyMsgFilter`, or the CLI subcommands.
-- The `logger` subcommand's `-C`/`--no-color` and `-D`/`--no-diff-only` flags are placeholders — parsed but not yet wired to behavior.
+- Test coverage spans verbosity helpers and comment-banner functions; no unit tests for `_LogFormatter`, `_DiffOnlyMsgFilter`, the color/compression toggles, or the CLI subcommands.

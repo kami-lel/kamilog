@@ -1008,19 +1008,22 @@ def _register_logger_parser(cli_subparser):
         help="log level name",
     )
     logger_parser.add_argument(
-        "--verbosity",
-        type=int,
-        default=3,
-        metavar="VERBOSITY",
-        help="base verbosity offset for level threshold; default=3",
-    )
-    logger_parser.add_argument(
         "-t",
         "--time-format",
         choices=list(_LOGGER_TIME_FORMAT_MAP),
         default="time",
         help="timestamp format; default=time",
     )
+
+    logger_parser.add_argument(
+        "--verbosity",
+        type=int,
+        default=3,
+        metavar="VERBOSITY",
+        help="base verbosity offset for level threshold; default=3",
+    )
+    add_verbose_arguments(logger_parser)
+
     logger_parser.add_argument(
         "-C",
         "--no-color",
@@ -1033,8 +1036,6 @@ def _register_logger_parser(cli_subparser):
         action="store_true",
         help="disable diff-only message compression",
     )
-
-    add_verbose_arguments(logger_parser)
 
     logger_parser.set_defaults(func=_logger_parser_main)
 
