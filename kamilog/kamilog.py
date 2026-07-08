@@ -519,20 +519,16 @@ class _TabAlignedLine(list):  # ************************************************
     a line of text split into tab-stop-aligned string blocks.
     """
 
-    TAB_SIZE = 8
-
-    def __init__(self, blocks, *, start_offset=0):
-        super().__init__(blocks)
-        self.start_offset = start_offset
-
     @classmethod
-    def parse(cls, line, *, start_offset=0):
+    def parse(cls, line, *, start_offset=0):  # ++++++++++++++++++++++++++++++++
         """
         split a regular text line into ``TAB_SIZE``-wide blocks.
 
         the first block is shortened by ``start_offset`` so later blocks
         still land on ``TAB_SIZE`` column boundaries; the last block
-        holds whatever remains and may be shorter than ``TAB_SIZE``
+        holds whatever remains and may be shorter than ``TAB_SIZE``;
+        any literal ``\\t`` chars already in ``line`` are expanded to
+        spaces first, so alignment stays correct
 
 
         :param line: source line to split
@@ -542,7 +538,20 @@ class _TabAlignedLine(list):  # ************************************************
         :return: new instance holding the split blocks
         :rtype: TabAlignedLine
         """
-        # BUG operate not correctly if message contains \t already
+        # expand tabs  ---------------------------------------------------------
+        expanded = []
+        col = start_offset
+        for ch in line:
+            if ch == "\t":
+                n_spaces = cls.TAB_SIZE - (col % cls.TAB_SIZE)
+                expanded.append(" " * n_spaces)
+                col += n_spaces
+            else:
+                expanded.append(ch)
+                col += 1
+        line = "".join(expanded)
+
+        # split blocks  --------------------------------------------------------
         n = len(line)
         blocks = []
 
@@ -557,6 +566,12 @@ class _TabAlignedLine(list):  # ************************************************
             pos = end
 
         return cls(blocks, start_offset=start_offset)
+
+    TAB_SIZE = 8
+
+    def __init__(self, blocks, *, start_offset=0):
+        super().__init__(blocks)
+        self.start_offset = start_offset
 
     def render(self, *, insert_prefix=False, prefix_symbol=" "):
         """
