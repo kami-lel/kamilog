@@ -5,6 +5,8 @@ exercise _DiffOnlyMsgFilter across word-boundary, leader, and edge-case
 scenarios; each demo logs 6 lines: 3 warmup, then 3 compressed
 """
 
+# BUG refactor break behavior
+
 import sys
 
 import kamilog
@@ -43,10 +45,7 @@ run_demo(
 run_demo(
     "hyphen/underscore glue — kebab and snake tokens",
     "deploy",
-    [
-        "deploy target=prod  job=etl-run_01{}  ok".format(i)
-        for i in range(1, 7)
-    ],
+    ["deploy target=prod  job=etl-run_01{}  ok".format(i) for i in range(1, 7)],
 )
 
 # equals boundary  #############################################################
