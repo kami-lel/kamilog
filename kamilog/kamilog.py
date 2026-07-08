@@ -189,6 +189,21 @@ class AnsiRenderer:  # =========================================================
         logging.CRITICAL: AnsiStyle.BRIGHT_MAGENTA,
     }
 
+    _TRIAGE_TAG2ANSI_STYLE = {
+        "BUG": AnsiStyle.RED,
+        "FIXME": AnsiStyle.RED,
+        "TODO": AnsiStyle.RED,
+        "HACK": AnsiStyle.RED,
+        "Bug": AnsiStyle.RED,
+        "Fixme": AnsiStyle.RED,
+        "Todo": AnsiStyle.RED,
+        "Hack": AnsiStyle.RED,
+        "bug": AnsiStyle.RED,
+        "fixme": AnsiStyle.RED,
+        "todo": AnsiStyle.RED,
+        "hack": AnsiStyle.RED,
+    }
+
     def __init__(self, stream=None, *, is_disabled=False):
         self._enabled = (
             not is_disabled
@@ -223,6 +238,12 @@ class AnsiRenderer:  # =========================================================
         ]
         return "\033[{}m{}{}".format(";".join(codes), text, self._RESET)
 
+    def color_grey(self, text):
+        """
+        apply bright-black (grey) ANSI color to ``text``
+        """
+        return self.color(text, AnsiStyle.GREY)
+
     def color_level(self, text, levelno):
         """
         apply bold and level-specific ANSI color to ``text``
@@ -236,11 +257,25 @@ class AnsiRenderer:  # =========================================================
             return text
         return self.color(text, color | AnsiStyle.BOLD)
 
-    def color_grey(self, text):
+    def color_triage_tag(self, triage_tag):
         """
-        apply bright-black (grey) ANSI color to ``text``
+        apply tag-specific ANSI color to ``triage_tag``
+
+
+        :param triage_tag: triage tag text, eg ``"BUG"``, ``"Fixme"``, ``"todo"``
+        :type triage_tag: str
+        :return: ``triage_tag`` with style applied
+        :rtype: str
+        :raises ValueError: if ``triage_tag`` is not a recognized triage tag
         """
-        return self.color(text, AnsiStyle.GREY)
+        style = self._TRIAGE_TAG2ANSI_STYLE.get(triage_tag)
+        if style is None:
+            raise ValueError(
+                "param triage_tag {!r} is not a recognized triage tag".format(
+                    triage_tag
+                )
+            )
+        return self.color(triage_tag, style)
 
 
 # Custom Logging  ##############################################################
