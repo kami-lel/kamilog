@@ -20,6 +20,17 @@
 
 ### Added
 
+- `_TabAlignedLine` — internal `list` subclass splitting a line of text into
+  `TAB_SIZE`-wide (8) blocks aligned to tab stops; `parse(line, *,
+  start_offset=0)` expands any literal `\t` already in `line` before
+  splitting, and `render(*, insert_prefix=False, prefix_symbol=" ")` (and
+  `__str__`) join the blocks back into a normal string
+- golden-output tests for every `examples/` demo script, asserting exact
+  captured stdout/stderr so future changes can't silently alter demo output
+  (`tests/cb/demo/`, `tests/dof/demo/`, `tests/logger/demo/`)
+- `logger-diff_only_stress_demo.py` — new "embedded tab" scenario
+  demonstrating compression when message content already contains a literal
+  `\t`
 - `logger` CLI subcommand (alias `l`) — reads lines from stdin and logs each
   at a chosen `LEVEL`, gated by a verbosity threshold; run as
   `python kamilog/kamilog.py logger LEVEL`
@@ -46,6 +57,9 @@
 - every subcommand is now built by a `_register_*_parser(cli_subparser)`
   function (`comment_banner`, `comment_banner_zero`, `logger`) instead of
   module-level parser objects
+- `_DiffOnlyEngine._compress` now splits the replaceable span into
+  `_TabAlignedLine` blocks instead of computing block boundaries inline;
+  `_COMPRESSION_BLOCK_SIZE` removed in favor of `_TabAlignedLine.TAB_SIZE`
 
 ### Deprecated
 
@@ -55,6 +69,12 @@
 
 - CLI help and usage now show the program name as `kamilog` instead of
   `__main__`
+- diff-only compression reverted to a character-precise cut/compress
+  implementation, restoring word-boundary preservation (e.g. a lone `=`
+  between fields no longer gets swallowed by the compressed run)
+- message content that already contains a literal `\t` no longer misaligns
+  diff-only compression — `_TabAlignedLine.parse` expands embedded tabs
+  before splitting into blocks
 
 ### Security
 
