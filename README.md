@@ -1,6 +1,6 @@
 # kamilog README
 
-A lightweight Python logging wrapper with structured output, custom log levels, ANSI 16-color support, and flexible timestamp options.
+A lightweight Python logging wrapper with structured output, custom log levels, combinable ANSI color styling, and flexible timestamp options.
 
 <!--
 todo add file handler option for getLogger
@@ -24,7 +24,9 @@ bug using different logger to print & diff only can produce confusing result
 
 #### 🎨 ANSI Colored Output
 
-- Per-level 16-color ANSI formatting with bold
+- Per-level ANSI formatting with bold
+- Combinable `AnsiStyle` flags — foreground, background, bold, and underline, mixed freely with `|`
+- Triage-tag coloring via `color_triage_tag`
 - TTY-aware (auto-disabled when piped)
 - Public color API for custom colored output
 

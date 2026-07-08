@@ -1,10 +1,10 @@
 # kamilog CONTEXT
 
-*Last updated: 2026-07-08 - v2.4.0*
+*Last updated: 2026-07-09 - v2.5.0*
 
 ## Project Overview
 
-kamilog is a lightweight Python logging utility that wraps the stdlib `logging` module. It adds structured output, custom log levels, ANSI 16-color formatting, flexible timestamp options, and a diff-only message filter that compresses repeated log lines. The public API is a single entry point — `kamilog.getLogger()` — that returns a fully configured logger as a drop-in replacement for `logging.getLogger()`.
+kamilog is a lightweight Python logging utility that wraps the stdlib `logging` module. It adds structured output, custom log levels, combinable ANSI color styling, flexible timestamp options, and a diff-only message filter that compresses repeated log lines. The public API is a single entry point — `kamilog.getLogger()` — that returns a fully configured logger as a drop-in replacement for `logging.getLogger()`.
 
 Repository: <https://github.com/kami-lel/kamilog>
 
@@ -14,7 +14,7 @@ Repository: <https://github.com/kami-lel/kamilog>
 kamilog/
 ├── kamilog/
 │   ├── __init__.py          # re-exports all public symbols from kamilog.py
-│   └── kamilog.py           # entire implementation (~1320 lines)
+│   └── kamilog.py           # entire implementation (~1580 lines)
 ├── tests/
 │   ├── cb/                          # comment-banner test suite
 │   │   ├── cb-centered_test.py
@@ -36,6 +36,9 @@ kamilog/
 │   ├── tal/                         # _TabAlignedLine test suite
 │   └── source_quality_test.py       # banned-marker scan (no TODO/FIXME/HACK/BUG)
 ├── examples/
+│   ├── ansi/
+│   │   ├── ansi-style-demo.py                # AnsiStyle flags and color combinations
+│   │   └── ansi-tt-demo.py                   # color_triage_tag across all 12 triage tags
 │   ├── cb/
 │   │   ├── cb-demo.py                       # all three comment-banner functions with char padding
 │   │   ├── cb-number-demo.py                # numeric padding shortcuts (1-5)
@@ -75,21 +78,16 @@ Private `IntEnum` subclass that consolidates every custom log level in one place
 
 Module-level aliases (`ENTER = _CustomLogLevel.ENTER`, etc.) keep the public API unchanged. `_PADDED_LEVELNAME_MAP` and `KamiLogger`'s log methods all reference `_CustomLogLevel` directly.
 
-### `AnsiColor`
+### `AnsiStyle`
 
-Public `Enum` of ANSI escape code constants keyed by descriptive color names. Each member's `.value` is the escape sequence string.
+Public combinable `Flag` enum of ANSI style bits — foreground, background, and text-attribute flags, combined with `|` (e.g. `AnsiStyle.BOLD | AnsiStyle.RED | AnsiStyle.BG_YELLOW`). Members carry no ANSI meaning themselves; `AnsiRenderer._ANSI_STYLE2CODE` maps each flag to its escape code.
 
-| member | escape sequence | usage |
-| --- | --- | --- |
-| `RESET` | `\033[0m` | terminator for all color codes |
-| `BOLD` | `\033[1m` | intensity modifier (applies to foreground) |
-| `GREY` | `\033[90m` | bright black; used for timestamps, source labels, markers |
-| `CYAN`, `BRIGHT_CYAN` | `\033[36m`, `\033[96m` | `DEBUG`, `ENTER` levels |
-| `BLUE`, `BRIGHT_BLUE` | `\033[34m`, `\033[94m` | `SKIP`, `INFO` levels |
-| `GREEN`, `BRIGHT_GREEN` | `\033[32m`, `\033[92m` | `SUCC`, `PASS` levels |
-| `YELLOW`, `BRIGHT_YELLOW` | `\033[33m`, `\033[93m` | `WARNING`, `DONE` levels |
-| `RED`, `BRIGHT_RED` | `\033[31m`, `\033[91m` | `ERROR`, `FAIL` levels |
-| `BRIGHT_MAGENTA` | `\033[95m` | `CRITICAL` level |
+| category | members |
+| --- | --- |
+| foreground hues | `RED`/`BRIGHT_RED`, `YELLOW`/`BRIGHT_YELLOW`, `GREEN`/`BRIGHT_GREEN`, `CYAN`/`BRIGHT_CYAN`, `BLUE`/`BRIGHT_BLUE`, `MAGENTA`/`BRIGHT_MAGENTA` |
+| foreground neutrals | `BLACK`, `GREY`, `WHITE`, `BRIGHT_WHITE` |
+| background | `BG_`-prefixed counterpart of every foreground member above |
+| text attribute | `BOLD`, `UNDERLINE` |
 
 ### `AnsiRenderer`
 
@@ -97,9 +95,10 @@ Public class that centralizes ANSI color detection and application. Instantiated
 
 - Detects TTY status once at construction via `stream.isatty()`; when `stream` is `None` or not a TTY, all methods return their input unchanged.
 - `is_disabled=False` (keyword-only) forces color off unconditionally at construction, regardless of the stream's TTY state.
-- `color(text, color, *, use_bold=False)` — generic color applier; wraps `text` in the given `AnsiColor` code, optionally with bold.
-- `color_level(text, levelno)` — wraps `text` in bold + per-level ANSI color codes via the internal `_LEVEL_COLORS` map.
-- `color_grey(text)` — wraps `text` in grey codes; used for timestamps, source labels, and compression markers.
+- `color(text, style)` — generic style applier; wraps `text` in the ANSI codes for every flag set in the combined `AnsiStyle` value.
+- `color_level(text, levelno)` — wraps `text` in bold + per-level ANSI color via the internal `_LEVEL2ANSI_COLOR` map.
+- `color_grey(text)` — wraps `text` in grey; used for timestamps, source labels, and compression markers.
+- `color_triage_tag(triage_tag)` — colors a triage-tag string (`BUG`/`Bug`/`bug`, `FIXME`/`Fixme`/`fixme`, `TODO`/`Todo`/`todo`, `HACK`/`Hack`/`hack`) via the internal `_TRIAGE_TAG2ANSI_STYLE` map. Each tag type keeps one hue across its three loudness tiers, with contrast (background presence/brightness, bold) escalating for louder tiers. Raises `ValueError` for any other string.
 
 ### `getLogger(name, *, datefmt, relative_to, disable_color, disable_diff_only_compression)`
 
@@ -276,7 +275,7 @@ kamilog.getLogger(name=None, *, datefmt=DATEFMT_TIME, relative_to=None,
 kamilog.KamiLogger                              # logger class (subclass of logging.Logger)
 
 # ANSI color
-kamilog.AnsiColor                               # Enum of ANSI escape codes
+kamilog.AnsiStyle                               # combinable Flag enum of style bits
 kamilog.AnsiRenderer(stream=None, *, is_disabled=False)  # TTY-detecting color applier
 
 # comment banner
