@@ -1196,12 +1196,12 @@ def gen_comment_banner_zero(
 
 # main parser  =================================================================
 
-cli_parser = ArgumentParser(
+_cli_parser = ArgumentParser(
     prog="kamilog",
     description="kamilog CLI: utilities for formatted output and logging",
 )
-cli_parser.set_defaults(func=lambda _: cli_parser.print_help())
-cli_subparser = cli_parser.add_subparsers(title="subcommands")
+_cli_parser.set_defaults(func=lambda _: _cli_parser.print_help())
+_cli_subparser = _cli_parser.add_subparsers(title="subcommands")
 
 # comment banner parser  =======================================================
 
@@ -1224,7 +1224,7 @@ def _comment_banner_parser_main(args):
     print(line, file=file)
 
 
-comment_banner_parser = cli_subparser.add_parser(
+_cli_comment_banner_parser = _cli_subparser.add_parser(
     "comment_banner",
     help=_COMMENT_BANNER_HELP,
     description=(
@@ -1237,18 +1237,18 @@ comment_banner_parser = cli_subparser.add_parser(
     aliases=["cb"],
 )
 
-comment_banner_parser.add_argument(
+_cli_comment_banner_parser.add_argument(
     "mode",
     choices=["c", "l", "r", "center", "left", "right"],
     help="text alignment: c/center, l/left(-justified), r/right(-justified)",
 )
 
-comment_banner_parser.add_argument(
+_cli_comment_banner_parser.add_argument(
     "padding",
     metavar="PADDING",
     help="fill char, or int 1~5 for CB1~CB5 preset (1:#/2:=/3:*/4:+/5:-)",
 )
-comment_banner_parser.add_argument(
+_cli_comment_banner_parser.add_argument(
     "-w",
     "--line-width",
     type=int,
@@ -1256,14 +1256,14 @@ comment_banner_parser.add_argument(
     metavar="LINE_WIDTH",
     help="total character width of output line; default 80",
 )
-comment_banner_parser.add_argument(
+_cli_comment_banner_parser.add_argument(
     "-e",
     "--stderr",
     action="store_true",
     help="print to stderr (instead of stdout)",
 )
 
-comment_banner_parser.set_defaults(func=_comment_banner_parser_main)
+_cli_comment_banner_parser.set_defaults(func=_comment_banner_parser_main)
 
 
 # cb0 parser  ==================================================================
@@ -1282,7 +1282,7 @@ def _comment_banner_zero_parser_main(args):
     print(banner, file=file)
 
 
-comment_banner_zero_parser = cli_subparser.add_parser(
+_cli_comment_banner_zero_parser = _cli_subparser.add_parser(
     "comment_banner_zero",
     help=_CB0_HELP,
     description=(
@@ -1295,7 +1295,7 @@ comment_banner_zero_parser = cli_subparser.add_parser(
     aliases=["cb0"],
 )
 
-comment_banner_zero_parser.add_argument(
+_cli_comment_banner_zero_parser.add_argument(
     "-w",
     "--line-width",
     type=int,
@@ -1303,20 +1303,20 @@ comment_banner_zero_parser.add_argument(
     metavar="LINE_WIDTH",
     help="total character width of output line; default 80",
 )
-comment_banner_zero_parser.add_argument(
+_cli_comment_banner_zero_parser.add_argument(
     "-e",
     "--stderr",
     action="store_true",
     help="print to stderr (instead of stdout)",
 )
 
-comment_banner_zero_parser.set_defaults(func=_comment_banner_zero_parser_main)
+_cli_comment_banner_zero_parser.set_defaults(func=_comment_banner_zero_parser_main)
 
 
-_register_logger_parser(cli_subparser)
+_register_logger_parser(_cli_subparser)
 
 
 # Entry Point  =================================================================
 if __name__ == "__main__":
-    parsed_args = cli_parser.parse_args()
+    parsed_args = _cli_parser.parse_args()
     parsed_args.func(parsed_args)
