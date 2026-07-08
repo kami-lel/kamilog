@@ -4,7 +4,7 @@ ansi-disable-color_test.py
 tests for `AnsiRenderer`'s explicit `is_disabled` override in `kamilog.py`
 """
 
-from kamilog.kamilog import AnsiColor, AnsiRenderer
+from kamilog.kamilog import AnsiStyle, AnsiRenderer
 
 
 class _FakeStream:
@@ -18,22 +18,22 @@ class _FakeStream:
 class TestDisabledOverridesTtyStream:
     def test_tty_stream_with_is_disabled_stays_uncolored(_):
         renderer = AnsiRenderer(_FakeStream(True), is_disabled=True)
-        assert renderer.color("hi", AnsiColor.RED) == "hi"
+        assert renderer.color("hi", AnsiStyle.RED) == "hi"
 
 
 class TestDisabledWithNoneStream:
     def test_none_stream_with_is_disabled_stays_uncolored(_):
         renderer = AnsiRenderer(None, is_disabled=True)
-        assert renderer.color("hi", AnsiColor.RED) == "hi"
+        assert renderer.color("hi", AnsiStyle.RED) == "hi"
 
 
 class TestNotDisabledKeepsTtyBehavior:
     def test_tty_stream_without_is_disabled_is_colored(_):
         renderer = AnsiRenderer(_FakeStream(True), is_disabled=False)
-        assert renderer.color("hi", AnsiColor.RED) == "\033[31mhi\033[0m"
+        assert renderer.color("hi", AnsiStyle.RED) == "\033[31mhi\033[0m"
 
 
 class TestIsDisabledDefaultsToFalse:
     def test_default_is_disabled_does_not_suppress_tty_color(_):
         renderer = AnsiRenderer(_FakeStream(True))
-        assert renderer.color("hi", AnsiColor.RED) == "\033[31mhi\033[0m"
+        assert renderer.color("hi", AnsiStyle.RED) == "\033[31mhi\033[0m"
