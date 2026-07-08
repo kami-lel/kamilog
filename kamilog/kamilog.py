@@ -1240,18 +1240,6 @@ def gen_comment_banner_zero(
     return "\n".join(formatted_lines)
 
 
-# CLI  #########################################################################
-
-# main parser  =================================================================
-
-_cli_parser = ArgumentParser(
-    prog="kamilog",
-    description="kamilog CLI: utilities for formatted output and logging",
-)
-_cli_parser.set_defaults(func=lambda _: _cli_parser.print_help())
-_cli_subparser = _cli_parser.add_subparsers(title="subcommands")
-
-
 # comment banner parser  =======================================================
 
 _COMMENT_BANNER_HELP = "print stdin content padded to line width"
@@ -1373,14 +1361,25 @@ def _register_comment_banner_zero_parser(cli_subparser):
     )
 
 
-# register subcommands  ========================================================
+# CLI main parser  #############################################################
+
+_cli_parser = ArgumentParser(
+    prog="kamilog",
+    description="kamilog CLI: utilities for formatted output and logging",
+)
+_cli_parser.set_defaults(func=lambda _: _cli_parser.print_help())
+_cli_subparser = _cli_parser.add_subparsers(title="subcommands")
+
+
+# register subcommands
 
 _register_comment_banner_parser(_cli_subparser)
 _register_comment_banner_zero_parser(_cli_subparser)
 _register_logger_parser(_cli_subparser)
 
 
-# Entry Point  =================================================================
+# Entry Point  #################################################################
+
 if __name__ == "__main__":
     parsed_args = _cli_parser.parse_args()
     parsed_args.func(parsed_args)
