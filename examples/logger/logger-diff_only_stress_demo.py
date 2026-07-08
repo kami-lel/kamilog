@@ -10,8 +10,6 @@ import sys
 import kamilog
 from kamilog.kamilog import AnsiRenderer, gen_comment_banner_centered
 
-# TODO add ut & demo where \t already existed
-
 # repeated calls share one renderer instead of re-detecting TTY state
 renderer = AnsiRenderer(sys.stdout)
 
@@ -133,4 +131,17 @@ run_demo(
     "identical lines — full compression",
     "heartbeat",
     ["heartbeat gateway alive"] * 6,
+)
+
+# embedded tab  #################################################################
+# message content already contains a literal "\t": _TabAlignedLine.parse
+# expands it into spaces before splitting into blocks, so alignment stays
+# correct instead of drifting off the tab stops
+run_demo(
+    "embedded tab — literal \\t in content",
+    "row",
+    [
+        "row\tsensor=cpu\tid=00{}\tstatus=ok".format(i)
+        for i in range(1, 7)
+    ],
 )
