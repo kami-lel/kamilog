@@ -698,11 +698,20 @@ class _DiffOnlyMsgFilter(logging.Filter):  # ***********************************
     :param threshold: forwarded to ``_DiffOnlyEngine`` as the history
             depth before compression activates
     :type threshold: int
+    :param disable_diff_only_compression: whether turn off diff-ony compression
+            and pass records through untouched
+    :type disable_diff_only_compression: bool
     """
 
-    def __init__(self, formatter, threshold=3):
+    def __init__(
+        self, formatter, threshold=3, *, disable_diff_only_compression=False
+    ):
         super().__init__()
-        self._engine = _DiffOnlyEngine(formatter, threshold)
+        self._engine = (
+            None
+            if disable_diff_only_compression
+            else _DiffOnlyEngine(formatter, threshold)
+        )
 
     def filter(self, record):
         """
@@ -714,6 +723,8 @@ class _DiffOnlyMsgFilter(logging.Filter):  # ***********************************
         :return: always ``True``; this filter never drops records
         :rtype: bool
         """
+        if self._engine is None:  # compression disabled, pass through
+            return True
         record.msg = self._engine.process(record)
         record.args = ()
         return True
@@ -721,12 +732,15 @@ class _DiffOnlyMsgFilter(logging.Filter):  # ***********************************
 
 # Logger Public API  ===========================================================
 
-# TODO add no diff only
-
 
 # pylint: disable-next=invalid-name
 def getLogger(
-    name=None, *, datefmt=DATEFMT_TIME, relative_to=None, disable_color=False
+    name=None,
+    *,
+    datefmt=DATEFMT_TIME,
+    relative_to=None,
+    disable_color=False,
+    disable_diff_only_compression=False,
 ):
     """
     return a configured :class:`KamiLogger` for ``name``, creating it if needed.
@@ -745,6 +759,9 @@ def getLogger(
     :param disable_color: disable ANSI color on all handlers
             and the diff-only filter
     :type disable_color: bool, optional
+    :param disable_diff_only_compression: whether turn off diff-ony compression
+            and pass records through untouched
+    :type disable_diff_only_compression: bool, optional
     :return: a logger with the `name`, create if non-existence;
             root logger if `name` is `None`
     :rtype: KamiLogger
@@ -762,7 +779,8 @@ def getLogger(
                     datefmt=datefmt,
                     relative_to=relative_to,
                     disable_color=disable_color,
-                )
+                ),
+                disable_diff_only_compression=disable_diff_only_compression,
             )
         )
 
