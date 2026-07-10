@@ -88,11 +88,19 @@ WARN. myapp: Warning message
 | SUCC. | 17 | `.succ()` | Green | `\033[32m` | operation succeeded |
 | INFO  | 20 | `.info()` | Bright Blue | `\033[94m` | general program event or state change |
 | PASS  | 21 | `.pass_()` | Bright Green | `\033[92m` | test assertion or case passed |
+| NOTE  | 23 | `.note()` | Grey | `\033[90m` | general aside worth noting |
+| TIP   | 24 | `.tip()` | White | `\033[37m` | actionable suggestion |
 | DONE  | 25 | `.done()` | Bright Yellow | `\033[93m` | program or major phase completed successfully |
+| HINT  | 26 | `.hint()` | Black | `\033[30m` | subtle, barely-there cue |
+| IMPT. | 27 | `.important()` | Bright White | `\033[97m` | emphasized information that should stand out |
 | WARN. | 30 | `.warning()` | Yellow | `\033[33m` | unexpected but recoverable condition |
+| CAUT. | 31 | `.caution()` | Magenta | `\033[35m` | risk of a negative outcome, heed carefully |
 | ERROR | 40 | `.error()` | Red | `\033[31m` | operation failed |
 | FAIL  | 45 | `.fail()` | Bright Red | `\033[91m` | test assertion or case failed |
 | CRIT. | 50 | `.critical()` | Bright Magenta | `\033[95m` | program failure or immediate crash |
+
+
+<!-- Fixme write better usage guide & tip -->
 
 > [!IMPORTANT]
 > `.pass_()` uses a trailing underscore because `pass` is a Python keyword.
