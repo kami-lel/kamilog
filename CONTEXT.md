@@ -1,6 +1,6 @@
 # kamilog CONTEXT
 
-*Last updated: 2026-07-10 - v2.5.0*
+*Last updated: 2026-07-10 - v2.6.0*
 
 ## Project Overview
 
@@ -69,9 +69,9 @@ Private `IntEnum` subclass that consolidates every custom log level in one place
 
 | member | value | `.name` | `.display` |
 | --- | --- | --- | --- |
-| `SUCC` | 15 | `"SUCC"` | `"SUCC."` |
-| `ENTER` | 16 | `"ENTER"` | `"ENTER"` |
-| `SKIP` | 17 | `"SKIP"` | `"SKIP "` |
+| `ENTER` | 15 | `"ENTER"` | `"ENTER"` |
+| `SKIP` | 16 | `"SKIP"` | `"SKIP "` |
+| `SUCC` | 17 | `"SUCC"` | `"SUCC."` |
 | `PASS` | 21 | `"PASS"` | `"PASS "` |
 | `NOTE` | 23 | `"NOTE"` | `"NOTE "` |
 | `TIP` | 24 | `"TIP"` | `"TIP  "` |
@@ -124,9 +124,9 @@ Subclasses `logging.Logger`. Adds eleven convenience methods mapping to the cust
 
 | method | level name | numeric |
 | --- | --- | --- |
-| `.succ()` | `SUCC` | 15 |
-| `.enter()` | `ENTER` | 16 |
-| `.skip()` | `SKIP` | 17 |
+| `.enter()` | `ENTER` | 15 |
+| `.skip()` | `SKIP` | 16 |
+| `.succ()` | `SUCC` | 17 |
 | `.pass_()` | `PASS` | 21 |
 | `.note()` | `NOTE` | 23 |
 | `.tip()` | `TIP` | 24 |
@@ -136,7 +136,7 @@ Subclasses `logging.Logger`. Adds eleven convenience methods mapping to the cust
 | `.caution()` | `CAUTION` | 31 |
 | `.fail()` | `FAIL` | 45 |
 
-The full level progression: `DEBUG`(10) → `SUCC`(15) → `ENTER`(16) → `SKIP`(17) → `INFO`(20) → `PASS`(21) → `NOTE`(23) → `TIP`(24) → `DONE`(25) → `HINT`(26) → `IMPORTANT`(27) → `WARNING`(30) → `CAUTION`(31) → `ERROR`(40) → `FAIL`(45) → `CRITICAL`(50).
+The full level progression: `DEBUG`(10) → `ENTER`(15) → `SKIP`(16) → `SUCC`(17) → `INFO`(20) → `PASS`(21) → `NOTE`(23) → `TIP`(24) → `DONE`(25) → `HINT`(26) → `IMPORTANT`(27) → `WARNING`(30) → `CAUTION`(31) → `ERROR`(40) → `FAIL`(45) → `CRITICAL`(50).
 
 ### `_LogFormatEngine`
 
