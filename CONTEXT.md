@@ -1,6 +1,6 @@
 # kamilog CONTEXT
 
-*Last updated: 2026-07-09 - v2.5.0*
+*Last updated: 2026-07-10 - v2.5.0*
 
 ## Project Overview
 
@@ -45,7 +45,7 @@ kamilog/
 │   │   └── cb-zero_demo.py                  # multi-line boxed banner (CB0)
 │   ├── verbosity_demo.py                    # CLI -v/-q flags with custom levels
 │   └── logger/
-│       ├── logger-all_levels_demo.py        # all eleven log levels with descriptions
+│       ├── logger-all_levels_demo.py        # all sixteen log levels with descriptions
 │       ├── logger-timestamps_demo.py        # all four DATEFMT_* formats and relative_to
 │       ├── logger-diff_only_demo.py         # _DiffOnlyMsgFilter compression walkthrough
 │       └── logger-diff_only_stress_demo.py  # word-boundary, leader, and embedded-tab
@@ -73,7 +73,12 @@ Private `IntEnum` subclass that consolidates every custom log level in one place
 | `ENTER` | 16 | `"ENTER"` | `"ENTER"` |
 | `SKIP` | 17 | `"SKIP"` | `"SKIP "` |
 | `PASS` | 21 | `"PASS"` | `"PASS "` |
+| `NOTE` | 23 | `"NOTE"` | `"NOTE "` |
+| `TIP` | 24 | `"TIP"` | `"TIP  "` |
 | `DONE` | 25 | `"DONE"` | `"DONE "` |
+| `HINT` | 26 | `"HINT"` | `"HINT "` |
+| `IMPORTANT` | 27 | `"IMPORTANT"` | `"IMPT."` |
+| `CAUTION` | 31 | `"CAUTION"` | `"CAUT."` |
 | `FAIL` | 45 | `"FAIL"` | `"FAIL "` |
 
 Module-level aliases (`ENTER = _CustomLogLevel.ENTER`, etc.) keep the public API unchanged. `_PADDED_LEVELNAME_MAP` and `KamiLogger`'s log methods all reference `_CustomLogLevel` directly.
@@ -115,7 +120,7 @@ Two keyword-only toggles propagate to those parts:
 
 ### `KamiLogger`
 
-Subclasses `logging.Logger`. Adds six convenience methods mapping to the custom levels:
+Subclasses `logging.Logger`. Adds eleven convenience methods mapping to the custom levels:
 
 | method | level name | numeric |
 | --- | --- | --- |
@@ -123,10 +128,15 @@ Subclasses `logging.Logger`. Adds six convenience methods mapping to the custom 
 | `.enter()` | `ENTER` | 16 |
 | `.skip()` | `SKIP` | 17 |
 | `.pass_()` | `PASS` | 21 |
+| `.note()` | `NOTE` | 23 |
+| `.tip()` | `TIP` | 24 |
 | `.done()` | `DONE` | 25 |
+| `.hint()` | `HINT` | 26 |
+| `.important()` | `IMPORTANT` | 27 |
+| `.caution()` | `CAUTION` | 31 |
 | `.fail()` | `FAIL` | 45 |
 
-The full level progression: `DEBUG`(10) → `SUCC`(15) → `ENTER`(16) → `SKIP`(17) → `INFO`(20) → `PASS`(21) → `DONE`(25) → `WARNING`(30) → `ERROR`(40) → `FAIL`(45) → `CRITICAL`(50).
+The full level progression: `DEBUG`(10) → `SUCC`(15) → `ENTER`(16) → `SKIP`(17) → `INFO`(20) → `PASS`(21) → `NOTE`(23) → `TIP`(24) → `DONE`(25) → `HINT`(26) → `IMPORTANT`(27) → `WARNING`(30) → `CAUTION`(31) → `ERROR`(40) → `FAIL`(45) → `CRITICAL`(50).
 
 ### `_LogFormatEngine`
 
@@ -139,7 +149,7 @@ Responsibilities:
 - `build_line(record)` — assembles the full `LEVEL source: message` line with optional timestamp prefix. Does not append `exc_info` or `stack_info`.
 - Private helpers `_fmt_asctime`, `_fmt_level`, `_fmt_source`, `_fmt_relative` delegate color application to `self._palette`.
 
-Level display names: `DEBUG`, `ENTER`, `SKIP `, `INFO `, `PASS `, `SUCC.`, `DONE `, `WARN.`, `ERROR`, `FAIL `, `CRIT.`
+Level display names: `DEBUG`, `ENTER`, `SKIP `, `INFO `, `PASS `, `SUCC.`, `NOTE `, `TIP  `, `DONE `, `HINT `, `IMPT.`, `WARN.`, `CAUT.`, `ERROR`, `FAIL `, `CRIT.`
 
 ### `_LogFormatter`
 
@@ -258,7 +268,7 @@ Both `cb` and `cb0` follow the Unix pipe pattern: text content is read from stdi
 
 **Logger subcommand (`logger` / `l`)**:
 - Stdin: `LINES` — one or more lines, read via `sys.stdin.read().splitlines()`; each is emitted as one log record
-- Positional: `LEVEL` — a level name from `_LOGGER_LEVEL_MAP` (`notset`, `debug`, `enter`, `skip`, `succ`, `info`, `pass`, `done`, `warning`, `error`, `fail`, `critical`)
+- Positional: `LEVEL` — a level name from `_LOGGER_LEVEL_MAP` (`notset`, `debug`, `enter`, `skip`, `succ`, `info`, `pass`, `note`, `tip`, `done`, `hint`, `important`, `warning`, `caution`, `error`, `fail`, `critical`)
 - Option: `--verbosity VERBOSITY` — base verbosity offset the `-v`/`-q` counts adjust from (default 3); the resolved level acts as the print threshold, so records below it are dropped
 - Option: `-t, --time-format` — one of `time`, `time-ms`, `datetime`, `datetime-ms`, `no-time` (default `time`), mapped through `_LOGGER_TIME_FORMAT_MAP` to a `datefmt` passed into `getLogger()`; `no-time` maps to `None`
 - Option: `-C, --no-color` — force plain output; forwarded to `getLogger(disable_color=True)`
@@ -285,8 +295,8 @@ kamilog.gen_comment_banner_right_just(content, padding, *, line_width=80, file, 
 kamilog.gen_comment_banner_zero(lines, *, line_width=80, file=sys.stdout, renderer=None) -> str
 
 # log level constants
-kamilog.NOTSET, DEBUG, ENTER, SKIP, INFO, PASS, SUCC, DONE,
-WARNING, ERROR, FAIL, CRITICAL
+kamilog.NOTSET, DEBUG, ENTER, SKIP, INFO, PASS, SUCC, NOTE, TIP,
+DONE, HINT, IMPORTANT, WARNING, CAUTION, ERROR, FAIL, CRITICAL
 
 # timestamp format constants
 kamilog.DATEFMT_TIME          # "HH:MM:SS"

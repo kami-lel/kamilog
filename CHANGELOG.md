@@ -20,7 +20,18 @@
 
 ### Added
 
+New custom log levels, each with a matching method:
+
+- `NOTE` (23) — `.note()` — general aside worth noting
+- `TIP` (24) — `.tip()` — actionable suggestion
+- `HINT` (26) — `.hint()` — subtle, barely-there cue
+- `IMPORTANT` (27) — `.important()` — emphasized information that should stand out
+- `CAUTION` (31) — `.caution()` — risk of a negative outcome, heed carefully
+
 ### Changed
+
+- `docs/usage_doc.md` — Custom Log Levels table documents the five new levels
+- `examples/logger/logger-all_levels_demo.py` — demonstrates all sixteen log levels
 
 ### Deprecated
 
