@@ -10,7 +10,7 @@ todo smart time print
 todo cli logger: implement relative time
 todo cli logger: allow to use already set up logger
 bug using different logger to print & diff only can produce confusing result
-Todo rework all colors: different color in the same scope (eg enter,debug,etc)
+TODO rework all colors: different color in the same scope (eg enter,debug,etc)
 -->
 
 ## Features
