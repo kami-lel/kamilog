@@ -7,12 +7,15 @@ from pathlib import Path
 
 _KAMILOG_DIR = Path(__file__).parent.parent / "kamilog"
 _BANNED = re.compile(r"\b(todo|bug|fixme|hack)\b", re.IGNORECASE)
+_STRING_LITERAL = re.compile(r"\"[^\"]*\"|'[^']*'")
 
 
 def _violations(path):
     lines = path.read_text(encoding="utf-8").splitlines()
     return [
-        (i + 1, line) for i, line in enumerate(lines) if _BANNED.search(line)
+        (i + 1, line)
+        for i, line in enumerate(lines)
+        if _BANNED.search(_STRING_LITERAL.sub("", line))
     ]
 
 

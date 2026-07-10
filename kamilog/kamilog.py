@@ -169,6 +169,8 @@ class AnsiRenderer:  # =========================================================
     _RESET = "\033[0m"
 
     _ANSI_STYLE2CODE = {
+        AnsiStyle.BOLD: "1",
+        AnsiStyle.UNDERLINE: "4",
         AnsiStyle.RED: "31",
         AnsiStyle.BRIGHT_RED: "91",
         AnsiStyle.YELLOW: "33",
@@ -201,8 +203,6 @@ class AnsiRenderer:  # =========================================================
         AnsiStyle.BG_GREY: "100",
         AnsiStyle.BG_WHITE: "47",
         AnsiStyle.BG_BRIGHT_WHITE: "107",
-        AnsiStyle.BOLD: "1",
-        AnsiStyle.UNDERLINE: "4",
     }
 
     _LEVEL2ANSI_COLOR = {
