@@ -16,7 +16,7 @@ bug using different logger to print & diff only can produce confusing result
 
 #### 🎯 Custom Logging Experience
 
-- Six custom log levels (`ENTER`, `SKIP`, `SUCC`, `PASS`, `DONE`, `FAIL`) for test and hook workflows
+- Eleven custom log levels (`ENTER`, `SKIP`, `SUCC`, `PASS`, `NOTE`, `TIP`, `DONE`, `HINT`, `IMPORTANT`, `CAUTION`, `FAIL`) for test, hook, and general-purpose workflows
 - Structured output with padded level names
 - Automatic stdout/stderr split by severity
 - Diff-only compression for repeated log lines

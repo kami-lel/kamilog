@@ -1,7 +1,7 @@
 """
 logger-all_levels_demo.py
 
-demonstrate all eleven log levels with a brief description of each
+demonstrate all sixteen log levels with a brief description of each
 """
 
 import sys
@@ -28,7 +28,12 @@ log.enter("Starting database migration")
 log.skip("Skipped validation step")
 log.pass_("All assertions passed")
 log.succ("User authentication succeeded")
+log.note("Migration touches the users table")
+log.tip("Run with --dry-run first to preview changes")
 log.done("Migration completed successfully")
+log.hint("Rerun with -v for more detail")
+log.important("Back up the database before proceeding")
+log.caution("This operation cannot be undone")
 log.fail("Test case failed")
 
 
@@ -42,8 +47,13 @@ log.skip("Marks skipped portion of routine")
 log.succ("Subroutine or execution succeeded")
 log.info("General informational message related to program function")
 log.pass_("Test case passed")
+log.note("General aside worth noting")
+log.tip("Actionable suggestion for the user")
 log.done("Entire program or major component completed successfully")
+log.hint("Subtle, barely-there cue")
+log.important("Emphasized information that should stand out")
 log.warning("Warning condition that should be investigated")
+log.caution("Risk of a negative outcome, heed carefully")
 log.error("Error condition that prevented operation completion")
 log.fail("Test case or subroutine/execution failed")
 log.critical("Program stopping or crashing immediately")

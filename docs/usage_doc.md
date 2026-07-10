@@ -78,39 +78,39 @@ WARN. myapp: Warning message
 
 ### Custom Log Levels
 
-`KamiLogger` extends the standard library logger with six custom levels for test and hook workflows. Full level reference:
+`KamiLogger` extends the standard library logger with ten custom levels for test and hook workflows. Full level reference:
 
-| Level | Num | Function | Color | ANSI Code | Meaning |
-|---|---|---|---|---|---|
-| DEBUG | 10 | `.debug()` | Cyan | `\033[36m` | internal program state and control flow |
-| ENTER | 15 | `.enter()` | Bright Cyan | `\033[96m` | starting a subroutine or code section |
-| SKIP  | 16 | `.skip()` | Blue | `\033[34m` | code section was skipped |
-| SUCC. | 17 | `.succ()` | Green | `\033[32m` | operation succeeded |
-| INFO  | 20 | `.info()` | Bright Blue | `\033[94m` | general program event or state change |
-| PASS  | 21 | `.pass_()` | Bright Green | `\033[92m` | test assertion or case passed |
-| DONE  | 25 | `.done()` | Bright Yellow | `\033[93m` | program or major phase completed successfully |
-| WARN. | 30 | `.warning()` | Yellow | `\033[33m` | unexpected but recoverable condition |
-| ERROR | 40 | `.error()` | Red | `\033[31m` | operation failed |
-| FAIL  | 45 | `.fail()` | Bright Red | `\033[91m` | test assertion or case failed |
-| CRIT. | 50 | `.critical()` | Bright Magenta | `\033[95m` | program failure or immediate crash |
+| Level | Num | Function | Color | Remark |
+|---|---|---|---|---|
+| DEBUG | 10 | `.debug()` | `CYAN` | internal state and control flow, kept to Debug output and never shown to users |
+| ENTER | 15 | `.enter()` | `BRIGHT_CYAN` | enters a subroutine or test section, a Developer trace of flow |
+| SKIP  | 16 | `.skip()` | `BLUE` | a logic branch or test case was Expectedly skipped |
+| SUCC. | 17 | `.succ()` | `GREEN` | a subroutine completed successfully, Pairs with ENTER |
+| INFO  | 20 | `.info()` | `BRIGHT_BLUE` | a general event or state Change during normal execution |
+| PASS  | 21 | `.pass_()` | `BRIGHT_GREEN` | a test assertion or case Passed |
+| NOTE  | 23 | `.note()` | `BLUE` | an aside worth Recording for the production user |
+| TIP   | 24 | `.tip()` | `BRIGHT_CYAN` | an actionable Suggestion for the production user |
+| DONE  | 25 | `.done()` | `BRIGHT_YELLOW` | an entire program or major Phase finished successfully |
+| HINT  | 26 | `.hint()` | `CYAN` | a subtle actionable cue Printed to the terminal |
+| IMPT. | 27 | `.important()` | `BRIGHT_BLUE` | emphasized terminal information that should Stand Out |
+| WARN. | 30 | `.warning()` | `YELLOW` | an unexpected but Recoverable condition |
+| CAUT. | 31 | `.caution()` | `MAGENTA` | needs even more Immediate attention than IMPT |
+| ERROR | 40 | `.error()` | `RED` | an operation Failed |
+| FAIL  | 45 | `.fail()` | `BRIGHT_RED` | a test assertion or case Failed |
+| CRIT. | 50 | `.critical()` | `BRIGHT_MAGENTA` | program failure or immediate Crash |
 
 > [!IMPORTANT]
 > `.pass_()` uses a trailing underscore because `pass` is a Python keyword.
 
-> [!TIP]
-> **DEBUG vs INFO**: `DEBUG` traces internal state and control flow; `INFO` logs general events and state changes in normal execution.
+**Development logging: `DEBUG`, `ENTER`, `SKIP`, `SUCC.`.** These levels help a developer follow the structure and flow of ordinary execution, and none of them are meant for a production user. `DEBUG` traces internal state and control flow. `ENTER` marks the start of a major subroutine or section; pair it at the top with `SUCC.` on successful completion. `SKIP` marks the expected skip of a logic branch that was deliberately not taken.
 
-> [!TIP]
-> **WARN., ERROR, CRIT. for error escalation**: Use in escalation order of increasing severity.
+**Test conditions: `ENTER`, `SKIP`, `PASS`, `FAIL`.** These track the flow of a test script and are likewise developer-facing, not for a production user. `ENTER` marks the start of a major test section. Each test-case branch then logs exactly one of `PASS` or `FAIL` — a passing assertion or a failing one. `SKIP` marks a test case that is deliberately not run.
 
-> [!TIP]
-> **ENTER, SKIP, SUCC. for subroutines**: Track major code sections with `ENTER` at the start. Pair with `SUCC.` upon completion. Use `SKIP` when sections are conditionally skipped.
+**Production logging: `INFO`, `NOTE`, `TIP`, `DONE`.** These are addressed to the production user and can be expected to land in the production logs. `INFO` records a general event or state change during normal execution, while `NOTE` is a plainer aside worth keeping and `TIP` offers an actionable suggestion. `DONE` fires once, at the successful finish of an entire program or major phase — it is the production-facing counterpart to the developer-only `SUCC.`.
 
-> [!TIP]
-> **ENTER, PASS, FAIL for testing**: Use in test scripts to track major sections (`ENTER`), passing tests (`.pass_()`), and failing tests (`.fail()`). Each test case branch logs one of the three.
+**Terminal attention: `HINT`, `IMPT.`, `CAUT.`.** These are expected to be printed to the terminal, so they usually point at something the user should actually do. `HINT` is the quietest of the three. `IMPT.` is emphasized information that should stand out. `CAUT.` escalates one step further, demanding even more immediate attention than `IMPT.`.
 
-> [!TIP]
-> **DONE for program completion**: Use `DONE` only once at the end to indicate the entire program or major phase completed successfully.
+**Error escalation: `WARN.`, `ERROR`, `CRIT.`.** These form a ladder of increasing severity — a recoverable surprise, a failed operation, and an outright crash — logged in that order as a situation worsens.
 
 
 

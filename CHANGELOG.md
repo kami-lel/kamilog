@@ -30,6 +30,53 @@
 
 ### Security
 
+[unreleased]: https://github.com/kami-lel/kamilog/compare/v2.6.0...dev
+
+
+
+
+
+
+
+
+
+
+
+
+
+## [2.6.0] - 2026-07-10
+
+### Added
+
+New custom log levels, each with a matching method:
+
+- `NOTE` (23) — `.note()` — general aside worth noting
+- `TIP` (24) — `.tip()` — actionable suggestion
+- `HINT` (26) — `.hint()` — subtle, barely-there cue
+- `IMPORTANT` (27) — `.important()` — emphasized information that should stand out
+- `CAUTION` (31) — `.caution()` — risk of a negative outcome, heed carefully
+
+### Changed
+
+- `docs/usage_doc.md` — Custom Log Levels table documents the five new levels
+- `examples/logger/logger-all_levels_demo.py` — demonstrates all sixteen log levels
+- ANSI colors for `NOTE`, `TIP`, `HINT`, and `IMPORTANT` revamped for clearer visual distinction, unifying the log color palette
+
+### Fixed
+
+- `tests/source_quality_test.py` — banned-marker scan no longer flags `todo`/`bug`/`fixme`/`hack` occurrences inside string literals
+
+[2.6.0]: https://github.com/kami-lel/kamilog/compare/v2.5.0...v2.6.0
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -253,7 +300,6 @@ Documentation:
 
 - CLI `cb` subcommand padding conversion — numeric arguments (1-5) now correctly convert to integer for preset characters
 
-[unreleased]: https://github.com/kami-lel/kamilog/compare/v2.5.0...dev
 [2.4.0]: https://github.com/kami-lel/kamilog/compare/v2.3.1...v2.4.0
 [2.3.1]: https://github.com/kami-lel/kamilog/compare/v2.3.0...v2.3.1
 [2.3.0]: https://github.com/kami-lel/kamilog/compare/v2.2.0...v2.3.0
