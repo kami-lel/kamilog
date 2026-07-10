@@ -80,24 +80,24 @@ WARN. myapp: Warning message
 
 `KamiLogger` extends the standard library logger with six custom levels for test and hook workflows. Full level reference:
 
-| Level | Num | Function | Color | ANSI Code | Meaning |
-|---|---|---|---|---|---|
-| DEBUG | 10 | `.debug()` | Cyan | `\033[36m` | internal program state and control flow |
-| ENTER | 15 | `.enter()` | Bright Cyan | `\033[96m` | starting a subroutine or code section |
-| SKIP  | 16 | `.skip()` | Blue | `\033[34m` | code section was skipped |
-| SUCC. | 17 | `.succ()` | Green | `\033[32m` | operation succeeded |
-| INFO  | 20 | `.info()` | Bright Blue | `\033[94m` | general program event or state change |
-| PASS  | 21 | `.pass_()` | Bright Green | `\033[92m` | test assertion or case passed |
-| NOTE  | 23 | `.note()` | Grey | `\033[90m` | general aside worth noting |
-| TIP   | 24 | `.tip()` | White | `\033[37m` | actionable suggestion |
-| DONE  | 25 | `.done()` | Bright Yellow | `\033[93m` | program or major phase completed successfully |
-| HINT  | 26 | `.hint()` | Black | `\033[30m` | subtle, barely-there cue |
-| IMPT. | 27 | `.important()` | Bright White | `\033[97m` | emphasized information that should stand out |
-| WARN. | 30 | `.warning()` | Yellow | `\033[33m` | unexpected but recoverable condition |
-| CAUT. | 31 | `.caution()` | Magenta | `\033[35m` | risk of a negative outcome, heed carefully |
-| ERROR | 40 | `.error()` | Red | `\033[31m` | operation failed |
-| FAIL  | 45 | `.fail()` | Bright Red | `\033[91m` | test assertion or case failed |
-| CRIT. | 50 | `.critical()` | Bright Magenta | `\033[95m` | program failure or immediate crash |
+| Level | Num | Function | Color | Meaning |
+|---|---|---|---|---|
+| DEBUG | 10 | `.debug()` | `CYAN` | internal program state and control flow |
+| ENTER | 15 | `.enter()` | `BRIGHT_CYAN` | starting a subroutine or code section |
+| SKIP  | 16 | `.skip()` | `BLUE` | code section was skipped |
+| SUCC. | 17 | `.succ()` | `GREEN` | operation succeeded |
+| INFO  | 20 | `.info()` | `BRIGHT_BLUE` | general program event or state change |
+| PASS  | 21 | `.pass_()` | `BRIGHT_GREEN` | test assertion or case passed |
+| NOTE  | 23 | `.note()` | `BLUE` | general aside worth noting |
+| TIP   | 24 | `.tip()` | `BRIGHT_CYAN` | actionable suggestion |
+| DONE  | 25 | `.done()` | `BRIGHT_YELLOW` | program or major phase completed successfully |
+| HINT  | 26 | `.hint()` | `CYAN` | subtle, barely-there cue |
+| IMPT. | 27 | `.important()` | `BRIGHT_BLUE` | emphasized information that should stand out |
+| WARN. | 30 | `.warning()` | `YELLOW` | unexpected but recoverable condition |
+| CAUT. | 31 | `.caution()` | `MAGENTA` | risk of a negative outcome, heed carefully |
+| ERROR | 40 | `.error()` | `RED` | operation failed |
+| FAIL  | 45 | `.fail()` | `BRIGHT_RED` | test assertion or case failed |
+| CRIT. | 50 | `.critical()` | `BRIGHT_MAGENTA` | program failure or immediate crash |
 
 
 <!-- Fixme write better usage guide & tip -->
