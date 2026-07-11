@@ -1332,6 +1332,7 @@ def _gen_comment_banner_generic(
     padding,
     *,
     line_width=80,
+    horizontal_offset=0,
     file=sys.stdout,
     renderer=None,
 ):
@@ -1380,8 +1381,11 @@ def _gen_comment_banner_generic(
         )
     else:  # centered (mode == "c")
         remaining = line_width - len(content) - len(_CONTENT_SPACING) * 2
-        left = remaining // 2
+        # horizontal_offset nudges Content sideways: -1 left, +1 right
+        left = remaining // 2 + horizontal_offset
         right = remaining - left
+        if left < 0 or right < 0:
+            raise ValueError("param horizontal_offset out of range")
         padded_content = (
             renderer.color_grey(padding * left)
             + _CONTENT_SPACING
