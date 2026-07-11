@@ -57,7 +57,7 @@ __all__ = (
 
 
 # metadata  ####################################################################
-__version__ = "2.6.0"
+__version__ = "2.7.0"
 __author__ = "kamiLeL"
 
 
@@ -1416,6 +1416,10 @@ def gen_comment_banner_centered(*args, **kwargs):
     :type padding: str or int
     :param line_width: total output width; defaults to ``80``
     :type line_width: int
+    :param horizontal_offset: nudge the centered content sideways by this
+            many columns; negative shifts left, positive shifts right;
+            defaults to ``0``
+    :type horizontal_offset: int
     :param file: output stream, used only for ANSI TTY detection;
             defaults to ``sys.stdout``
     :type file: IO
@@ -1426,10 +1430,13 @@ def gen_comment_banner_centered(*args, **kwargs):
     :rtype: str
     :raises ValueError: if ``content`` contains ``"\\n"`` or exceeds
             ``line_width``; if ``padding`` is not exactly one printable
-            non-space character or outside range 1-5 if int
+            non-space character or outside range 1-5 if int; if
+            ``horizontal_offset`` pushes either fill side below zero
     :example:
     >>> gen_comment_banner_centered("hi", "=", line_width=20)
     '=======  hi  ======='
+    >>> gen_comment_banner_centered("hi", "=", line_width=20, horizontal_offset=2)
+    '=========  hi  ====='
     >>> gen_comment_banner_centered("hi", 2, line_width=20)
     '=======  hi  ======='
     """

@@ -1,6 +1,6 @@
 # kamilog CONTEXT
 
-*Last updated: 2026-07-10 - v2.6.0*
+*Last updated: 2026-07-11 - v2.7.0*
 
 ## Project Overview
 
@@ -42,6 +42,7 @@ kamilog/
 │   ├── cb/
 │   │   ├── cb-demo.py                       # all three comment-banner functions with char padding
 │   │   ├── cb-number-demo.py                # numeric padding shortcuts (1-5)
+│   │   ├── cb-offset-demo.py               # centered horizontal_offset aligning a prefixed banner
 │   │   └── cb-zero_demo.py                  # multi-line boxed banner (CB0)
 │   ├── verbosity_demo.py                    # CLI -v/-q flags with custom levels
 │   └── logger/
@@ -200,7 +201,7 @@ The original (uncompressed) message is stored in `_history` so compression decis
 
 ### Comment Banner Utilities
 
-Three public functions that return a fixed-width line by padding `content` with a repeated character to fill `line_width` (default 80). All share the same internal dispatcher `_gen_comment_banner_generic(mode, content, padding, *, line_width, file, renderer=None)`, which accepts string modes (`"c"`, `"l"`, `"r"`).
+Three public functions that return a fixed-width line by padding `content` with a repeated character to fill `line_width` (default 80). All share the same internal dispatcher `_gen_comment_banner_generic(mode, content, padding, *, line_width, horizontal_offset=0, file, renderer=None)`, which accepts string modes (`"c"`, `"l"`, `"r"`). The `horizontal_offset` kwarg applies only in centered mode; left and right modes ignore it.
 
 The `padding` parameter accepts either a string (single character) or an integer (1-5). Integer shortcuts map to predefined characters: 1→`#`, 2→`=`, 3→`*`, 4→`+`, 5→`-`. The function converts integer padding to its corresponding character before processing.
 
@@ -213,10 +214,11 @@ Input validation (raises `ValueError`):
 - `len(content)` must not exceed `line_width`
 - `padding` (string) must be exactly one printable, non-space character
 - `padding` (integer) must be in range 1-5
+- `horizontal_offset` (centered mode) must not push either fill side below zero
 
 | function | mode | layout |
 | --- | --- | --- |
-| `gen_comment_banner_centered` | `"c"` | `grey(padding * left) + "  " + content + "  " + grey(padding * right)` (remainder split evenly; odd char goes right) |
+| `gen_comment_banner_centered` | `"c"` | `grey(padding * left) + "  " + content + "  " + grey(padding * right)` (remainder split evenly; odd char goes right; `left` shifted by `horizontal_offset`) |
 | `gen_comment_banner_left_just` | `"l"` | `content + "  " + grey(padding * remaining)` |
 | `gen_comment_banner_right_just` | `"r"` | `grey(padding * remaining) + "  " + content` |
 
@@ -289,7 +291,7 @@ kamilog.AnsiStyle                               # combinable Flag enum of style 
 kamilog.AnsiRenderer(stream=None, *, is_disabled=False)  # TTY-detecting color applier
 
 # comment banner
-kamilog.gen_comment_banner_centered(content, padding, *, line_width=80, file, renderer=None) -> str
+kamilog.gen_comment_banner_centered(content, padding, *, line_width=80, horizontal_offset=0, file, renderer=None) -> str
 kamilog.gen_comment_banner_left_just(content, padding, *, line_width=80, file, renderer=None) -> str
 kamilog.gen_comment_banner_right_just(content, padding, *, line_width=80, file, renderer=None) -> str
 kamilog.gen_comment_banner_zero(lines, *, line_width=80, file=sys.stdout, renderer=None) -> str
