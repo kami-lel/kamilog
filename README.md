@@ -39,6 +39,7 @@ bug using different logger to print & diff only can produce confusing result
 
 - Centered, left-justified, and right-justified alignment modes
 - Fixed-width terminal banners with custom fill characters
+- Horizontal offset for centered banners, keeping titles aligned behind a prefix
 
 #### 💻 Command-Line Interface
 

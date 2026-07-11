@@ -30,7 +30,28 @@
 
 ### Security
 
-[unreleased]: https://github.com/kami-lel/kamilog/compare/v2.6.0...dev
+[unreleased]: https://github.com/kami-lel/kamilog/compare/v2.7.0...dev
+
+
+
+
+
+
+
+
+
+
+
+
+
+## [2.7.0] - 2026-07-11
+
+### Added
+
+- `horizontal_offset` parameter on `gen_comment_banner_centered`, nudging the centered content left or right by a given number of columns; raises `ValueError` when the offset pushes either fill side below zero
+- `examples/cb/cb-offset-demo.py`, showing a prefixed banner kept aligned with a bare one via `horizontal_offset`
+
+[2.7.0]: https://github.com/kami-lel/kamilog/compare/v2.6.0...v2.7.0
 
 
 
