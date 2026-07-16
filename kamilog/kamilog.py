@@ -1217,6 +1217,16 @@ def _set_logger_level(level, *, logger=None, logger_name=None):
 
 # Verbosity Public API  ========================================================
 
+_VERBOSE_FLAG_CHOICES = ("vq", "VQ", "")
+_EXTREME_VERBOSITY = 1_000_000
+
+_STEP_VERBOSE_HELP = (
+    "make verbose, each -{flag}/--verbose increase verbosity by 1"
+)
+_STEP_QUIET_HELP = "make quiet, each -{flag}/--quiet decrease verbosity by 1"
+_EXTREMITY_VERBOSE_HELP = "make maximally verbose"
+_EXTREMITY_QUIET_HELP = "make maximally quiet"
+
 
 def add_verbose_arguments(
     parser,
@@ -1255,22 +1265,68 @@ def add_verbose_arguments(
     :param extremity_flags: letter pair used as the extremity flag;
             one of ``"vq"``, ``"VQ"``, ``""``; default=``"VQ"``
     :type extremity_flags: str, optional
+    :raises ValueError: step_flags is not one of ``"vq"``, ``"VQ"``, ``""``
+    :raises ValueError: extremity_flags is not one of ``"vq"``, ``"VQ"``,
+            ``""``
+    :raises ValueError: step_flags and extremity_flags are the same
+            non-empty letter pair, which would bind one flag letter
+            twice
     """
-    # BUG implement
-    parser.add_argument(
-        "-v",
-        "--verbose",
-        action="count",
-        default=0,
-        help="make verbose, each -v/--verbose increase verbosity by 1",
-    )
-    parser.add_argument(
-        "-q",
-        "--quiet",
-        action="count",
-        default=0,
-        help="make quiet, each -q/--quiet decrease verbosity by 1",
-    )
+    if step_flags not in _VERBOSE_FLAG_CHOICES:
+        raise ValueError(
+            "param step_flags {!r} must be one of {!r}".format(
+                step_flags, _VERBOSE_FLAG_CHOICES
+            )
+        )
+    if extremity_flags not in _VERBOSE_FLAG_CHOICES:
+        raise ValueError(
+            "param extremity_flags {!r} must be one of {!r}".format(
+                extremity_flags, _VERBOSE_FLAG_CHOICES
+            )
+        )
+    if step_flags and step_flags == extremity_flags:
+        raise ValueError(
+            "param step_flags and extremity_flags conflict: "
+            "both are {!r}".format(step_flags)
+        )
+
+    if step_flags:  # step flag  -----------------------------------------------
+        v_flag, q_flag = step_flags
+        parser.add_argument(
+            "-{}".format(v_flag),
+            "--verbose",
+            action="count",
+            default=0,
+            help=_STEP_VERBOSE_HELP.format(flag=v_flag),
+        )
+        parser.add_argument(
+            "-{}".format(q_flag),
+            "--quiet",
+            action="count",
+            default=0,
+            help=_STEP_QUIET_HELP.format(flag=q_flag),
+        )
+
+    if extremity_flags:  # extremity flag  -------------------------------------
+        ev_flag, eq_flag = extremity_flags
+        parser.add_argument(
+            "-{}".format(ev_flag),
+            "--max-verbose",
+            dest="verbose",
+            action="store_const",
+            const=_EXTREME_VERBOSITY,
+            default=0,
+            help=_EXTREMITY_VERBOSE_HELP,
+        )
+        parser.add_argument(
+            "-{}".format(eq_flag),
+            "--max-quiet",
+            dest="quiet",
+            action="store_const",
+            const=_EXTREME_VERBOSITY,
+            default=0,
+            help=_EXTREMITY_QUIET_HELP,
+        )
 
 
 def calc_verbosity(namespace, *, verbosity=0):
