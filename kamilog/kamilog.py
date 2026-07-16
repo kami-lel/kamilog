@@ -1073,7 +1073,7 @@ def getLogger(
             )
         )
 
-    if not logger.handlers:
+    if not disable_console and not logger.handlers:
         stdout_handler = StreamHandler(sys.stdout)
         stdout_handler.setFormatter(
             _LogFormatter(
