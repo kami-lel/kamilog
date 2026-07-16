@@ -22,6 +22,8 @@
 
 - `calc_verbosity(namespace, *, verbosity=0)`, exposing the offset calculation (namespace's `-v`/`-q` counts applied to a base verbosity) previously buried inside `set_logging_level_by_namespace`
 - `calc_logging_level(verbosity, *, namespace=None)`, exposing the verbosity-to-level mapping; pass `namespace` to fold in a parsed namespace's `-v`/`-q` offset via `calc_verbosity` in the same call
+- `add_verbose_arguments` now also adds `--max-verbose`/`--max-quiet` (extremity behavior), jumping straight to maximum/minimum verbosity, alongside the existing `--verbose`/`--quiet` step options
+- `step_flags` (default `"vq"`) and `extremity_flags` (default `"VQ"`) keyword-only parameters on `add_verbose_arguments`, choosing which short-flag pair — `-v`/`-q`, `-V`/`-Q`, or none (`""`) — binds to each behavior; raises `ValueError` on an invalid choice or when both request the same non-empty pair
 
 ### Changed
 

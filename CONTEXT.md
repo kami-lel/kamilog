@@ -276,7 +276,7 @@ Both `cb` and `cb0` follow the Unix pipe pattern: text content is read from stdi
 - Option: `-t, --time-format` — one of `time`, `time-ms`, `datetime`, `datetime-ms`, `no-time` (default `time`), mapped through `_LOGGER_TIME_FORMAT_MAP` to a `datefmt` passed into `getLogger()`; `no-time` maps to `None`
 - Option: `-C, --no-color` — force plain output; forwarded to `getLogger(disable_color=True)`
 - Option: `-D, --no-diff-only` — skip diff-only compression; forwarded to `getLogger(disable_diff_only_compression=True)`
-- Option: `-v`/`-q` via `add_verbose_arguments`
+- Option: verbosity flags via `add_verbose_arguments` — `-v`/`-q` (step) plus `-V`/`-Q`/`--max-verbose`/`--max-quiet` (extremity)
 - Example: `echo 'disk full' | python kamilog/kamilog.py logger error`
 
 ## Public API Surface
@@ -308,7 +308,7 @@ kamilog.DATEFMT_DATETIME      # "YYYY-MM-DD HH:MM:SS"
 kamilog.DATEFMT_DATETIME_MS   # "YYYY-MM-DD HH:MM:SS.mmm"
 
 # verbosity helpers
-kamilog.add_verbose_arguments(parser)
+kamilog.add_verbose_arguments(parser, *, step_flags="vq", extremity_flags="VQ")
 kamilog.calc_verbosity(namespace, verbosity=0) -> int
 kamilog.calc_logging_level(verbosity, namespace=None) -> int
 kamilog.set_logging_level_by_namespace(namespace, verbosity=0, logger=None, logger_name=None)
@@ -324,6 +324,16 @@ functions with `logger.setLevel(...)`.
 
 `set_logging_level_by_namespace`'s `verbosity` kwarg sets the base level that
 the namespace's `-v`/`-q` counts offset from, instead of always starting at 0.
+
+`add_verbose_arguments` adds two flag families to a parser: **step** flags
+(`--verbose`/`--quiet`, `action="count"`) that shift verbosity by ±1 per
+occurrence, and **extremity** flags (`--max-verbose`/`--max-quiet`,
+`action="store_const"`) that jump straight to ±`_EXTREME_VERBOSITY` (10⁶),
+pinning the level to `DEBUG`/`CRITICAL`. All four long options are always
+added; the keyword-only `step_flags` and `extremity_flags` (each `"vq"`,
+`"VQ"`, or `""`) choose which single-letter short-flag pair — `-v`/`-q`,
+`-V`/`-Q`, or none — binds to each family. Raises `ValueError` on an invalid
+choice or when both families request the same non-empty pair.
 
 Verbosity mapping (default level is `DONE` = 25):
 
