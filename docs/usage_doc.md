@@ -264,9 +264,11 @@ Related options:
 - `disable_console=True` — skip the stdout/stderr handlers for a **file-only** logger
 - `file_mode` — open mode forwarded to `logging.FileHandler`; default `"a"` (append), pass `"w"` to truncate
 
-The file handler is attached idempotently per resolved path, so repeated
-`getLogger()` calls with the same `name` and `filename` never stack
-duplicate handlers.
+Console and file handlers are attached idempotently and independently —
+console by handler kind, the file by resolved path — so repeated
+`getLogger()` calls on the same `name` never stack duplicates, and the
+console handlers attach regardless of whether a file handler was added
+first (or the other way around).
 
 
 
