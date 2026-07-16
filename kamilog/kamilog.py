@@ -20,7 +20,7 @@ __all__ = (
     "getLogger",
     "KamiLogger",
     "add_verbose_arguments",
-    "calc_verbosity_by_namespace",
+    "calc_verbosity",
     "calc_logging_level_by_verbosity",
     "set_logging_level_by_namespace",
     "set_logging_level_by_verbosity",
@@ -1242,7 +1242,7 @@ def add_verbose_arguments(parser):
     )
 
 
-def calc_verbosity_by_namespace(namespace, *, verbosity=0):
+def calc_verbosity(namespace, *, verbosity=0):
     """
     apply namespace's verbose/quiet counts as an offset to verbosity
 
@@ -1310,7 +1310,7 @@ def set_logging_level_by_namespace(
     """
     _set_logger_level(
         calc_logging_level_by_verbosity(
-            calc_verbosity_by_namespace(namespace, verbosity=verbosity)
+            calc_verbosity(namespace, verbosity=verbosity)
         ),
         logger=logger,
         logger_name=logger_name,
