@@ -1010,6 +1010,22 @@ class _DiffOnlyMsgFilter(logging.Filter):  # ***********************************
 # Logger Public API  ===========================================================
 
 
+def _build_log_formatter(
+    stream=None, *, datefmt=None, relative_to=None, disable_color=False
+):
+    """
+    build a :class:`_LogFormatter` from shared formatting options;
+    auxiliary for :func:`getLogger`, collapsing the repeated formatter
+    construction shared by the filter, console, and file handlers
+    """
+    return _LogFormatter(
+        stream,
+        datefmt=datefmt,
+        relative_to=relative_to,
+        disable_color=disable_color,
+    )
+
+
 # pylint: disable-next=invalid-name
 def getLogger(
     name=None,
@@ -1064,7 +1080,7 @@ def getLogger(
     if not any(isinstance(f, _DiffOnlyMsgFilter) for f in logger.filters):
         logger.addFilter(
             _DiffOnlyMsgFilter(
-                _LogFormatter(
+                _build_log_formatter(
                     sys.stdout,
                     datefmt=datefmt,
                     relative_to=relative_to,
@@ -1074,10 +1090,14 @@ def getLogger(
             )
         )
 
-    if not disable_console and not logger.handlers:
+    has_console = any(
+        isinstance(h, StreamHandler) and not isinstance(h, FileHandler)
+        for h in logger.handlers
+    )
+    if not disable_console and not has_console:
         stdout_handler = StreamHandler(sys.stdout)
         stdout_handler.setFormatter(
-            _LogFormatter(
+            _build_log_formatter(
                 sys.stdout,
                 datefmt=datefmt,
                 relative_to=relative_to,
@@ -1088,7 +1108,7 @@ def getLogger(
 
         stderr_handler = StreamHandler(sys.stderr)
         stderr_handler.setFormatter(
-            _LogFormatter(
+            _build_log_formatter(
                 sys.stderr,
                 datefmt=datefmt,
                 relative_to=relative_to,
@@ -1111,7 +1131,7 @@ def getLogger(
                 filename, mode=file_mode, encoding="utf-8"
             )
             file_handler.setFormatter(
-                _LogFormatter(
+                _build_log_formatter(
                     datefmt=datefmt,
                     relative_to=relative_to,
                     disable_color=True,
