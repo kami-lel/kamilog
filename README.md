@@ -3,9 +3,6 @@
 A lightweight Python logging wrapper with structured output, custom log levels, combinable ANSI color styling, and flexible timestamp options.
 
 <!--
-todo add file handler option for getLogger
-todo allows use -V being equivalent to -vvv (v.v.)
-todo allows to use only -V, dont add -v (v.v.)
 todo smart time print
 todo cli logger: implement relative time
 todo cli logger: allow to use already set up logger
@@ -20,6 +17,7 @@ bug using different logger to print & diff only can produce confusing result
 - Structured output with padded level names
 - Automatic stdout/stderr split by severity
 - Diff-only compression for repeated log lines
+- Optional log-file output via `getLogger(filename=...)`, with a file-only mode
 - Drop-in replacement for `logging.getLogger()`
 
 #### 🎨 ANSI Colored Output

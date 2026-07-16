@@ -30,7 +30,29 @@
 
 ### Security
 
-[unreleased]: https://github.com/kami-lel/kamilog/compare/v2.7.0...dev
+[unreleased]: https://github.com/kami-lel/kamilog/compare/v2.8.0...dev
+
+
+
+
+
+
+
+
+
+
+
+
+
+## [2.8.0] - 2026-07-17
+
+### Added
+
+- file logging — `getLogger` can now write to a log file, with an option for a file-only logger that mutes the console
+- `calc_verbosity` and `calc_logging_level` — the verbosity-to-level conversion is now public
+- `--max-verbose`/`--max-quiet` CLI flags — jump straight to the highest or lowest verbosity, and choose which short flags bind to the stepwise and extremity behaviors
+
+[2.8.0]: https://github.com/kami-lel/kamilog/compare/v2.7.0...v2.8.0
 
 
 

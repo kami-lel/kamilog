@@ -1,6 +1,6 @@
 # kamilog CONTEXT
 
-*Last updated: 2026-07-11 - v2.7.0*
+*Last updated: 2026-07-17 - v2.8.0*
 
 ## Project Overview
 
@@ -24,6 +24,7 @@ kamilog/
 │   │   └── demo/                    # golden-output tests for examples/cb/*
 │   ├── v/                           # verbosity helper test suite
 │   │   ├── v-add_verbose_arguments_test.py
+│   │   ├── v-calc_verbosity_test.py
 │   │   ├── v-calc_logging_level_test.py
 │   │   ├── v-calc_logging_level_namespace_test.py
 │   │   └── v-set_logging_level_by_namespace_test.py
@@ -106,18 +107,22 @@ Public class that centralizes ANSI color detection and application. Instantiated
 - `color_grey(text)` — wraps `text` in grey; used for timestamps, source labels, and compression markers.
 - `color_triage_tag(triage_tag)` — colors a triage-tag string (`BUG`/`Bug`/`bug`, `FIXME`/`Fixme`/`fixme`, `TODO`/`Todo`/`todo`, `HACK`/`Hack`/`hack`) via the internal `_TRIAGE_TAG2ANSI_STYLE` map. Each tag type keeps one hue across its three loudness tiers, with contrast (background presence/brightness, bold) escalating for louder tiers. Raises `ValueError` for any other string.
 
-### `getLogger(name, *, datefmt, relative_to, disable_color, disable_diff_only_compression)`
+### `getLogger(name, *, datefmt, relative_to, disable_color, disable_diff_only_compression, filename, file_mode, disable_console)`
 
 The sole public entry point. Every call:
 
 1. Retrieves or creates a stdlib logger and upgrades it to `KamiLogger` via `__class__` assignment.
 2. Attaches a `_DiffOnlyMsgFilter` instance if one is not already present.
-3. Adds stdout and stderr `StreamHandler`s (with `_LogFormatter`) if no handlers exist yet — stdout for `< WARNING`, stderr for `>= WARNING`.
+3. Adds stdout and stderr `StreamHandler`s (with `_LogFormatter`) if no handlers exist yet — stdout for `< WARNING`, stderr for `>= WARNING` — unless `disable_console=True`, which skips the pair entirely.
+4. When `filename` is set, adds a `FileHandler` carrying a color-disabled `_LogFormatter` and no level split (all levels land in the one file), idempotently per resolved absolute path.
 
-Two keyword-only toggles propagate to those parts:
+Keyword-only options propagate to those parts:
 
 - `disable_color=False` — forwarded to every `_LogFormatter` (as `disable_color`) and on to `AnsiRenderer(is_disabled=…)`, so all handlers and the diff-only filter emit plain text regardless of TTY state.
 - `disable_diff_only_compression=False` — forwarded to `_DiffOnlyMsgFilter`; when `True` the filter skips building its `_DiffOnlyEngine` and passes records through untouched.
+- `filename=None` — path to a log file; when set, attaches the `FileHandler` described above with color always disabled (a file is never a TTY).
+- `file_mode="a"` — open mode forwarded to `logging.FileHandler` (`"a"` append, `"w"` truncate).
+- `disable_console=False` — when `True`, omits the stdout/stderr handlers, yielding a file-only logger.
 
 ### `KamiLogger`
 
@@ -275,7 +280,7 @@ Both `cb` and `cb0` follow the Unix pipe pattern: text content is read from stdi
 - Option: `-t, --time-format` — one of `time`, `time-ms`, `datetime`, `datetime-ms`, `no-time` (default `time`), mapped through `_LOGGER_TIME_FORMAT_MAP` to a `datefmt` passed into `getLogger()`; `no-time` maps to `None`
 - Option: `-C, --no-color` — force plain output; forwarded to `getLogger(disable_color=True)`
 - Option: `-D, --no-diff-only` — skip diff-only compression; forwarded to `getLogger(disable_diff_only_compression=True)`
-- Option: `-v`/`-q` via `add_verbose_arguments`
+- Option: verbosity flags via `add_verbose_arguments` — `-v`/`-q` (step) plus `-V`/`-Q`/`--max-verbose`/`--max-quiet` (extremity)
 - Example: `echo 'disk full' | python kamilog/kamilog.py logger error`
 
 ## Public API Surface
@@ -283,7 +288,8 @@ Both `cb` and `cb0` follow the Unix pipe pattern: text content is read from stdi
 ```python
 # logger factory
 kamilog.getLogger(name=None, *, datefmt=DATEFMT_TIME, relative_to=None,
-                  disable_color=False, disable_diff_only_compression=False) -> KamiLogger
+                  disable_color=False, disable_diff_only_compression=False,
+                  filename=None, file_mode="a", disable_console=False) -> KamiLogger
 kamilog.KamiLogger                              # logger class (subclass of logging.Logger)
 
 # ANSI color
@@ -307,13 +313,32 @@ kamilog.DATEFMT_DATETIME      # "YYYY-MM-DD HH:MM:SS"
 kamilog.DATEFMT_DATETIME_MS   # "YYYY-MM-DD HH:MM:SS.mmm"
 
 # verbosity helpers
-kamilog.add_verbose_arguments(parser)
+kamilog.add_verbose_arguments(parser, *, step_flags="vq", extremity_flags="VQ")
+kamilog.calc_verbosity(namespace, verbosity=0) -> int
+kamilog.calc_logging_level(verbosity, namespace=None) -> int
 kamilog.set_logging_level_by_namespace(namespace, verbosity=0, logger=None, logger_name=None)
 kamilog.set_logging_level_by_verbosity(verbosity, logger=None, logger_name=None)
 ```
 
+`calc_verbosity` applies a namespace's `-v`/`-q` counts as an offset to a base
+`verbosity` and returns the resulting integer. `calc_logging_level` maps a
+verbosity integer to a logging level, and — when passed a `namespace` — folds
+in `calc_verbosity`'s offset first. `set_logging_level_by_namespace` and
+`set_logging_level_by_verbosity` are thin wrappers composing these two
+functions with `logger.setLevel(...)`.
+
 `set_logging_level_by_namespace`'s `verbosity` kwarg sets the base level that
 the namespace's `-v`/`-q` counts offset from, instead of always starting at 0.
+
+`add_verbose_arguments` adds two flag families to a parser: **step** flags
+(`--verbose`/`--quiet`, `action="count"`) that shift verbosity by ±1 per
+occurrence, and **extremity** flags (`--max-verbose`/`--max-quiet`,
+`action="store_const"`) that jump straight to ±`_EXTREME_VERBOSITY` (10⁶),
+pinning the level to `DEBUG`/`CRITICAL`. All four long options are always
+added; the keyword-only `step_flags` and `extremity_flags` (each `"vq"`,
+`"VQ"`, or `""`) choose which single-letter short-flag pair — `-v`/`-q`,
+`-V`/`-Q`, or none — binds to each family. Raises `ValueError` on an invalid
+choice or when both families request the same non-empty pair.
 
 Verbosity mapping (default level is `DONE` = 25):
 
@@ -329,5 +354,4 @@ Verbosity mapping (default level is `DONE` = 25):
 
 ## Known Limitations and Future Work
 
-- No file handler option on `getLogger()` — stdout/stderr only.
 - Test coverage now spans verbosity helpers, comment-banner functions, `AnsiRenderer`/TTY detection (`tests/ansi/`), `_LogFormatter`/`_LogFormatEngine` (`tests/lf/`), `KamiLogger` (`tests/logger/`), `_DiffOnlyEngine`/`_DiffOnlyMsgFilter` (`tests/dof/`), and `_TabAlignedLine` (`tests/tal/`), plus golden-output tests for every `examples/` demo script; the CLI subcommands (`cb`, `cb0`, `logger`) still have no dedicated tests.

@@ -246,6 +246,42 @@ log = kamilog.getLogger("myapp", disable_diff_only_compression=True)
 
 
 
+### File Output
+
+Pass `filename` to `getLogger()` to also write the kamilog format to a log
+file. Color is always disabled for the file, and every level lands in the
+one file (no stdout/stderr split):
+
+```python
+import kamilog
+
+# log to console *and* app.log
+log = kamilog.getLogger("myapp", filename="app.log")
+```
+
+Related options:
+
+- `disable_console=True` — skip the stdout/stderr handlers for a **file-only** logger
+- `file_mode` — open mode forwarded to `logging.FileHandler`; default `"a"` (append), pass `"w"` to truncate
+
+Console and file handlers are attached idempotently and independently —
+console by handler kind, the file by resolved path — so repeated
+`getLogger()` calls on the same `name` never stack duplicates, and the
+console handlers attach regardless of whether a file handler was added
+first (or the other way around).
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -540,3 +576,26 @@ kamilog.set_logging_level_by_verbosity(2, logger=log)
 | `-q` | -1 | `WARN` | 30 | WARN, 〃 |
 | `-qq` | -2 | `ERROR` | 40 | ERROR, FAIL, 〃 |
 | `-qqq` or more | ≤ -3 | `CRIT` | 50 | CRIT |
+
+
+
+### Calculation Only
+
+`set_logging_level_by_namespace` and `set_logging_level_by_verbosity` set a
+logger's level as a side effect. To get the offset or the level back as a
+plain value instead — for logging, testing, or passing along elsewhere — use
+`calc_verbosity` and `calc_logging_level` directly:
+
+```python
+# apply a namespace's -v/-q counts to a base verbosity, without touching a logger
+verbosity = kamilog.calc_verbosity(args, verbosity=-2)
+
+# map a verbosity integer to a logging level
+level = kamilog.calc_logging_level(2)  # ENTER
+
+# or fold a namespace's offset into the same call
+level = kamilog.calc_logging_level(-2, namespace=args)
+```
+
+`set_logging_level_by_namespace(args, verbosity=v)` is equivalent to
+`logger.setLevel(kamilog.calc_logging_level(v, namespace=args))`.

@@ -1,55 +1,58 @@
 """
-v-calc_logging_level_namespace_test.py
+v-calc_verbosity_test.py
 
-tests for `calc_logging_level`'s `namespace` param in `kamilog.py`
+tests for `calc_verbosity` in `kamilog.py`
 """
 
-import logging
-from argparse import ArgumentParser
-from kamilog.kamilog import (
-    add_verbose_arguments,
-    calc_logging_level,
-    ENTER,
-    DONE,
-)
+from argparse import ArgumentParser, Namespace
+from kamilog.kamilog import add_verbose_arguments, calc_verbosity
 
 
-class TestCalcLoggingLevelNamespace:
+class TestCalcVerbosity:
     def test_no_flags(_):
         parser = ArgumentParser()
         add_verbose_arguments(parser)
         args = parser.parse_args([])
-        assert calc_logging_level(0, namespace=args) == DONE
+        assert calc_verbosity(args) == 0
 
     def test_v1(_):
         parser = ArgumentParser()
         add_verbose_arguments(parser)
         args = parser.parse_args(["-v"])
-        assert calc_logging_level(0, namespace=args) == logging.INFO
+        assert calc_verbosity(args) == 1
 
     def test_v2(_):
         parser = ArgumentParser()
         add_verbose_arguments(parser)
         args = parser.parse_args(["-vv"])
-        assert calc_logging_level(0, namespace=args) == ENTER
+        assert calc_verbosity(args) == 2
 
     def test_combined_vv_verbose_qq_net_v1(_):
         parser = ArgumentParser()
         add_verbose_arguments(parser)
         args = parser.parse_args(["-vv", "--verbose", "-qq"])
-        assert calc_logging_level(0, namespace=args) == logging.INFO
+        assert calc_verbosity(args) == 1
 
     def test_quiet(_):
         parser = ArgumentParser()
         add_verbose_arguments(parser)
         args = parser.parse_args(["--quiet"])
-        assert calc_logging_level(0, namespace=args) == logging.WARNING
+        assert calc_verbosity(args) == -1
 
     def test_base_verbosity_offset(_):
         parser = ArgumentParser()
         add_verbose_arguments(parser)
         args = parser.parse_args(["-v"])
-        assert calc_logging_level(1, namespace=args) == ENTER
+        assert calc_verbosity(args, verbosity=2) == 3
 
-    def test_namespace_none_uses_plain_verbosity(_):
-        assert calc_logging_level(1, namespace=None) == logging.INFO
+    def test_bare_namespace_has_no_offset(_):
+        args = Namespace()
+        assert calc_verbosity(args, verbosity=2) == 2
+
+    def test_verbose_only_namespace(_):
+        args = Namespace(verbose=2)
+        assert calc_verbosity(args) == 2
+
+    def test_quiet_only_namespace(_):
+        args = Namespace(quiet=1)
+        assert calc_verbosity(args, verbosity=2) == 1
