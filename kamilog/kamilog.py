@@ -1203,7 +1203,7 @@ def _register_logger_parser(cli_subparser):
 
 # Verbosity  ###################################################################
 
-# verbosity helpers  ===========================================================
+# auxiliaries  =================================================================
 
 
 def _set_logger_level(level, *, logger=None, logger_name=None):
@@ -1217,28 +1217,139 @@ def _set_logger_level(level, *, logger=None, logger_name=None):
 
 # Verbosity Public API  ========================================================
 
+_VERBOSE_FLAG_CHOICES = ("vq", "VQ", "")
+_EXTREME_VERBOSITY = 1_000_000
 
-def add_verbose_arguments(parser):
+_STEP_VERBOSE_HELP = "make verbose, each {opt} increase verbosity by 1"
+_STEP_QUIET_HELP = "make quiet, each {opt} decrease verbosity by 1"
+_EXTREMITY_VERBOSE_HELP = "make maximally verbose, via {opt}"
+_EXTREMITY_QUIET_HELP = "make maximally quiet, via {opt}"
+
+
+def _flag_option_strings(short_flag, long_flag):
     """
-    add ``-v``/``--verbose`` and ``-q``/``--quiet`` options to ``parser``.
+    build the option-string list for ``parser.add_argument``.
+
+
+    :param short_flag: single letter for the short flag;
+            falsy skips the short flag entirely
+    :type short_flag: str
+    :param long_flag: long flag, eg ``"--verbose"``; always included
+    :type long_flag: str
+    :return: ``[long_flag]``, or ``["-{short_flag}", long_flag]`` when
+            ``short_flag`` is truthy
+    :rtype: list[str]
+    """
+    if short_flag:
+        return ["-{}".format(short_flag), long_flag]
+    return [long_flag]
+
+
+def add_verbose_arguments(
+    parser,
+    *,
+    step_flags="vq",
+    extremity_flags="VQ",
+):
+    """
+    add verbosity options to ``parser``, in two behaviors:
+
+    - **step** — ``--verbose``/``--quiet``, each occurrence shifts
+      verbosity up/down by one
+    - **extremity** — ``--max-verbose``/``--max-quiet``, jumps
+      straight to the maximum/minimum verbosity
+
+    those four long options are always added. ``step_flags`` and
+    ``extremity_flags`` only choose which single-letter short flag, if
+    any, is bound alongside each behavior; each takes one of three
+    values:
+
+    - ``"vq"`` — bind ``-v`` and ``-q`` as the pair's short flags
+    - ``"VQ"`` — bind ``-V`` and ``-Q`` as the pair's short flags
+    - ``""`` — bind no short flag; the behavior stays reachable only
+      through its long options
+
+    eg the default ``step_flags="vq"``, ``extremity_flags="VQ"`` binds:
+
+    - ``-v``/``-q`` alongside ``--verbose``/``--quiet``
+    - ``-V``/``-Q`` alongside ``--max-verbose``/``--max-quiet``
+
+    whereas ``step_flags="VQ"``, ``extremity_flags=""`` binds:
+
+    - ``-V``/``-Q`` alongside ``--verbose``/``--quiet``
+    - no short flag alongside ``--max-verbose``/``--max-quiet``
 
 
     :param parser: argument parser to extend
     :type parser: argparse.ArgumentParser
+    :param step_flags: short-flag pair bound to the step behavior;
+            one of ``"vq"``, ``"VQ"``, ``""``; default=``"vq"``
+    :type step_flags: str, optional
+    :param extremity_flags: short-flag pair bound to the extremity
+            behavior; one of ``"vq"``, ``"VQ"``, ``""``;
+            default=``"VQ"``
+    :type extremity_flags: str, optional
+    :raises ValueError: step_flags is not one of ``"vq"``, ``"VQ"``, ``""``
+    :raises ValueError: extremity_flags is not one of ``"vq"``, ``"VQ"``,
+            ``""``
+    :raises ValueError: step_flags and extremity_flags are the same
+            non-empty pair, which would bind one flag letter twice
     """
+    if step_flags not in _VERBOSE_FLAG_CHOICES:
+        raise ValueError(
+            "param step_flags {!r} must be one of {!r}".format(
+                step_flags, _VERBOSE_FLAG_CHOICES
+            )
+        )
+    if extremity_flags not in _VERBOSE_FLAG_CHOICES:
+        raise ValueError(
+            "param extremity_flags {!r} must be one of {!r}".format(
+                extremity_flags, _VERBOSE_FLAG_CHOICES
+            )
+        )
+    if step_flags and step_flags == extremity_flags:
+        raise ValueError(
+            "param step_flags and extremity_flags conflict: "
+            "both are {!r}".format(step_flags)
+        )
+
+    v_flag, q_flag = step_flags if step_flags else ("", "")
+    ev_flag, eq_flag = extremity_flags if extremity_flags else ("", "")
+
+    # step flag  -----------------------------------------------------------
+    verbose_opts = _flag_option_strings(v_flag, "--verbose")
+    quiet_opts = _flag_option_strings(q_flag, "--quiet")
     parser.add_argument(
-        "-v",
-        "--verbose",
+        *verbose_opts,
         action="count",
         default=0,
-        help="make verbose, each -v/--verbose increase verbosity by 1",
+        help=_STEP_VERBOSE_HELP.format(opt="/".join(verbose_opts)),
     )
     parser.add_argument(
-        "-q",
-        "--quiet",
+        *quiet_opts,
         action="count",
         default=0,
-        help="make quiet, each -q/--quiet decrease verbosity by 1",
+        help=_STEP_QUIET_HELP.format(opt="/".join(quiet_opts)),
+    )
+
+    # extremity flag  --------------------------------------------------------
+    max_verbose_opts = _flag_option_strings(ev_flag, "--max-verbose")
+    max_quiet_opts = _flag_option_strings(eq_flag, "--max-quiet")
+    parser.add_argument(
+        *max_verbose_opts,
+        dest="verbose",
+        action="store_const",
+        const=_EXTREME_VERBOSITY,
+        default=0,
+        help=_EXTREMITY_VERBOSE_HELP.format(opt="/".join(max_verbose_opts)),
+    )
+    parser.add_argument(
+        *max_quiet_opts,
+        dest="quiet",
+        action="store_const",
+        const=_EXTREME_VERBOSITY,
+        default=0,
+        help=_EXTREMITY_QUIET_HELP.format(opt="/".join(max_quiet_opts)),
     )
 
 
