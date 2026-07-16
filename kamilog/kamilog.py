@@ -20,6 +20,8 @@ __all__ = (
     "getLogger",
     "KamiLogger",
     "add_verbose_arguments",
+    "calc_verbosity_by_namespace",
+    "calc_logging_level_by_verbosity",
     "set_logging_level_by_namespace",
     "set_logging_level_by_verbosity",
     # ANSI style
@@ -1204,38 +1206,6 @@ def _register_logger_parser(cli_subparser):
 # verbosity helpers  ===========================================================
 
 
-def _calc_logging_level_from_verbosity(verbosity):
-    """
-    map a verbosity integer to a logging level
-    """
-    if verbosity >= 3:
-        return logging.DEBUG
-    elif verbosity == 2:
-        return ENTER
-    elif verbosity == 1:
-        return logging.INFO
-    elif verbosity == 0:
-        return DONE
-    elif verbosity == -1:
-        return logging.WARNING
-    elif verbosity == -2:
-        return logging.ERROR
-    else:  # verbosity <= -3
-        return logging.CRITICAL
-
-
-def _calc_logging_level_from_verbosity_namespace(namespace, verbosity=0):
-    """
-    apply namespace's verbose/quiet counts as an offset to ``verbosity``,
-    then return the logging level
-    """
-    if hasattr(namespace, "verbose"):
-        verbosity += namespace.verbose
-    if hasattr(namespace, "quiet"):
-        verbosity -= namespace.quiet
-    return _calc_logging_level_from_verbosity(verbosity)
-
-
 def _set_logger_level(level, *, logger=None, logger_name=None):
     """
     set ``level`` on ``logger``, falling back to ``logger_name``
@@ -1272,7 +1242,49 @@ def add_verbose_arguments(parser):
     )
 
 
-# FIXME expose verbosity value
+def calc_verbosity_by_namespace(namespace, *, verbosity=0):
+    """
+    apply namespace's verbose/quiet counts as an offset to verbosity
+
+
+    :param namespace: parsed namespace containing ``--verbose`` and/or
+            ``--quiet`` counts
+    :type namespace: argparse.Namespace
+    :param verbosity: base verbosity that namespace's ``--verbose``/``--quiet``
+            counts are added to/subtracted from; default=0
+    :type verbosity: int, optional
+    :return: resulting verbosity after applying namespace's offset
+    :rtype: int
+    """
+    if hasattr(namespace, "verbose"):
+        verbosity += namespace.verbose
+    if hasattr(namespace, "quiet"):
+        verbosity -= namespace.quiet
+    return verbosity
+
+
+def calc_logging_level_by_verbosity(verbosity):
+    """
+    :param verbosity: verbosity integer; higher is more verbose
+    :type verbosity: int
+    :return: logging level corresponding to ``verbosity``
+    :rtype: int
+    """
+    if verbosity >= 3:
+        return logging.DEBUG
+    elif verbosity == 2:
+        return ENTER
+    elif verbosity == 1:
+        return logging.INFO
+    elif verbosity == 0:
+        return DONE
+    elif verbosity == -1:
+        return logging.WARNING
+    elif verbosity == -2:
+        return logging.ERROR
+    else:  # verbosity <= -3
+        return logging.CRITICAL
+
 
 # set logger level  ------------------------------------------------------------
 
@@ -1297,7 +1309,9 @@ def set_logging_level_by_namespace(
     :type logger_name: str, optional
     """
     _set_logger_level(
-        _calc_logging_level_from_verbosity_namespace(namespace, verbosity),
+        calc_logging_level_by_verbosity(
+            calc_verbosity_by_namespace(namespace, verbosity=verbosity)
+        ),
         logger=logger,
         logger_name=logger_name,
     )
@@ -1318,7 +1332,7 @@ def set_logging_level_by_verbosity(verbosity, *, logger=None, logger_name=None):
     :type logger_name: str, optional
     """
     _set_logger_level(
-        _calc_logging_level_from_verbosity(verbosity),
+        calc_logging_level_by_verbosity(verbosity),
         logger=logger,
         logger_name=logger_name,
     )
