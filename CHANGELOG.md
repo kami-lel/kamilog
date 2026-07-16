@@ -20,7 +20,12 @@
 
 ### Added
 
+- `calc_verbosity(namespace, *, verbosity=0)`, exposing the offset calculation (namespace's `-v`/`-q` counts applied to a base verbosity) previously buried inside `set_logging_level_by_namespace`
+- `calc_logging_level(verbosity, *, namespace=None)`, exposing the verbosity-to-level mapping; pass `namespace` to fold in a parsed namespace's `-v`/`-q` offset via `calc_verbosity` in the same call
+
 ### Changed
+
+- `set_logging_level_by_namespace` and `set_logging_level_by_verbosity` now compose `calc_verbosity`/`calc_logging_level` internally instead of private helpers; behavior is unchanged
 
 ### Deprecated
 
