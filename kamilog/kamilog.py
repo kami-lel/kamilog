@@ -10,11 +10,12 @@ Q.v. https://github.com/kami-lel/kamilog/tree/main/docs for Documentation
 
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 import logging
+import os
 import sys
 import time
 from collections import deque
 from enum import Flag, IntEnum, auto
-from logging import Formatter, StreamHandler
+from logging import FileHandler, Formatter, StreamHandler
 
 __all__ = (
     "getLogger",
@@ -1009,6 +1010,22 @@ class _DiffOnlyMsgFilter(logging.Filter):  # ***********************************
 # Logger Public API  ===========================================================
 
 
+def _build_log_formatter(
+    stream=None, *, datefmt=None, relative_to=None, disable_color=False
+):
+    """
+    build a :class:`_LogFormatter` from shared formatting options;
+    auxiliary for :func:`getLogger`, collapsing the repeated formatter
+    construction shared by the filter, console, and file handlers
+    """
+    return _LogFormatter(
+        stream,
+        datefmt=datefmt,
+        relative_to=relative_to,
+        disable_color=disable_color,
+    )
+
+
 # pylint: disable-next=invalid-name
 def getLogger(
     name=None,
@@ -1017,6 +1034,9 @@ def getLogger(
     relative_to=None,
     disable_color=False,
     disable_diff_only_compression=False,
+    filename=None,
+    file_mode="a",
+    disable_console=False,
 ):
     """
     return a configured :class:`KamiLogger` for ``name``, creating it if needed.
@@ -1038,6 +1058,16 @@ def getLogger(
     :param disable_diff_only_compression: whether turn off diff-ony compression
             and pass records through untouched
     :type disable_diff_only_compression: bool, optional
+    :param filename: path to a log file; when set, a file handler using the
+            kamilog format is attached, with color always disabled;
+            ``None`` attaches no file handler
+    :type filename: str or None, optional
+    :param file_mode: open mode for the log file, forwarded to
+            ``logging.FileHandler``; default=``"a"`` (append)
+    :type file_mode: str, optional
+    :param disable_console: when ``True``, skip the stdout/stderr handlers,
+            yielding a file-only logger; default=``False``
+    :type disable_console: bool, optional
     :return: a logger with the `name`, create if non-existence;
             root logger if `name` is `None`
     :rtype: KamiLogger
@@ -1050,7 +1080,7 @@ def getLogger(
     if not any(isinstance(f, _DiffOnlyMsgFilter) for f in logger.filters):
         logger.addFilter(
             _DiffOnlyMsgFilter(
-                _LogFormatter(
+                _build_log_formatter(
                     sys.stdout,
                     datefmt=datefmt,
                     relative_to=relative_to,
@@ -1060,10 +1090,14 @@ def getLogger(
             )
         )
 
-    if not logger.handlers:
+    has_console = any(
+        isinstance(h, StreamHandler) and not isinstance(h, FileHandler)
+        for h in logger.handlers
+    )
+    if not disable_console and not has_console:
         stdout_handler = StreamHandler(sys.stdout)
         stdout_handler.setFormatter(
-            _LogFormatter(
+            _build_log_formatter(
                 sys.stdout,
                 datefmt=datefmt,
                 relative_to=relative_to,
@@ -1074,7 +1108,7 @@ def getLogger(
 
         stderr_handler = StreamHandler(sys.stderr)
         stderr_handler.setFormatter(
-            _LogFormatter(
+            _build_log_formatter(
                 sys.stderr,
                 datefmt=datefmt,
                 relative_to=relative_to,
@@ -1085,6 +1119,25 @@ def getLogger(
 
         logger.addHandler(stdout_handler)
         logger.addHandler(stderr_handler)
+
+    if filename is not None:  # attach File handler, color always off
+        target = os.path.abspath(filename)  # normalize for dedup
+        has_file = any(
+            isinstance(h, FileHandler) and h.baseFilename == target
+            for h in logger.handlers
+        )
+        if not has_file:
+            file_handler = FileHandler(
+                filename, mode=file_mode, encoding="utf-8"
+            )
+            file_handler.setFormatter(
+                _build_log_formatter(
+                    datefmt=datefmt,
+                    relative_to=relative_to,
+                    disable_color=True,
+                )
+            )
+            logger.addHandler(file_handler)  # no level split, all Levels
 
     return logger
 

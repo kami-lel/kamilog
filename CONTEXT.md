@@ -107,18 +107,22 @@ Public class that centralizes ANSI color detection and application. Instantiated
 - `color_grey(text)` — wraps `text` in grey; used for timestamps, source labels, and compression markers.
 - `color_triage_tag(triage_tag)` — colors a triage-tag string (`BUG`/`Bug`/`bug`, `FIXME`/`Fixme`/`fixme`, `TODO`/`Todo`/`todo`, `HACK`/`Hack`/`hack`) via the internal `_TRIAGE_TAG2ANSI_STYLE` map. Each tag type keeps one hue across its three loudness tiers, with contrast (background presence/brightness, bold) escalating for louder tiers. Raises `ValueError` for any other string.
 
-### `getLogger(name, *, datefmt, relative_to, disable_color, disable_diff_only_compression)`
+### `getLogger(name, *, datefmt, relative_to, disable_color, disable_diff_only_compression, filename, file_mode, disable_console)`
 
 The sole public entry point. Every call:
 
 1. Retrieves or creates a stdlib logger and upgrades it to `KamiLogger` via `__class__` assignment.
 2. Attaches a `_DiffOnlyMsgFilter` instance if one is not already present.
-3. Adds stdout and stderr `StreamHandler`s (with `_LogFormatter`) if no handlers exist yet — stdout for `< WARNING`, stderr for `>= WARNING`.
+3. Adds stdout and stderr `StreamHandler`s (with `_LogFormatter`) if no handlers exist yet — stdout for `< WARNING`, stderr for `>= WARNING` — unless `disable_console=True`, which skips the pair entirely.
+4. When `filename` is set, adds a `FileHandler` carrying a color-disabled `_LogFormatter` and no level split (all levels land in the one file), idempotently per resolved absolute path.
 
-Two keyword-only toggles propagate to those parts:
+Keyword-only options propagate to those parts:
 
 - `disable_color=False` — forwarded to every `_LogFormatter` (as `disable_color`) and on to `AnsiRenderer(is_disabled=…)`, so all handlers and the diff-only filter emit plain text regardless of TTY state.
 - `disable_diff_only_compression=False` — forwarded to `_DiffOnlyMsgFilter`; when `True` the filter skips building its `_DiffOnlyEngine` and passes records through untouched.
+- `filename=None` — path to a log file; when set, attaches the `FileHandler` described above with color always disabled (a file is never a TTY).
+- `file_mode="a"` — open mode forwarded to `logging.FileHandler` (`"a"` append, `"w"` truncate).
+- `disable_console=False` — when `True`, omits the stdout/stderr handlers, yielding a file-only logger.
 
 ### `KamiLogger`
 
@@ -284,7 +288,8 @@ Both `cb` and `cb0` follow the Unix pipe pattern: text content is read from stdi
 ```python
 # logger factory
 kamilog.getLogger(name=None, *, datefmt=DATEFMT_TIME, relative_to=None,
-                  disable_color=False, disable_diff_only_compression=False) -> KamiLogger
+                  disable_color=False, disable_diff_only_compression=False,
+                  filename=None, file_mode="a", disable_console=False) -> KamiLogger
 kamilog.KamiLogger                              # logger class (subclass of logging.Logger)
 
 # ANSI color
@@ -349,5 +354,4 @@ Verbosity mapping (default level is `DONE` = 25):
 
 ## Known Limitations and Future Work
 
-- No file handler option on `getLogger()` — stdout/stderr only.
 - Test coverage now spans verbosity helpers, comment-banner functions, `AnsiRenderer`/TTY detection (`tests/ansi/`), `_LogFormatter`/`_LogFormatEngine` (`tests/lf/`), `KamiLogger` (`tests/logger/`), `_DiffOnlyEngine`/`_DiffOnlyMsgFilter` (`tests/dof/`), and `_TabAlignedLine` (`tests/tal/`), plus golden-output tests for every `examples/` demo script; the CLI subcommands (`cb`, `cb0`, `logger`) still have no dedicated tests.

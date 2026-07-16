@@ -50,7 +50,7 @@ Tests live in `tests/` and use `pytest` class-based style (`class TestFoo`).
 
 Before merging:
 
-1. `pytest tests/` — all 431 tests must pass with zero failures.
+1. `pytest tests/` — all 437 tests must pass with zero failures.
 2. `tests/source_quality_test.py` scans `kamilog/kamilog.py` and `kamilog/__init__.py` for `todo`, `bug`, `fixme`, `hack` (case-insensitive) — leave none behind.
 
 When adding new public functions, add corresponding tests under the relevant subdirectory — `tests/v/` for verbosity helpers (named `v-<feature>_test.py`), `tests/cb/` for comment-banner functions (named `cb-<feature>_test.py`), `tests/dof/` for diff-only compression, `tests/tal/` for `_TabAlignedLine`. Each `examples/` demo script has a matching golden-output test under `tests/cb/demo/`, `tests/dof/demo/`, or `tests/logger/demo/` — add or update one when a demo script's output changes.
