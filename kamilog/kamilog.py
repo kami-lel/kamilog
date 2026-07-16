@@ -1017,6 +1017,9 @@ def getLogger(
     relative_to=None,
     disable_color=False,
     disable_diff_only_compression=False,
+    filename=None,
+    file_mode="a",
+    disable_console=False,
 ):
     """
     return a configured :class:`KamiLogger` for ``name``, creating it if needed.
@@ -1038,6 +1041,16 @@ def getLogger(
     :param disable_diff_only_compression: whether turn off diff-ony compression
             and pass records through untouched
     :type disable_diff_only_compression: bool, optional
+    :param filename: path to a log file; when set, a file handler using the
+            kamilog format is attached, with color always disabled;
+            ``None`` attaches no file handler
+    :type filename: str or None, optional
+    :param file_mode: open mode for the log file, forwarded to
+            ``logging.FileHandler``; default=``"a"`` (append)
+    :type file_mode: str, optional
+    :param disable_console: when ``True``, skip the stdout/stderr handlers,
+            yielding a file-only logger; default=``False``
+    :type disable_console: bool, optional
     :return: a logger with the `name`, create if non-existence;
             root logger if `name` is `None`
     :rtype: KamiLogger
