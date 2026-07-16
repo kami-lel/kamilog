@@ -1217,9 +1217,6 @@ def _set_logger_level(level, *, logger=None, logger_name=None):
 
 # Verbosity Public API  ========================================================
 
-# TODO allows use -V being equivalent to -vvv (v.v.)
-# TODO use -V instead of -v
-
 
 def add_verbose_arguments(
     parser,
@@ -1228,12 +1225,38 @@ def add_verbose_arguments(
     extremity_flags="VQ",
 ):
     """
-    add ``-v``/``--verbose`` and ``-q``/``--quiet`` options to ``parser``.
+    add verbose/quiet options to ``parser``, letting ``step_flags`` and
+    ``extremity_flags`` pick which letter pair drives each behavior.
+
+    each of ``step_flags``/``extremity_flags`` only ever takes one of
+    three values: ``"vq"``, ``"VQ"``, or ``""``.
+
+    ``step_flags`` selects the letter pair used as the step flag,
+    whose count is added to/subtracted from verbosity one step at a
+    time.
+
+    ``extremity_flags`` selects the letter pair used as the extremity
+    flag, which jumps straight to the maximum/minimum verbosity;
+    ``""`` disables that flag entirely.
+
+    by default (``step_flags="vq"``, ``extremity_flags="VQ"``),
+    ``-v``/``-q`` is the step flag and ``-V``/``-Q`` is the extremity
+    flag.
+
+    eg with ``step_flags="VQ"``, ``extremity_flags=""``, ``-V``/``-Q``
+    becomes the step flag and no extremity flag is accepted
 
 
     :param parser: argument parser to extend
     :type parser: argparse.ArgumentParser
+    :param step_flags: letter pair used as the step flag;
+            one of ``"vq"``, ``"VQ"``, ``""``; default=``"vq"``
+    :type step_flags: str, optional
+    :param extremity_flags: letter pair used as the extremity flag;
+            one of ``"vq"``, ``"VQ"``, ``""``; default=``"VQ"``
+    :type extremity_flags: str, optional
     """
+    # BUG implement
     parser.add_argument(
         "-v",
         "--verbose",
