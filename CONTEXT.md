@@ -1,6 +1,6 @@
 # kamilog CONTEXT
 
-*Last updated: 2026-07-11 - v2.7.0*
+*Last updated: 2026-07-17 - v2.7.0*
 
 ## Project Overview
 
@@ -24,6 +24,7 @@ kamilog/
 │   │   └── demo/                    # golden-output tests for examples/cb/*
 │   ├── v/                           # verbosity helper test suite
 │   │   ├── v-add_verbose_arguments_test.py
+│   │   ├── v-calc_verbosity_test.py
 │   │   ├── v-calc_logging_level_test.py
 │   │   ├── v-calc_logging_level_namespace_test.py
 │   │   └── v-set_logging_level_by_namespace_test.py
@@ -308,9 +309,18 @@ kamilog.DATEFMT_DATETIME_MS   # "YYYY-MM-DD HH:MM:SS.mmm"
 
 # verbosity helpers
 kamilog.add_verbose_arguments(parser)
+kamilog.calc_verbosity(namespace, verbosity=0) -> int
+kamilog.calc_logging_level(verbosity, namespace=None) -> int
 kamilog.set_logging_level_by_namespace(namespace, verbosity=0, logger=None, logger_name=None)
 kamilog.set_logging_level_by_verbosity(verbosity, logger=None, logger_name=None)
 ```
+
+`calc_verbosity` applies a namespace's `-v`/`-q` counts as an offset to a base
+`verbosity` and returns the resulting integer. `calc_logging_level` maps a
+verbosity integer to a logging level, and — when passed a `namespace` — folds
+in `calc_verbosity`'s offset first. `set_logging_level_by_namespace` and
+`set_logging_level_by_verbosity` are thin wrappers composing these two
+functions with `logger.setLevel(...)`.
 
 `set_logging_level_by_namespace`'s `verbosity` kwarg sets the base level that
 the namespace's `-v`/`-q` counts offset from, instead of always starting at 0.
