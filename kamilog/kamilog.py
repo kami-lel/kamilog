@@ -21,7 +21,7 @@ __all__ = (
     "KamiLogger",
     "add_verbose_arguments",
     "calc_verbosity",
-    "calc_logging_level_by_verbosity",
+    "calc_logging_level",
     "set_logging_level_by_namespace",
     "set_logging_level_by_verbosity",
     # ANSI style
@@ -1263,13 +1263,24 @@ def calc_verbosity(namespace, *, verbosity=0):
     return verbosity
 
 
-def calc_logging_level_by_verbosity(verbosity):
+def calc_logging_level(verbosity, *, namespace=None):
     """
-    :param verbosity: verbosity integer; higher is more verbose
+    map a verbosity integer to a logging level, optionally offset by
+    namespace's verbose/quiet counts
+
+
+    :param verbosity: base verbosity integer; higher is more verbose
     :type verbosity: int
-    :return: logging level corresponding to ``verbosity``
+    :param namespace: parsed namespace containing ``--verbose`` and/or
+            ``--quiet`` counts, applied via :func:`calc_verbosity` to
+            offset ``verbosity`` before mapping; default=None
+    :type namespace: argparse.Namespace, optional
+    :return: logging level corresponding to the resulting verbosity
     :rtype: int
     """
+    if namespace is not None:
+        verbosity = calc_verbosity(namespace, verbosity=verbosity)
+
     if verbosity >= 3:
         return logging.DEBUG
     elif verbosity == 2:
@@ -1309,9 +1320,7 @@ def set_logging_level_by_namespace(
     :type logger_name: str, optional
     """
     _set_logger_level(
-        calc_logging_level_by_verbosity(
-            calc_verbosity(namespace, verbosity=verbosity)
-        ),
+        calc_logging_level(verbosity, namespace=namespace),
         logger=logger,
         logger_name=logger_name,
     )
@@ -1332,7 +1341,7 @@ def set_logging_level_by_verbosity(verbosity, *, logger=None, logger_name=None):
     :type logger_name: str, optional
     """
     _set_logger_level(
-        calc_logging_level_by_verbosity(verbosity),
+        calc_logging_level(verbosity),
         logger=logger,
         logger_name=logger_name,
     )
