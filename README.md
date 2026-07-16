@@ -5,7 +5,6 @@ A lightweight Python logging wrapper with structured output, custom log levels, 
 <!--
 todo add file handler option for getLogger
 Todo allows use -V being equivalent to -vvv (v.v.)
-Todo allows to use only -V, dont add -v (v.v.)
 Fixme expose verbosity value
 todo smart time print
 todo cli logger: implement relative time

@@ -1160,6 +1160,9 @@ def add_verbose_arguments(parser):
     )
 
 
+# set logger level  ------------------------------------------------------------
+
+
 def set_logging_level_by_namespace(
     namespace, *, verbosity=0, logger=None, logger_name=None
 ):
