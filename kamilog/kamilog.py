@@ -1272,6 +1272,8 @@ def add_verbose_arguments(parser):
     )
 
 
+# FIXME expose verbosity value
+
 # set logger level  ------------------------------------------------------------
 
 
