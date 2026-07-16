@@ -3,7 +3,6 @@
 A lightweight Python logging wrapper with structured output, custom log levels, combinable ANSI color styling, and flexible timestamp options.
 
 <!--
-TODO add file handler option for getLogger
 todo smart time print
 todo cli logger: implement relative time
 todo cli logger: allow to use already set up logger
