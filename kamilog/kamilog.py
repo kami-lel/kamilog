@@ -1221,7 +1221,12 @@ def _set_logger_level(level, *, logger=None, logger_name=None):
 # TODO use -V instead of -v
 
 
-def add_verbose_arguments(parser):
+def add_verbose_arguments(
+    parser,
+    *,
+    step_flags="vq",
+    extremity_flags="VQ",
+):
     """
     add ``-v``/``--verbose`` and ``-q``/``--quiet`` options to ``parser``.
 
