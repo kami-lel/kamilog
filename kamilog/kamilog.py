@@ -1252,50 +1252,48 @@ def add_verbose_arguments(
     extremity_flags="VQ",
 ):
     """
-    add verbose/quiet options to ``parser``, letting ``step_flags`` and
-    ``extremity_flags`` pick which letter pair drives each behavior.
+    add verbosity options to ``parser``, in two behaviors:
 
-    ``--verbose``/``--quiet`` (step) and ``--max-verbose``/
-    ``--max-quiet`` (extremity) are always added, regardless of
-    ``step_flags``/``extremity_flags``; those two params only control
-    which single-letter short flag, if any, is bound alongside them.
+    - **step** — ``--verbose``/``--quiet``, each occurrence shifts
+      verbosity up/down by one
+    - **extremity** — ``--max-verbose``/``--max-quiet``, jumps
+      straight to the maximum/minimum verbosity
 
-    each of ``step_flags``/``extremity_flags`` only ever takes one of
-    three values: ``"vq"``, ``"VQ"``, or ``""``.
+    those four long options are always added. ``step_flags`` and
+    ``extremity_flags`` only choose which single-letter short flag, if
+    any, is bound alongside each behavior; each takes one of three
+    values:
 
-    ``step_flags`` selects the letter pair bound as the short flag for
-    the step behavior, whose count is added to/subtracted from
-    verbosity one step at a time.
+    - ``"vq"`` — bind ``-v`` and ``-q`` as the pair's short flags
+    - ``"VQ"`` — bind ``-V`` and ``-Q`` as the pair's short flags
+    - ``""`` — bind no short flag; the behavior stays reachable only
+      through its long options
 
-    ``extremity_flags`` selects the letter pair bound as the short
-    flag for the extremity behavior, which jumps straight to the
-    maximum/minimum verbosity; ``""`` leaves that behavior reachable
-    only through its long option.
+    eg the default ``step_flags="vq"``, ``extremity_flags="VQ"`` binds:
 
-    by default (``step_flags="vq"``, ``extremity_flags="VQ"``),
-    ``-v``/``-q`` is bound alongside ``--verbose``/``--quiet``, and
-    ``-V``/``-Q`` is bound alongside ``--max-verbose``/``--max-quiet``.
+    - ``-v``/``-q`` alongside ``--verbose``/``--quiet``
+    - ``-V``/``-Q`` alongside ``--max-verbose``/``--max-quiet``
 
-    eg with ``step_flags="VQ"``, ``extremity_flags=""``, ``-V``/``-Q``
-    is bound alongside ``--verbose``/``--quiet`` instead, and
-    ``--max-verbose``/``--max-quiet`` accept no short flag
+    whereas ``step_flags="VQ"``, ``extremity_flags=""`` binds:
+
+    - ``-V``/``-Q`` alongside ``--verbose``/``--quiet``
+    - no short flag alongside ``--max-verbose``/``--max-quiet``
 
 
     :param parser: argument parser to extend
     :type parser: argparse.ArgumentParser
-    :param step_flags: letter pair bound as the step behavior's short
-            flag; one of ``"vq"``, ``"VQ"``, ``""``; default=``"vq"``
+    :param step_flags: short-flag pair bound to the step behavior;
+            one of ``"vq"``, ``"VQ"``, ``""``; default=``"vq"``
     :type step_flags: str, optional
-    :param extremity_flags: letter pair bound as the extremity
-            behavior's short flag; one of ``"vq"``, ``"VQ"``, ``""``;
+    :param extremity_flags: short-flag pair bound to the extremity
+            behavior; one of ``"vq"``, ``"VQ"``, ``""``;
             default=``"VQ"``
     :type extremity_flags: str, optional
     :raises ValueError: step_flags is not one of ``"vq"``, ``"VQ"``, ``""``
     :raises ValueError: extremity_flags is not one of ``"vq"``, ``"VQ"``,
             ``""``
     :raises ValueError: step_flags and extremity_flags are the same
-            non-empty letter pair, which would bind one flag letter
-            twice
+            non-empty pair, which would bind one flag letter twice
     """
     if step_flags not in _VERBOSE_FLAG_CHOICES:
         raise ValueError(
