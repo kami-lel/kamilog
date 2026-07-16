@@ -10,11 +10,12 @@ Q.v. https://github.com/kami-lel/kamilog/tree/main/docs for Documentation
 
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 import logging
+import os
 import sys
 import time
 from collections import deque
 from enum import Flag, IntEnum, auto
-from logging import Formatter, StreamHandler
+from logging import FileHandler, Formatter, StreamHandler
 
 __all__ = (
     "getLogger",
@@ -1098,6 +1099,25 @@ def getLogger(
 
         logger.addHandler(stdout_handler)
         logger.addHandler(stderr_handler)
+
+    if filename is not None:  # attach File handler, color always off
+        target = os.path.abspath(filename)  # normalize for dedup
+        has_file = any(
+            isinstance(h, FileHandler) and h.baseFilename == target
+            for h in logger.handlers
+        )
+        if not has_file:
+            file_handler = FileHandler(
+                filename, mode=file_mode, encoding="utf-8"
+            )
+            file_handler.setFormatter(
+                _LogFormatter(
+                    datefmt=datefmt,
+                    relative_to=relative_to,
+                    disable_color=True,
+                )
+            )
+            logger.addHandler(file_handler)  # no level split, all Levels
 
     return logger
 
