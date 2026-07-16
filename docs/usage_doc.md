@@ -246,6 +246,40 @@ log = kamilog.getLogger("myapp", disable_diff_only_compression=True)
 
 
 
+### File Output
+
+Pass `filename` to `getLogger()` to also write the kamilog format to a log
+file. Color is always disabled for the file, and every level lands in the
+one file (no stdout/stderr split):
+
+```python
+import kamilog
+
+# log to console *and* app.log
+log = kamilog.getLogger("myapp", filename="app.log")
+```
+
+Related options:
+
+- `disable_console=True` — skip the stdout/stderr handlers for a **file-only** logger
+- `file_mode` — open mode forwarded to `logging.FileHandler`; default `"a"` (append), pass `"w"` to truncate
+
+The file handler is attached idempotently per resolved path, so repeated
+`getLogger()` calls with the same `name` and `filename` never stack
+duplicate handlers.
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

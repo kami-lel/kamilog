@@ -17,6 +17,7 @@ bug using different logger to print & diff only can produce confusing result
 - Structured output with padded level names
 - Automatic stdout/stderr split by severity
 - Diff-only compression for repeated log lines
+- Optional log-file output via `getLogger(filename=...)`, with a file-only mode
 - Drop-in replacement for `logging.getLogger()`
 
 #### 🎨 ANSI Colored Output
