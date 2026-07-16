@@ -20,15 +20,7 @@
 
 ### Added
 
-- `getLogger` gains `filename`, `file_mode`, and `disable_console` keyword-only parameters; passing `filename` attaches a `logging.FileHandler` that writes the kamilog format to a log file with color always disabled, `file_mode` (default `"a"`) sets the open mode, and `disable_console=True` suppresses the stdout/stderr handlers for a file-only logger — the file handler is added idempotently per resolved path
-- `calc_verbosity(namespace, *, verbosity=0)`, exposing the offset calculation (namespace's `-v`/`-q` counts applied to a base verbosity) previously buried inside `set_logging_level_by_namespace`
-- `calc_logging_level(verbosity, *, namespace=None)`, exposing the verbosity-to-level mapping; pass `namespace` to fold in a parsed namespace's `-v`/`-q` offset via `calc_verbosity` in the same call
-- `add_verbose_arguments` now also adds `--max-verbose`/`--max-quiet` (extremity behavior), jumping straight to maximum/minimum verbosity, alongside the existing `--verbose`/`--quiet` step options
-- `step_flags` (default `"vq"`) and `extremity_flags` (default `"VQ"`) keyword-only parameters on `add_verbose_arguments`, choosing which short-flag pair — `-v`/`-q`, `-V`/`-Q`, or none (`""`) — binds to each behavior; raises `ValueError` on an invalid choice or when both request the same non-empty pair
-
 ### Changed
-
-- `set_logging_level_by_namespace` and `set_logging_level_by_verbosity` now compose `calc_verbosity`/`calc_logging_level` internally instead of private helpers; behavior is unchanged
 
 ### Deprecated
 
@@ -38,7 +30,29 @@
 
 ### Security
 
-[unreleased]: https://github.com/kami-lel/kamilog/compare/v2.7.0...dev
+[unreleased]: https://github.com/kami-lel/kamilog/compare/v2.8.0...dev
+
+
+
+
+
+
+
+
+
+
+
+
+
+## [2.8.0] - 2026-07-17
+
+### Added
+
+- file logging — `getLogger` can now write to a log file, with an option for a file-only logger that mutes the console
+- `calc_verbosity` and `calc_logging_level` — the verbosity-to-level conversion is now public
+- `--max-verbose`/`--max-quiet` CLI flags — jump straight to the highest or lowest verbosity, and choose which short flags bind to the stepwise and extremity behaviors
+
+[2.8.0]: https://github.com/kami-lel/kamilog/compare/v2.7.0...v2.8.0
 
 
 
