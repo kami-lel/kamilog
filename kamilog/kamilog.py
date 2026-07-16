@@ -1203,7 +1203,7 @@ def _register_logger_parser(cli_subparser):
 
 # Verbosity  ###################################################################
 
-# verbosity helpers  ===========================================================
+# auxiliaries  =================================================================
 
 
 def _set_logger_level(level, *, logger=None, logger_name=None):
@@ -1216,6 +1216,9 @@ def _set_logger_level(level, *, logger=None, logger_name=None):
 
 
 # Verbosity Public API  ========================================================
+
+# TODO allows use -V being equivalent to -vvv (v.v.)
+# TODO use -V instead of -v
 
 
 def add_verbose_arguments(parser):
