@@ -44,3 +44,12 @@ class TestCalcLoggingLevelNamespace:
         add_verbose_arguments(parser)
         args = parser.parse_args(["--quiet"])
         assert calc_logging_level(0, namespace=args) == logging.WARNING
+
+    def test_base_verbosity_offset(_):
+        parser = ArgumentParser()
+        add_verbose_arguments(parser)
+        args = parser.parse_args(["-v"])
+        assert calc_logging_level(1, namespace=args) == ENTER
+
+    def test_namespace_none_uses_plain_verbosity(_):
+        assert calc_logging_level(1, namespace=None) == logging.INFO

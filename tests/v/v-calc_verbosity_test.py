@@ -4,7 +4,7 @@ v-calc_verbosity_test.py
 tests for `calc_verbosity` in `kamilog.py`
 """
 
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace
 from kamilog.kamilog import add_verbose_arguments, calc_verbosity
 
 
@@ -44,3 +44,15 @@ class TestCalcVerbosity:
         add_verbose_arguments(parser)
         args = parser.parse_args(["-v"])
         assert calc_verbosity(args, verbosity=2) == 3
+
+    def test_bare_namespace_has_no_offset(_):
+        args = Namespace()
+        assert calc_verbosity(args, verbosity=2) == 2
+
+    def test_verbose_only_namespace(_):
+        args = Namespace(verbose=2)
+        assert calc_verbosity(args) == 2
+
+    def test_quiet_only_namespace(_):
+        args = Namespace(quiet=1)
+        assert calc_verbosity(args, verbosity=2) == 1

@@ -53,3 +53,12 @@ class TestSetLoggingLevelByNamespace:
         args = parser.parse_args(["-qq"])
         set_logging_level_by_namespace(args, logger_name=LOGGER_NAME)
         assert logging.getLogger(LOGGER_NAME).level == logging.ERROR
+
+    def test_base_verbosity_offset(_):
+        parser = ArgumentParser()
+        add_verbose_arguments(parser)
+        args = parser.parse_args(["-v"])
+        set_logging_level_by_namespace(
+            args, verbosity=1, logger_name=LOGGER_NAME
+        )
+        assert logging.getLogger(LOGGER_NAME).level == ENTER
