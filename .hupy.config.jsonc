@@ -7,7 +7,7 @@
 // #############################################################################
 {
   // HUPy version, do not edit
-  "hupy_version": "1.0.0",
+  "hupy_version": "2.0.0",
   "vg": { // VerGrep  ##########################################################
     // grep repo's version string
     //
@@ -54,6 +54,19 @@
     // glob patterns excluded from TT scanning
     "ignored_path_globs": []
   },
+  "pt": { // Paper Trail #######################################################
+    // disable PT
+    "is_disabled": false,
+    "trails": [
+      {
+        "remark": "Changelog Entry Required on Feature Landing",
+        "glob": "CHANGELOG.md",
+        "allow_commit_types": [
+          "FEATURE_LANDING"
+        ]
+      }
+    ]
+  },
   "pch": { // Prepend Commit Header ############################################
     // adds a short header line to the top of the commit message
     //
@@ -75,65 +88,7 @@
     "release_candidate_tag": "-rc"
   },
   "hb": { // Hook Bracket ######################################################
-    // run extra commands around HUPy's own hook logic
-    //
-    // a single HB command entry include fields:
-    //
-    // - "cmd": shell command to be ran (at repository root)
-    // - "allow_commit_types" (optional, list of string): v.i.
-    // - "allow_failure" (optional, boolean):
-    //   allowing failed command proceeded with committing
-    // - "remark" (optional, string): description/name of entry,
-    //   strictly used in logger
-    //
-    // "allow_commit_types" include all commit types which
-    // this command should be ran, possible values:
-    //
-    // - non-merge commits
-    //   - "REGULAR_COMMIT",
-    //   - "OTHER_COMMIT",
-    // - merge commits:
-    //   - "FEATURE_LANDING"
-    //   - "VERSION_RELEASE"
-    //   - "SYNC_BACKPORT"
-    //   - "CATCH_UP"
-    //   - "HOTFIX_RELEASE"
-    //   - "HOTFIX_BACKPORT"
-    //   - "RELEASE_CUT"
-    //   - "RELEASE_BACKPORT"
-    //   - "OTHER_MERGE"
-    // - merge categories (union of merge subtypes above):
-    //   - "MERGE" (all merge commits)
-    //   - "RELEASE": VERSION_RELEASE | HOTFIX_RELEASE | RELEASE_CUT
-    //   - "BACKPORT": SYNC_BACKPORT | HOTFIX_BACKPORT | RELEASE_BACKPORT
-    //   - "INTEGRATION": RELEASE | FEATURE_LANDING
-    //
     // disable HB
-    "is_disabled": false,
-    "pre_commit": {
-      // run before pre-commit's core logic
-      "lead": [
-        {
-          "cmd": "pytest tests/",
-          "allow_commit_types": ["INTEGRATION"],
-          "allow_failure": false,
-          "remark": "Integration UTs"
-        }
-      ],
-      // run after pre-commit's core logic
-      "trail": []
-    },
-    "prepare_commit_msg": {
-      // run before prepare-commit-msg's core logic
-      "lead": [],
-      // run after prepare-commit-msg's core logic
-      "trail": []
-    },
-    "post_commit": {
-      // run before post-commit's core logic
-      "lead": [],
-      // run after post-commit's core logic
-      "trail": []
-    }
+    "is_disabled": false
   }
 }
