@@ -2,13 +2,6 @@
 
 A lightweight Python logging wrapper with structured output, custom log levels, combinable ANSI color styling, and flexible timestamp options.
 
-<!--
-todo smart time print
-todo cli logger: implement relative time
-todo cli logger: allow to use already set up logger
-bug using different logger to print & diff only can produce confusing result
--->
-
 ## Features
 
 #### 🎯 Custom Logging Experience
