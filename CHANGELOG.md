@@ -1,10 +1,6 @@
 # kamilog CHANGELOG
 
 <!--
-Fixme main script optimization
-Fixme split usage doc
-Fixme use `-` in doc
-
 todo cli color-triage-tag
 todo smart time print
 todo cli logger: implement relative time
@@ -33,7 +29,7 @@ bug using different logger to print & diff only can produce confusing result
 ### Added
 
 - badges: labels for the mode a run is in (`dry`, `force`, `auto` and more, or any custom string); set for a run with `KamiLogger.set_badges()` / `clear_badges()`, or per record with `badges=` and `is_inheriting_badges=` on every level method and `log()`
-- badges print between the timestamp and the level (`time badges<tab>level source: message`), sorted by priority, one hue per native badge on a TTY and grey for custom ones; lines without badges are unchanged
+- badges print between the timestamp and the level (`time badges<tab>level source: message`), sorted by priority, one hue per native badge on a TTY and magenta for custom ones; lines without badges are unchanged
 - `AnsiRenderer.color_badge()` and `record.badges` for custom formatters
 - `docs/badge-doc.md`: user guide to badges, with every native badge
 - `logger-badge_demo.py` example with a golden-output test
@@ -42,6 +38,7 @@ bug using different logger to print & diff only can produce confusing result
 - `kamilog deed <method>` CLI subcommand for the 17 deeds, with `--level`; `-- COMMAND` runs the command, logs its outcome (`--err-level` sets the failure level) and returns its exit status to the shell
 - deed args are stringified with `str()` once, when the deed is called or `act.set()` gives them, so a later change to the object never alters the line
 - `docs/deed-doc.md`: user guide to deed log methods
+- topic guides `docs/log-doc.md`, `ansi-doc.md`, `banner-doc.md`, `verbosity-doc.md`, `shim-doc.md`, cross-linked w/ each other & `README.md`
 - `logger-deed_demo.py` example with a golden-output test
 
 ### Changed
@@ -51,6 +48,8 @@ bug using different logger to print & diff only can produce confusing result
 - diff-only dittos stay tab-aligned under badges
 - `getLogger()` timestamps now depend on the destination when `datefmt` is not given: the console prints none, and a log file (`filename=`) uses `DATEFMT_DATETIME_MS`; an explicit `datefmt` or `relative_to` still applies to console and file alike
 - `kamilog logger` and `kamilog deed` print no timestamp by default; `-t/--time-format` defaults to `no-time`, and `-t time` restores `HH:MM:SS`
+- `docs/usage_doc.md` split into the topic guides; `README.md` Usage now links all of them, plus a Contributing section
+- installation instructions moved from `docs/install_guide.md` into the `README.md` Install section; the guide is removed
 - diff-only ditto tab stops shift with the shorter console prefix, so a compressed line may cover one more leading character
 - `logger-timestamps_demo.py` opens with a default section: console w/o timestamp vs file w/ `DATEFMT_DATETIME_MS`
 

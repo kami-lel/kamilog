@@ -14,7 +14,7 @@ Repository: <https://github.com/kami-lel/kamilog>
 kamilog/
 ├── kamilog/
 │   ├── __init__.py          # re-exports all public symbols from kamilog.py
-│   └── kamilog.py           # entire implementation (~2740 lines)
+│   └── kamilog.py           # entire implementation (~2850 lines)
 ├── tests/
 │   ├── cb/                          # comment-banner test suite
 │   │   ├── cb-centered_test.py
@@ -59,10 +59,13 @@ kamilog/
 │       └── logger-diff_only_stress_demo.py  # word-boundary, leader, and embedded-tab
 │                                             # compression scenarios
 ├── docs/
-│   ├── usage_doc.md         # public API reference with examples
+│   ├── log-doc.md           # user guide to levels, timestamps, diff-only output, file output
+│   ├── ansi-doc.md          # user guide to AnsiStyle and AnsiRenderer
+│   ├── banner-doc.md        # user guide to comment banner functions
+│   ├── verbosity-doc.md     # user guide to -v/-q flags and verbosity helpers
+│   ├── shim-doc.md          # user guide to the kamilog_shim.sh fallback
 │   ├── badge-doc.md         # user guide to badges and the native badge table
-│   ├── deed-doc.md          # user guide to deed log methods
-│   └── install_guide.md     # installation methods
+│   └── deed-doc.md          # user guide to deed log methods
 ├── scripts/
 │   └── kamilog_shim.sh       # bash `kamilog()` fallback wrapper, meant to be copy-pasted
 │                             # or sourced into a caller's own script
@@ -117,7 +120,7 @@ Public class that centralizes ANSI color detection and application. Instantiated
 - `is_disabled=False` (keyword-only) forces color off unconditionally at construction, regardless of the stream's TTY state.
 - `color(text, style)` — generic style applier; wraps `text` in the ANSI codes for every flag set in the combined `AnsiStyle` value.
 - `color_level(text, levelno)` — wraps `text` in bold + per-level ANSI color via the internal `_LEVEL2ANSI_COLOR` map.
-- `color_badge(text, badge)` — wraps `text` in the badge's hue from `_NATIVE_BADGES`; any other (custom) badge is grey.
+- `color_badge(text, badge)` — wraps `text` in the badge's hue from `_NATIVE_BADGES`; any other (custom) badge is magenta.
 - `color_grey(text)` — wraps `text` in grey; used for timestamps, source labels, and compression markers.
 - `color_triage_tag(triage_tag)` — colors a triage-tag string (`BUG`/`Bug`/`bug`, `FIXME`/`Fixme`/`fixme`, `TODO`/`Todo`/`todo`, `HACK`/`Hack`/`hack`) via the internal `_TRIAGE_TAG2ANSI_STYLE` map. Each tag type keeps one hue across its three loudness tiers, with contrast (background presence/brightness, bold) escalating for louder tiers. Raises `ValueError` for any other string.
 
@@ -163,7 +166,7 @@ Subclasses `logging.Logger`. Adds eleven convenience methods mapping to the cust
 
 `KamiLogger` also carries badges: labels for the mode the whole run is in (`dry`, `force`, `auto` and the rest). kamilog only records and displays them.
 
-- `_NATIVE_BADGES` — module-level table mapping each native label to `(AnsiStyle hue, priority)`; a higher priority prints earlier. Any label absent from it is a custom badge: grey, priority 0.
+- `_NATIVE_BADGES` — module-level table mapping each native label to `(AnsiStyle hue, priority)`; a higher priority prints earlier. Any label absent from it is a custom badge: magenta, priority 0.
 - `_normalize_badges(badges)` — private pure function: accepts `None`, a `str` or an iterable, drops duplicates and orders by descending priority (stable for ties; customs keep the order given). Returns a tuple.
 - `set_badges(badges=None)` / `clear_badges()` — replace or unset the run-wide set, stored per logger in `_run_badges` (class default `()`). `set_badges()`, `None` and `[]` all unset it; there is no add or remove of one label.
 - `_log(..., badges=None, is_inheriting_badges=True)` — override that merges per-call badges with the run-wide set (`is_inheriting_badges=False` hides the run-wide set for one record) and stamps the result on the record as `record.badges` through `extra`. It forwards to `super()._log` with `stacklevel + 1`, so `funcName` and `lineno` still point at the caller. Every level method and `log()` accept the kwargs through `**kwargs`.
@@ -189,10 +192,10 @@ Holds all core formatting logic, independent of `logging.Formatter`. Instantiate
 
 Responsibilities:
 
-- `count_prefix_chars(record)` — returns the printable character count before the message text for a given record. Accounts for the optional timestamp (relative: always 13 chars; datefmt: rendered `time.strftime` length), the 5-char padded level name, and the source name with colon. When the record carries badges the value is a display column, not a character count: the badges follow the timestamp and the level starts on the first tab stop strictly after the badges (`_next_tab_stop`), so a literal tab in the line spans several columns. ANSI escape codes are excluded. Uses `time.strftime` directly so there is no dependency on `Formatter`.
+- `count_prefix_chars(record)` — returns the printable character count before the message text for a given record. Accounts for the optional timestamp (relative: always 13 chars; datefmt: rendered `time.strftime` length), the 5-char padded level name, and the source name with colon. When the record carries badges the value is a display column, not a character count: the badges follow the timestamp and the level starts on the first tab stop strictly after the badges (`_calc_tab_advance`), so a literal tab in the line spans several columns. ANSI escape codes are excluded. Uses `time.strftime` directly so there is no dependency on `Formatter`.
 - `format_time(record, datefmt)` — produces the optionally colored timestamp string, or an empty string when disabled.
 - `build_line(record)` — assembles the full `LEVEL source: message` line with optional timestamp prefix. When `record.badges` is non-empty (read with a default, so plain `logging` records still work) `<badges>\t` is inserted between the timestamp and the level, badges joined by single spaces and colored per label (separators uncolored); a line with no badges is byte-identical to before. Does not append `exc_info` or `stack_info`.
-- Private helpers `_fmt_asctime`, `_fmt_level`, `_fmt_badges`, `_fmt_source`, `_next_tab_stop`, `_fmt_relative` delegate color application to `self._palette`.
+- Private helpers `_fmt_asctime`, `_fmt_level`, `_fmt_badges`, `_fmt_source`, `_fmt_relative` delegate color application to `self._palette`.
 
 Level display names: `DEBUG`, `ENTER`, `SKIP `, `INFO `, `PASS `, `SUCC.`, `NOTE `, `TIP  `, `DONE `, `HINT `, `IMPT.`, `WARN.`, `CAUT.`, `ERROR`, `FAIL `, `CRIT.`
 

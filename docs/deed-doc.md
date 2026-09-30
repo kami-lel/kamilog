@@ -2,7 +2,7 @@
 
 A **deed** is one common thing your program does, such as creating, copying, or deleting a file. Each deed has its own logger method that logs it in a fixed wording.
 
-kamilog only reports deeds. Your code still does the work.
+kamilog only reports deeds. Your code still does the work. Deeds log through the [logger](log-doc.md), so its levels, timestamps, and file output apply.
 
 
 
@@ -166,7 +166,7 @@ with logger.track.run_command("make") as act:
 
 ## Shell CLI
 
-Shell scripts use `kamilog deed <method>`, with the name in kebab case and the same arguments. The options are `--level` and `--err-level`.
+Shell scripts use `kamilog deed <method>` (on machines without `kamilog`, the [shell shim](shim-doc.md) covers only `cb` and `logger`, so deed calls just pass stdin through), with the name in kebab case and the same arguments. The options are `--level` and `--err-level`.
 
 ```bash
 kamilog deed create-file out/a.txt

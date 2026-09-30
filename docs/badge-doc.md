@@ -2,7 +2,7 @@
 
 A **badge** is a short label that says what mode the whole run is in: a dry run, an unattended run, a forced run. Set it once, and every log line carries it, so nobody reading the output has to wonder whether anything was really changed.
 
-kamilog only shows badges. It never makes anything dry or forced; your code does that.
+kamilog only shows badges. It never makes anything dry or forced; your code does that. Badges are a feature of the [logger](log-doc.md), and [deeds](deed-doc.md) accept them per line.
 
 
 
@@ -29,7 +29,9 @@ log.done("wrote a.txt")
 log.done("wrote b.txt", badges="deploy")  # this line only, on top of the set
 log.done("wrote c.txt", is_inheriting_badges=False)  # this line only, without the set
 
-log.clear_badges()  # same as set_badges(), (None) or ([])
+log.clear_badges()    # or equivalently
+log.set_badges(None)  # or equivalently
+log.set_badges([])
 log.done("wrote d.txt")
 ```
 
@@ -116,4 +118,22 @@ Execution:
 
 ## Custom Badges
 
-Any other string works as a badge, with no declaration, and prints grey after the native ones. Names are not checked, so a misspelled native badge such as `"forse"` prints as a grey custom one.
+Any other string works as a badge, with no declaration, and prints magenta after the native ones. Names are not checked, so a misspelled native badge such as `"forse"` prints as a magenta custom one.
+
+A nightly sync job run by cron, pushing to the `eu-west` region, mixes native and custom badges:
+
+```python
+import kamilog
+
+log = kamilog.getLogger("sync")
+log.setLevel(kamilog.DEBUG)
+
+log.set_badges(["eu-west", "auto", "keep"])
+log.done("synced 120 files")
+```
+
+```
+auto keep eu-west	DONE  sync: synced 120 files
+```
+
+`auto` and `keep` are native and lead, colored by severity, while `eu-west` is custom and follows in magenta.

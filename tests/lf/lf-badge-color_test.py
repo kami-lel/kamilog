@@ -46,9 +46,9 @@ class TestColorBadge:
     def test_dry_is_bright_yellow(_):
         assert _renderer().color_badge("dry", "dry") == "\033[93mdry\033[0m"
 
-    def test_custom_badge_is_grey(_):
+    def test_custom_badge_is_magenta(_):
         assert _renderer().color_badge("deploy", "deploy") == (
-            "\033[90mdeploy\033[0m"
+            "\033[35mdeploy\033[0m"
         )
 
     def test_plain_when_color_disabled(_):
@@ -63,7 +63,7 @@ def _build_line(badges, is_tty=True):
 class TestBuildLineBadgeColor:
     def test_each_badge_colored_separators_plain(_):
         line = _build_line(("dry", "x"))
-        colored = "\033[93mdry\033[0m \033[90mx\033[0m"
+        colored = "\033[93mdry\033[0m \033[35mx\033[0m"
         assert line.startswith("{}\t".format(colored))
 
     def test_plain_output_has_bare_labels(_):

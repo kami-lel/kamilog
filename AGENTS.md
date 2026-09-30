@@ -49,7 +49,7 @@ Tests live in `tests/` and use `pytest` class-based style (`class TestFoo`).
 
 Before merging:
 
-1. `pytest tests/` — all 1240 tests must pass with zero failures.
+1. `pytest tests/` — all 1251 tests must pass with zero failures.
 2. `tests/source_quality_test.py` scans `kamilog/kamilog.py` and `kamilog/__init__.py` for `todo`, `bug`, `fixme`, `hack` (case-insensitive) — leave none behind.
 
 When adding new public functions, add corresponding tests under the relevant subdirectory — `tests/v/` for verbosity helpers (named `v-<feature>_test.py`), `tests/cb/` for comment-banner functions (named `cb-<feature>_test.py`), `tests/ansi/` for `AnsiRenderer`/TTY detection, `tests/lf/` for `_LogFormatter`/`_LogFormatEngine`, `tests/badge/` for badges (named `badge-<feature>_test.py`), `tests/logger/` for `KamiLogger` behavior, `tests/deed/` for deed methods (named `deed-<feature>_test.py`), `tests/dof/` for diff-only compression, `tests/tal/` for `_TabAlignedLine`, `tests/cli/` for CLI subcommand flags (named `cli-<feature>_test.py`). Every `examples/` demo script has a matching golden-output test under `tests/<area>/demo/` — add or update one when a demo script's output changes.
@@ -66,7 +66,7 @@ Pre-merge checklist:
 - [ ] `pytest tests/` passes
 - [ ] `__all__` in both `kamilog.py` and `__init__.py` is up to date
 - [ ] CHANGELOG updated
-- [ ] `docs/usage_doc.md` reflects any API changes
+- [ ] the matching topic guide under `docs/` reflects any API changes
 - [ ] `CONTEXT.md` updated if architecture or module layout changed
 
 ## Documentation Maintenance
@@ -78,10 +78,14 @@ Keep these files in sync with code changes:
 | `CHANGELOG.md` | any user-visible change |
 | `AGENTS.md` | commands, conventions, or constraints change |
 | `CONTEXT.md` | architecture, module layout, or feature set changes |
-| [`docs/usage_doc.md`](docs/usage_doc.md) | public API or output format changes |
+| `README.md` | installation steps or requirements change, or a file is added to `docs/` (link it there and cross-link it from related guides) |
+| [`docs/log-doc.md`](docs/log-doc.md) | log levels, timestamps, diff-only output, or file output change |
+| [`docs/ansi-doc.md`](docs/ansi-doc.md) | `AnsiStyle` or `AnsiRenderer` change |
+| [`docs/banner-doc.md`](docs/banner-doc.md) | comment banner functions change |
+| [`docs/verbosity-doc.md`](docs/verbosity-doc.md) | verbosity helpers, `-v`/`-q` flags, or level mapping change |
+| [`docs/shim-doc.md`](docs/shim-doc.md) | `scripts/kamilog_shim.sh` or its fallbacks change |
 | [`docs/badge-doc.md`](docs/badge-doc.md) | badge API, native badges, or badge display change |
 | [`docs/deed-doc.md`](docs/deed-doc.md) | deed methods, wording, levels, track form, or `deed` CLI change |
-| [`docs/install_guide.md`](docs/install_guide.md) | installation steps or requirements change |
 
 ## Security Considerations
 
