@@ -2,7 +2,7 @@
 
 A **badge** is a short label that says what mode the whole run is in: a dry run, an unattended run, a forced run. Set it once, and every log line carries it, so nobody reading the output has to wonder whether anything was really changed.
 
-kamilog only shows badges. It never makes anything dry or forced; your code does that.
+kamilog only shows badges. It never makes anything dry or forced; your code does that. Badges are a feature of the [logger](log-doc.md), and [deeds](deed-doc.md) accept them per line.
 
 
 

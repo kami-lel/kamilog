@@ -43,6 +43,10 @@ WARN. myapp: Warning message
 
 Records below `WARNING` go to stdout, `WARNING` and above go to stderr.
 
+Related guides: [verbosity](verbosity-doc.md) for `-v`/`-q` flags that set the
+level, [deeds](deed-doc.md) for common actions logged in fixed wording, and
+the [README](../README.md) for installation.
+
 
 
 
@@ -108,7 +112,8 @@ tests. Every level has a method of the same name on the logger.
 ## ANSI Color Output
 
 Color is on automatically when the output is a terminal, and off when it is piped or
-redirected to a file. To turn it off for good:
+redirected to a file. To use the same colors outside logging, see the
+[ANSI documentation](ansi-doc.md). To turn it off for good:
 
 ```python
 log = kamilog.getLogger("myapp", disable_color=True)

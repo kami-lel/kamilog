@@ -1,6 +1,6 @@
 # ANSI Colored Output Documentation
 
-`AnsiStyle` and `AnsiRenderer` provide TTY-aware color application independent of logging.
+`AnsiStyle` and `AnsiRenderer` provide TTY-aware color application independent of logging. The logger uses the same colors for its levels, listed in the [logging documentation](log-doc.md#custom-log-levels), and the [comment banners](banner-doc.md) accept an `AnsiRenderer` too.
 
 ```python
 import sys

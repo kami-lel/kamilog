@@ -1,8 +1,6 @@
 # kamilog CHANGELOG
 
 <!--
-HACK rm emoji
-
 todo cli color-triage-tag
 todo smart time print
 todo cli logger: implement relative time

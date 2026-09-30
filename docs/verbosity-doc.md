@@ -1,7 +1,8 @@
 # Verbosity and Logging Level Documentation
 
 Built-in helpers map verbosity, from either CLI flags or a plain integer, to
-logging levels.
+logging levels. The levels are described in the
+[logging documentation](log-doc.md#custom-log-levels).
 
 
 

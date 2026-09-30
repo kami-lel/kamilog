@@ -1,6 +1,6 @@
 # Comment Banner Documentation
 
-Three functions return fixed-width lines padded with a fill character: `gen_comment_banner_centered`, `gen_comment_banner_left_just`, `gen_comment_banner_right_just`. A two-space separator is always placed between content and fill. Print the result yourself:
+Three functions return fixed-width lines padded with a fill character: `gen_comment_banner_centered`, `gen_comment_banner_left_just`, `gen_comment_banner_right_just`. A two-space separator is always placed between content and fill. Print the result yourself. Colors come from the [ANSI renderer](ansi-doc.md), and the same banners are available in shell scripts through `kamilog cb` (see the [shell shim](shim-doc.md) for machines without `kamilog`):
 
 ```python
 import kamilog

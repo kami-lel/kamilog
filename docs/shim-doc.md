@@ -1,7 +1,7 @@
 # `kamilog_shim` Documentation
 
 [`scripts/kamilog_shim.sh`](../scripts/kamilog_shim.sh) lets a shell script
-call `kamilog` safely, even where it is not installed. Either **copy-paste**
+call `kamilog` safely, even where it is not installed. Its `cb` fallback stands in for the [comment banners](banner-doc.md), and `logger` for the [logger](log-doc.md). Either **copy-paste**
 the shim into your script, or `source` it:
 
 ```bash
