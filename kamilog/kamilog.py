@@ -965,6 +965,7 @@ class _DiffOnlyEngine:  # ******************************************************
     _MARKER_WIDTH = 2  # rendered columns of _MARKER_CHAR
     _LEADER_MARKER_MIN = 4  # leader shorter than this becomes bare "\t"
     _LONG_LINE_COLS = 100  # wider rendered lines drop tab alignment
+    _LONG_LINE_MARKER = "〃 "  # full-block ditto on a long line
 
     def __init__(self, formatter, threshold=3):
         self._formatter = formatter
@@ -1153,9 +1154,10 @@ class _DiffOnlyEngine:  # ******************************************************
             )
         elif leader:
             result.append("\t")
-        result.append(
-            self._formatter.palette.color_grey(self._COMPRESSION_MARKER * k)
+        block_marker = (
+            self._LONG_LINE_MARKER if is_long else self._COMPRESSION_MARKER
         )
+        result.append(self._formatter.palette.color_grey(block_marker * k))
         # partial block: marker + spaces padding to the cut
         if gap >= self._MARKER_WIDTH:
             result.append(

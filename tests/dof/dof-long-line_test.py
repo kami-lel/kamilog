@@ -144,3 +144,50 @@ class TestLongFlagPerLine:
         plain = _DiffOnlyEngine(_StubFormatter(), threshold=1)
         plain.process(_StubRecord(_LONG + "X"))
         assert out == plain.process(_StubRecord(_LONG + "Y"))
+
+
+class _NoLimitEngine(_DiffOnlyEngine):
+    _LONG_LINE_COLS = 10**6
+
+
+def _second_of_width(width, engine_cls=_DiffOnlyEngine):
+    """compress a message of exactly ``width`` columns, prefix 0"""
+    body = "a" * (width - 5) + "/bbb"
+    engine = engine_cls(_StubFormatter(), threshold=1)
+    engine.process(_StubRecord(body + "X"))
+    return engine.process(_StubRecord(body + "Y"))
+
+
+class TestSpacedFullBlockDittos:
+    def test_line_of_100_columns_keeps_tab_form(_):
+        out = _second_of_width(100)
+        assert out.startswith("〃\t〃\t")
+        assert "〃 〃" not in out
+
+    def test_line_of_101_columns_uses_spaced_form(_):
+        out = _second_of_width(101)
+        assert out.startswith("〃 〃 ")
+        assert "〃\t" not in out
+
+    def test_short_line_output_is_unchanged(_):
+        assert _second_of_width(40) == "〃\t〃\t〃\t〃\t〃 /bbbY"
+
+    def test_long_line_is_narrower_than_its_tab_form(_):
+        long_form = _second_of_width(160)
+        tab_form = _second_of_width(160, _NoLimitEngine)
+        assert len(long_form.expandtabs(8)) < len(tab_form.expandtabs(8))
+
+    def test_each_full_block_is_marker_plus_one_space(_):
+        out = _second_of_width(160)
+        assert out.startswith("〃 " * 5)
+        assert out.endswith("Y")
+
+    def test_multi_line_message_mixes_forms_per_line(_):
+        engine = _DiffOnlyEngine(_StubFormatter(), threshold=1)
+        short = "a" * 16 + "/bbb"
+        long = "a" * 120 + "/bbb"
+        engine.process(_StubRecord(short + "X\n" + long + "X"))
+        out = engine.process(_StubRecord(short + "Y\n" + long + "Y"))
+        line1, line2 = out.split("\n")
+        assert line1.startswith("〃\t") and "〃 〃" not in line1
+        assert line2.startswith("〃 〃 ") and "〃\t" not in line2
