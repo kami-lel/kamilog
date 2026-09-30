@@ -140,3 +140,99 @@ class TestDittoAlignmentUnderBadges:
         assert with_badge in lines[3]
         ref = _tail_col(lines[1], _TAIL + "X")
         assert _tail_col(lines[3], _TAIL + "Y") == ref
+
+
+def _split_records(lines, n_records, n_lines):
+    """regroup physical file lines into one list per record"""
+    assert len(lines) == n_records * n_lines
+    return [
+        lines[i * n_lines : (i + 1) * n_lines] for i in range(n_records)
+    ]
+
+
+class TestBadgedMultiLineMessage:
+    @pytest.mark.parametrize("datefmt", [None, DATEFMT_TIME])
+    @pytest.mark.parametrize("badges", _BADGE_SETS)
+    def test_each_line_keeps_its_own_column(_, tmp_path, badges, datefmt):
+        line1 = "a" * 20 + _TAIL
+        line2 = "b" * 40 + _TAIL
+        messages = [
+            "{}X\n{}P".format(line1, line2),
+        ] * 3 + ["{}Y\n{}Q".format(line1, line2)]
+        lines = _log_lines(
+            tmp_path, messages, badges=badges, datefmt=datefmt, name_len=1
+        )
+        first, *_mid, last = _split_records(lines, 4, 2)
+        assert _display_cols(first[0]) <= 100  # both lines stay short
+        # line 1 carries the badged prefix, line 2 starts at column 0
+        assert _tail_col(last[0], _TAIL + "Y") == _tail_col(
+            first[0], _TAIL + "X"
+        )
+        assert _tail_col(last[1], _TAIL + "Q") == _tail_col(
+            first[1], _TAIL + "P"
+        )
+        assert "〃" in last[0] and "〃" in last[1]
+
+    def test_second_line_has_no_prefix_or_badge_text(_, tmp_path):
+        body = "a" * 20 + _TAIL
+        messages = ["{}X\n{}P".format(body, body)] * 3
+        messages.append("{}Y\n{}Q".format(body, body))
+        lines = _log_lines(tmp_path, messages, badges=("dry", "yes"))
+        last = _split_records(lines, 4, 2)[-1]
+        assert "dry" not in last[1]
+        assert last[1].startswith("〃")
+
+    def test_line_count_change_does_not_crash_or_misalign(_, tmp_path):
+        body = "a" * 20 + _TAIL
+        messages = [body + "X"] * 3 + ["{}Y\nextra".format(body)]
+        lines = _log_lines(tmp_path, messages, badges=("dry",))
+        assert len(lines) == 5
+        assert lines[4] == "extra"
+        assert _tail_col(lines[3], _TAIL + "Y") == _tail_col(
+            lines[0], _TAIL + "X"
+        )
+
+
+class TestBadgedLongMultiLineMessage:
+    def _long_records(_, tmp_path, badges, datefmt):
+        short = "a" * 20 + _TAIL
+        long = "c" * 120 + _TAIL
+        messages = [
+            "{}X\n{}P".format(short, long),
+        ] * 3 + ["{}Y\n{}Q".format(short, long)]
+        lines = _log_lines(
+            tmp_path, messages, badges=badges, datefmt=datefmt
+        )
+        return _split_records(lines, 4, 2)
+
+    @pytest.mark.parametrize("badges", _BADGE_SETS)
+    def test_short_line_keeps_tabs_long_line_uses_spaces(_, tmp_path, badges):
+        first, *_mid, last = TestBadgedLongMultiLineMessage._long_records(
+            _, tmp_path, badges, None
+        )
+        assert _display_cols(first[1]) > 100
+        assert "〃\t" in last[0]
+        assert "〃\t" not in last[1]
+        assert last[1].startswith("〃 〃 ")
+        assert "\t" not in last[1]
+
+    @pytest.mark.parametrize("badges", _BADGE_SETS)
+    def test_long_line_tail_is_kept_intact(_, tmp_path, badges):
+        *_head, last = TestBadgedLongMultiLineMessage._long_records(
+            _, tmp_path, badges, DATEFMT_TIME
+        )
+        assert last[1].endswith(_TAIL + "Q")
+        assert last[0].endswith(_TAIL + "Y")
+
+    def test_badges_can_push_only_line_one_over_the_limit(_, tmp_path):
+        # 70 columns of message: short at col 0, long behind 40+ prefix
+        body = "d" * 66 + _TAIL
+        badges = ("unsafe", "deploy-staging-env")
+        messages = ["{}X\n{}P".format(body, body)] * 3
+        messages.append("{}Y\n{}Q".format(body, body))
+        lines = _log_lines(tmp_path, messages, badges=badges)
+        first, *_mid, last = _split_records(lines, 4, 2)
+        assert _display_cols(first[0]) > 100
+        assert _display_cols(first[1]) <= 100
+        assert "〃\t" not in last[0]  # line 1: spaced
+        assert "〃\t" in last[1]  # line 2: still tab aligned
