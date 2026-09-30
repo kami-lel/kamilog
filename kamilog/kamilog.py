@@ -1052,7 +1052,25 @@ class _DiffOnlyEngine:  # ******************************************************
 
     def _compress(self, record, message):
         """
-        compress positions matching ``_common`` into ``〃\\t`` markers.
+        compress ``message`` line by line against the matching history
+        lines; only line 1 carries the record prefix, later lines start
+        at column 0
+        """
+        prefix_len = self._formatter.engine.count_prefix_chars(record)
+        lines = message.split("\n")
+        return "\n".join(
+            self._compress_line(
+                line,
+                self._common[k] if k < len(self._common) else [],
+                prefix_len if k == 0 else 0,
+            )
+            for k, line in enumerate(lines)
+        )
+
+    def _compress_line(self, message, common, prefix_len):
+        """
+        compress positions of one line matching ``common`` into
+        ``〃\\t`` markers.
 
         the replaceable span (``run_s`` to ``cut``) is split into
         ``_TabAlignedLine`` blocks anchored at its absolute column, so
@@ -1061,8 +1079,6 @@ class _DiffOnlyEngine:  # ******************************************************
         replaceable tab stop.
         """
         block = _TabAlignedLine.TAB_SIZE
-        prefix_len = self._formatter.engine.count_prefix_chars(record)
-        common = self._common[0] if self._common else []
         n_common = len(common)
         is_common = [
             i < n_common
