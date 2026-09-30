@@ -708,6 +708,10 @@ class _LogFormatEngine:  # *****************************************************
         asctime = self.format_time(record)
         source = self._fmt_source(record.name)
         space = " " if record.name and record.name != "root" else ""
+        badges = getattr(record, "badges", ())
+        if badges:
+            # badges sit b/t level & source, each side on a tab stop
+            space = "\t{}\t".format(" ".join(badges))
 
         if asctime:
             return "{} {}{}{} {}".format(
