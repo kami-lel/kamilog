@@ -35,7 +35,16 @@ bug using different logger to print & diff only can produce confusing result
 
 ### Added
 
+- operation badges: labels for the mode a run is in (`dry`, `force`, `auto` and more, or any custom string); set for a run with `KamiLogger.set_badges()` / `clear_badges()`, or per record with `badges=` and `inherit_badges=` on every level method and `log()`
+- badges print after the level between two tabs (`level<tab>badges<tab>source: message`), sorted by priority, one hue per native badge on a TTY and grey for custom ones; lines without badges are unchanged
+- `AnsiRenderer.color_badge()` and `record.badges` for custom formatters
+- `logger-badge_demo.py` example with a golden-output test
+
 ### Changed
+
+- diff-only compression compares a multi-line message line by line, each line against the same line of earlier messages; only line 1 follows the record prefix, later lines start at column 0
+- diff-only compression separates dittos with a space instead of a tab on a line whose rendered width exceeds 100 columns, and drops tab jumps and padding there
+- diff-only dittos stay tab-aligned under badges
 
 ### Deprecated
 
