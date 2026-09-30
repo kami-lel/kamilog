@@ -6,7 +6,6 @@ track form on success and failure, the `act` handle, and `suppress`
 """
 
 import os
-import re
 import subprocess
 import sys
 
@@ -16,51 +15,50 @@ _ROOT = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "..", "..", "..")
 )
 _DEMO = os.path.join(_ROOT, "examples", "logger", "logger-deed_demo.py")
-_TIME_RE = re.compile(r"\d{2}:\d{2}:\d{2}")
 
 _EXPECTED_STDOUT = [
     "#################################  plain form  #################################",
-    "<TIME> INFO  deed: create out/a.txt",
-    "<TIME> INFO  deed: copy a.txt -> backup/a.txt",
-    "<TIME> INFO  deed: append out/a.txt",
-    "<TIME> INFO  deed: chmod run.sh 755",
-    "<TIME> INFO  deed: download https://example.com/a.zip",
-    "<TIME> INFO  deed: delete tmp/b.txt",
-    "<TIME> SKIP  deed: skip keep/a.txt",
-    "<TIME> dry\tINFO  deed: copy a.txt -> backup/a.txt",
+    "INFO  deed: create out/a.txt",
+    "INFO  deed: copy a.txt -> backup/a.txt",
+    "INFO  deed: append out/a.txt",
+    "INFO  deed: chmod run.sh 755",
+    "INFO  deed: download https://example.com/a.zip",
+    "INFO  deed: delete tmp/b.txt",
+    "SKIP  deed: skip keep/a.txt",
+    "dry\tINFO  deed: copy a.txt -> backup/a.txt",
     "",
     "############################  track form: success  #############################",
-    "<TIME> INFO  deed: copy a.txt -> backup/a.txt",
-    "<TIME> DEBUG deed: run make",
+    "INFO  deed: copy a.txt -> backup/a.txt",
+    "DEBUG deed: run make",
     "",
     "############################  track form: failure  #############################",
     "the exception still propagated",
     "suppress carried on",
-    "<TIME> INFO  deed: fail to delete tmp/d.txt: OSError: already gone",
+    "INFO  deed: fail to delete tmp/d.txt: OSError: already gone",
     "Traceback (most recent call last):",
     '  File "<DEMO>", line 63, in <module>',
     '    raise OSError("already gone")',
     "OSError: already gone",
     "",
     "#############################  track form: handle  #############################",
-    "<TIME> INFO  deed: download https://example.com/b.zip -> b.zip",
-    "<TIME> INFO  deed: download https://example.com/c.zip",
+    "INFO  deed: download https://example.com/b.zip -> b.zip",
+    "INFO  deed: download https://example.com/c.zip",
 ]
 
 _EXPECTED_STDERR = [
-    "<TIME> WARN. deed: delete tmp/a.txt",
-    "<TIME> ERROR deed: fail to copy a.txt -> /root/a.txt: PermissionError: [Errno 13] Permission denied: '/root/a.txt'",
+    "WARN. deed: delete tmp/a.txt",
+    "ERROR deed: fail to copy a.txt -> /root/a.txt: PermissionError: [Errno 13] Permission denied: '/root/a.txt'",
     "Traceback (most recent call last):",
     '  File "<DEMO>", line 52, in <module>',
     '    raise PermissionError(13, "Permission denied", "/root/a.txt")',
     "PermissionError: [Errno 13] Permission denied: '/root/a.txt'",
-    "<TIME> WARN. deed: fail to delete tmp/c.txt: OSError: device busy",
+    "WARN. deed: fail to delete tmp/c.txt: OSError: device busy",
     "Traceback (most recent call last):",
     '  File "<DEMO>", line 57, in <module>',
     '    raise OSError("device busy")',
     "OSError: device busy",
-    "<TIME> ERROR deed: fail to run make: exit 2",
-    "<TIME> ERROR deed: fail to download https://example.com/d.zip: status 404",
+    "ERROR deed: fail to run make: exit 2",
+    "ERROR deed: fail to download https://example.com/d.zip: status 404",
 ]
 
 
@@ -77,8 +75,8 @@ def _run_demo():
 
 
 def _normalize(text):
-    """mask timestamps and the machine-specific demo path, split lines"""
-    text = _TIME_RE.sub("<TIME>", text).replace(_DEMO, "<DEMO>")
+    """mask the machine-specific demo path, split lines"""
+    text = text.replace(_DEMO, "<DEMO>")
     return text.split("\n")[:-1]
 
 

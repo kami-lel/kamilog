@@ -10,13 +10,11 @@ import argparse
 import contextlib
 import io
 import logging
-import re
 
 import pytest
 
 import kamilog
 
-_TIME_RE = re.compile(r"\d{2}:\d{2}:\d{2}")
 
 _LABELS = {
     "debug": "DEBUG",
@@ -59,10 +57,6 @@ _FLAG_CASES = [
 ]
 
 
-def _mask_time(text):
-    return _TIME_RE.sub("<TIME>", text)
-
-
 def _fresh_root_logger():
     log = logging.getLogger()
     log.handlers = []
@@ -81,7 +75,7 @@ def _run_demo(argv):
         kamilog.set_logging_level_by_namespace(args)
         for method, message, _levelno in _CALLS:
             getattr(log, method)(message)
-    return _mask_time(out.getvalue()), _mask_time(err.getvalue())
+    return out.getvalue(), err.getvalue()
 
 
 def _expected_lines(threshold):
@@ -89,7 +83,7 @@ def _expected_lines(threshold):
     for method, message, levelno in _CALLS:
         if levelno < threshold:
             continue
-        line = "<TIME> {}: {}".format(_LABELS[method], message)
+        line = "{}: {}".format(_LABELS[method], message)
         if method in _STDERR_METHODS:
             stderr_lines.append(line)
         else:
