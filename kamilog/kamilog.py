@@ -75,7 +75,7 @@ __author__ = "kamiLeL"
 # enum  ########################################################################
 class _CustomLogLevel(IntEnum):
     """
-    custom log level IntEnum with padded 5-char display name.
+    custom log level IntEnum with padded 5-char display name
 
 
     :param value: numeric log level (used as the enum's int value)
@@ -169,14 +169,14 @@ class AnsiStyle(Flag):  # =====================================================
     def parse(cls, raw):
         """
         parse a comma-separated list of ``AnsiStyle`` member names into a
-        single combined ``AnsiStyle`` value.
+        single combined ``AnsiStyle`` value
 
 
         :param raw: comma-separated member names, eg ``"RED,BOLD"``
         :type raw: str
+        :raises ValueError: ``raw`` contains an unknown member name
         :return: combined style
         :rtype: AnsiStyle
-        :raises ValueError: if ``raw`` contains an unknown member name
         """
         style = cls(0)
         for name in raw.split(","):
@@ -196,9 +196,9 @@ class AnsiRenderer:  # =========================================================
     :param stream: output stream used for TTY detection;
             ``None`` disables color unconditionally
     :type stream: IO or None
-    :param is_disabled: when ``True``, disable color unconditionally,
-            regardless of ``stream``; defaults to ``False``
-    :type is_disabled: bool
+    :param is_disabled: whether to disable color unconditionally,
+            regardless of ``stream``; default=False
+    :type is_disabled: bool, optional
     """
 
     _RESET = "\033[0m"
@@ -286,7 +286,7 @@ class AnsiRenderer:  # =========================================================
 
     def color(self, text, style):
         """
-        apply ANSI style codes to text.
+        apply ANSI style codes to text
 
 
         :param text: text to colorize
@@ -311,6 +311,12 @@ class AnsiRenderer:  # =========================================================
     def color_grey(self, text):
         """
         apply bright-black (grey) ANSI color to ``text``
+
+
+        :param text: text to colorize
+        :type text: str
+        :return: ``text`` in grey if color is enabled; otherwise unchanged
+        :rtype: str
         """
         return self.color(text, AnsiStyle.GREY)
 
@@ -319,8 +325,13 @@ class AnsiRenderer:  # =========================================================
         apply bold and level-specific ANSI color to ``text``
 
 
+        :param text: text to colorize
+        :type text: str
         :param levelno: numeric log level used to select the color
         :type levelno: int
+        :return: ``text`` with the level's style applied if color is enabled
+                and the level is known; otherwise ``text`` unchanged
+        :rtype: str
         """
         color = self._LEVEL2ANSI_COLOR.get(levelno)
         if color is None:
@@ -348,11 +359,12 @@ class AnsiRenderer:  # =========================================================
         apply tag-specific ANSI color to ``triage_tag``
 
 
-        :param triage_tag: triage tag text, eg ``"BUG"``, ``"Fixme"``, ``"todo"``
+        :param triage_tag: triage tag text,
+                eg ``"BUG"``, ``"Fixme"``, ``"todo"``
         :type triage_tag: str
+        :raises ValueError: ``triage_tag`` is not a recognized triage tag
         :return: ``triage_tag`` with style applied
         :rtype: str
-        :raises ValueError: if ``triage_tag`` is not a recognized triage tag
         """
         style = self._TRIAGE_TAG2ANSI_STYLE.get(triage_tag)
         if style is None:
@@ -425,7 +437,7 @@ _NATIVE_BADGES = {
 def _normalize_badges(badges):
     """
     drop duplicate badges, then order by descending priority;
-            customs rank 0 and keep the order given
+    customs rank 0 and keep the order given
     """
     if badges is None:
         return ()
@@ -513,7 +525,7 @@ _DEEDS = {
 def _stringify_deed_args(args):
     """
     str() each arg once when given, so a later change to the object can not
-            alter the line; None stays None and still drops its segment
+    alter the line; None stays None and still drops its segment
     """
     return tuple(None if arg is None else str(arg) for arg in args)
 
@@ -541,7 +553,7 @@ def _bind_deed_methods(cls, make_method, qualname_prefix):
 def _render_deed_message(deed, *args, **kwargs):
     """
     render `deed` wording from positional `args` and named `kwargs`;
-            an omitted argument drops its segment, e.g. ` -> {destination}`
+    an omitted argument drops its segment, e.g. ` -> {destination}`
     """
     if len(args) > len(deed.arg_names):
         raise TypeError(
@@ -580,13 +592,9 @@ class _DeedHandle:  # **********************************************************
 
     def set(self, **kwargs):
         """
-        give arguments known only after the deed started.
-
-
-        :param kwargs: argument names of the deed, with their values;
-                an argument still missing at block exit drops its segment
-        :raises TypeError: if a name is unknown or was already given
-                positionally
+        give arguments known only after the deed started; an argument still
+        missing at block exit drops its segment, and a name the deed lacks or
+        already got positionally raises ``TypeError``
         """
         self._scope.set_late_args(kwargs)
 
@@ -594,11 +602,7 @@ class _DeedHandle:  # **********************************************************
         """
         mark the deed failed without raising, e.g. a bad exit status;
         the failure line reads ``fail to <message>: <detail>``
-        and carries no traceback.
-
-
-        :param detail: why the deed failed
-        :type detail: object
+        and carries no traceback
         """
         self._scope.mark_failed(detail)
 
@@ -639,7 +643,9 @@ class _DeedScope:  # ***********************************************************
         return False
 
     def set_late_args(self, kwargs):
-        """record arguments given after entry, validating each name"""
+        """
+        record arguments given after entry, validating each name
+        """
         for key in kwargs:
             if key not in self._deed.arg_names:
                 _raise_unexpected_deed_arg(self._deed, key)
@@ -653,22 +659,30 @@ class _DeedScope:  # ***********************************************************
         self._late_args.update(zip(kwargs, values))
 
     def mark_failed(self, detail):
-        """mark the deed failed as a value; no exception involved"""
+        """
+        mark the deed failed as a value; no exception involved
+        """
         self._is_failed = True
         self._fail_detail = detail
 
     def _render(self):
-        """render the deed wording from entry and late arguments"""
+        """
+        render the deed wording from entry and late arguments
+        """
         return _render_deed_message(self._deed, *self._args, **self._late_args)
 
     def _log_success(self):
-        """log the success line at the deed's level"""
+        """
+        log the success line at the deed's level
+        """
         level = self._options["level"]
         level = self._deed.level if level is None else level
         self._emit(level, self._render())
 
     def _log_failure(self, cause, exc_info=None):
-        """log `fail to <message>: <cause>`, with traceback if `exc_info`"""
+        """
+        log `fail to <message>: <cause>`, with traceback if `exc_info`
+        """
         err_level = self._options["err_level"]
         err_level = self._deed.err_level if err_level is None else err_level
         message = "fail to {}".format(self._render())
@@ -677,7 +691,9 @@ class _DeedScope:  # ***********************************************************
         self._emit(err_level, message, exc_info)
 
     def _emit(self, level, message, exc_info=None):
-        """log `message`, attributed to the code holding the `with`"""
+        """
+        log `message`, attributed to the code holding the `with`
+        """
         self._logger._log_if_enabled(
             level,
             message,
@@ -700,7 +716,9 @@ class _DeedTrack:  # ***********************************************************
 
 
 def _make_track_method(deed):
-    """build the track-form method of `deed` for :class:`_DeedTrack`"""
+    """
+    build the track-form method of `deed` for :class:`_DeedTrack`
+    """
 
     def track_method(
         self,
@@ -726,11 +744,12 @@ def _make_track_method(deed):
     track_method.__doc__ = """
         track the deed ``{template}``: one line is logged when the block
         exits, at ``level`` on success or at ``err_level`` on an
-        ``Exception``, which then propagates unless ``suppress``. The block
-        yields a handle with ``set(name=value)`` and ``fail(detail)``.
+        ``Exception``, which then propagates unless ``suppress``; the block
+        yields a handle with ``set(name=value)`` and ``fail(detail)``
 
 
         :param args: the deed's own arguments, in order ``{arg_names}``
+        :type args: object
         :param level: severity of the success line; default=the deed's level
         :type level: int, optional
         :param err_level: severity of the failure line;
@@ -756,7 +775,7 @@ _bind_deed_methods(_DeedTrack, _make_track_method, "_DeedTrack")
 
 class KamiLogger(logging.Logger):  # ===========================================
     """
-    logger subclass extending :class:`logging.Logger` with custom levels.
+    logger subclass extending :class:`logging.Logger` with custom levels
 
     provides convenience methods for test and hook workflows;
     obtain instances via :func:`getlogger`
@@ -767,67 +786,166 @@ class KamiLogger(logging.Logger):  # ===========================================
 
     def enter(self, message, *args, **kwargs):
         """
-        log at ``ENTER`` level (15): entering a hook or test case.
+        log at ``ENTER`` level (15): entering a hook or test case
+
+
+        :param message: message, or ``%``-style format string for ``args``
+        :type message: str
+        :param args: values interpolated into ``message``
+        :type args: object
+        :param kwargs: forwarded to ``logging.Logger._log``: ``exc_info``,
+                ``extra``, ``stack_info``, ``badges``, ``is_inheriting_badges``
+        :type kwargs: object
         """
         self._log_if_enabled(ENTER, message, args, 2, **kwargs)
 
     def skip(self, message, *args, **kwargs):
         """
-        log at ``SKIP`` level (16): skipping a hook or test case.
+        log at ``SKIP`` level (16): skipping a hook or test case
+
+
+        :param message: message, or ``%``-style format string for ``args``
+        :type message: str
+        :param args: values interpolated into ``message``
+        :type args: object
+        :param kwargs: forwarded to ``logging.Logger._log``: ``exc_info``,
+                ``extra``, ``stack_info``, ``badges``, ``is_inheriting_badges``
+        :type kwargs: object
         """
         self._log_if_enabled(SKIP, message, args, 2, **kwargs)
 
     def succ(self, message, *args, **kwargs):
         """
-        log at ``SUCC`` level (17): task or operation succeeded.
+        log at ``SUCC`` level (17): task or operation succeeded
+
+
+        :param message: message, or ``%``-style format string for ``args``
+        :type message: str
+        :param args: values interpolated into ``message``
+        :type args: object
+        :param kwargs: forwarded to ``logging.Logger._log``: ``exc_info``,
+                ``extra``, ``stack_info``, ``badges``, ``is_inheriting_badges``
+        :type kwargs: object
         """
         self._log_if_enabled(SUCC, message, args, 2, **kwargs)
 
     def pass_(self, message, *args, **kwargs):
         """
-        log at ``PASS`` level (21): hook or test case passed.
+        log at ``PASS`` level (21): hook or test case passed
+
+
+        :param message: message, or ``%``-style format string for ``args``
+        :type message: str
+        :param args: values interpolated into ``message``
+        :type args: object
+        :param kwargs: forwarded to ``logging.Logger._log``: ``exc_info``,
+                ``extra``, ``stack_info``, ``badges``, ``is_inheriting_badges``
+        :type kwargs: object
         """
         self._log_if_enabled(PASS, message, args, 2, **kwargs)
 
     def note(self, message, *args, **kwargs):
         """
-        log at ``NOTE`` level (23): general aside worth noting.
+        log at ``NOTE`` level (23): general aside worth noting
+
+
+        :param message: message, or ``%``-style format string for ``args``
+        :type message: str
+        :param args: values interpolated into ``message``
+        :type args: object
+        :param kwargs: forwarded to ``logging.Logger._log``: ``exc_info``,
+                ``extra``, ``stack_info``, ``badges``, ``is_inheriting_badges``
+        :type kwargs: object
         """
         self._log_if_enabled(NOTE, message, args, 2, **kwargs)
 
     def tip(self, message, *args, **kwargs):
         """
-        log at ``TIP`` level (24): actionable suggestion.
+        log at ``TIP`` level (24): actionable suggestion
+
+
+        :param message: message, or ``%``-style format string for ``args``
+        :type message: str
+        :param args: values interpolated into ``message``
+        :type args: object
+        :param kwargs: forwarded to ``logging.Logger._log``: ``exc_info``,
+                ``extra``, ``stack_info``, ``badges``, ``is_inheriting_badges``
+        :type kwargs: object
         """
         self._log_if_enabled(TIP, message, args, 2, **kwargs)
 
     def done(self, message, *args, **kwargs):
         """
-        log at ``DONE`` level (25): task or operation completed.
+        log at ``DONE`` level (25): task or operation completed
+
+
+        :param message: message, or ``%``-style format string for ``args``
+        :type message: str
+        :param args: values interpolated into ``message``
+        :type args: object
+        :param kwargs: forwarded to ``logging.Logger._log``: ``exc_info``,
+                ``extra``, ``stack_info``, ``badges``, ``is_inheriting_badges``
+        :type kwargs: object
         """
         self._log_if_enabled(DONE, message, args, 2, **kwargs)
 
     def hint(self, message, *args, **kwargs):
         """
-        log at ``HINT`` level (26): subtle, barely-there cue.
+        log at ``HINT`` level (26): subtle, barely-there cue
+
+
+        :param message: message, or ``%``-style format string for ``args``
+        :type message: str
+        :param args: values interpolated into ``message``
+        :type args: object
+        :param kwargs: forwarded to ``logging.Logger._log``: ``exc_info``,
+                ``extra``, ``stack_info``, ``badges``, ``is_inheriting_badges``
+        :type kwargs: object
         """
         self._log_if_enabled(HINT, message, args, 2, **kwargs)
 
     def important(self, message, *args, **kwargs):
         """
-        log at ``IMPORTANT`` level (27): emphasized information.
+        log at ``IMPORTANT`` level (27): emphasized information
+
+
+        :param message: message, or ``%``-style format string for ``args``
+        :type message: str
+        :param args: values interpolated into ``message``
+        :type args: object
+        :param kwargs: forwarded to ``logging.Logger._log``: ``exc_info``,
+                ``extra``, ``stack_info``, ``badges``, ``is_inheriting_badges``
+        :type kwargs: object
         """
         self._log_if_enabled(IMPORTANT, message, args, 2, **kwargs)
 
     def caution(self, message, *args, **kwargs):
         """
-        log at ``CAUTION`` level (31): risk of a negative outcome.
+        log at ``CAUTION`` level (31): risk of a negative outcome
+
+
+        :param message: message, or ``%``-style format string for ``args``
+        :type message: str
+        :param args: values interpolated into ``message``
+        :type args: object
+        :param kwargs: forwarded to ``logging.Logger._log``: ``exc_info``,
+                ``extra``, ``stack_info``, ``badges``, ``is_inheriting_badges``
+        :type kwargs: object
         """
         self._log_if_enabled(CAUTION, message, args, 2, **kwargs)
 
     def fail(self, message, *args, **kwargs):
         """
-        log at ``FAIL`` level (45): hook or test case failed.
+        log at ``FAIL`` level (45): hook or test case failed
+
+
+        :param message: message, or ``%``-style format string for ``args``
+        :type message: str
+        :param args: values interpolated into ``message``
+        :type args: object
+        :param kwargs: forwarded to ``logging.Logger._log``: ``exc_info``,
+                ``extra``, ``stack_info``, ``badges``, ``is_inheriting_badges``
+        :type kwargs: object
         """
         self._log_if_enabled(FAIL, message, args, 2, **kwargs)
 
@@ -835,6 +953,7 @@ class KamiLogger(logging.Logger):  # ===========================================
     def track(self):
         """
         track form of the deed methods, e.g. ``with logger.track.cp_file(a, b)``
+
 
         :return: namespace whose methods mirror the plain deed methods
         :rtype: _DeedTrack
@@ -882,18 +1001,10 @@ class KamiLogger(logging.Logger):  # ===========================================
         is_inheriting_badges=True,
     ):
         """
-        stamp the record with its effective badges, then log as usual
-
+        stamp the record with its effective badges, then log as usual;
         per-call ``badges`` add to the run-wide set unless
-        ``is_inheriting_badges`` is false; the result lands on
+        ``is_inheriting_badges`` is false, and the result lands on
         ``record.badges`` as a priority-sorted tuple
-
-
-        :param badges: badge labels for this record only; default=None
-        :type badges: str or Iterable(str), optional
-        :param is_inheriting_badges: whether the run-wide badges apply to this
-                record; default=True
-        :type is_inheriting_badges: bool, optional
         """
         run_badges = self._run_badges if is_inheriting_badges else ()
         extra = dict(extra) if extra else {}
@@ -913,7 +1024,9 @@ class KamiLogger(logging.Logger):  # ===========================================
 
 
 def _make_deed_method(deed):
-    """build the plain-form method of `deed` for :class:`KamiLogger`"""
+    """
+    build the plain-form method of `deed` for :class:`KamiLogger`
+    """
 
     def deed_method(
         self, *args, level=None, badges=None, is_inheriting_badges=True
@@ -930,11 +1043,12 @@ def _make_deed_method(deed):
             )
 
     deed_method.__doc__ = """
-        log the deed ``{template}`` at ``{level}`` level by default.
+        log the deed ``{template}`` at ``{level}`` level by default
 
 
         :param args: the deed's own arguments, in order ``{arg_names}``;
                 trailing ones may be omitted
+        :type args: object
         :param level: severity of the line; default=the deed's level
         :type level: int, optional
         :param badges: badge labels for this record only; default=None
@@ -974,7 +1088,7 @@ _PADDED_LEVELNAME_MAP = {
 
 class _LogFormatEngine:  # *****************************************************
     """
-    core log-line formatting logic, independent of ``logging.Formatter``.
+    core log-line formatting logic, independent of ``logging.Formatter``
 
 
     :param palette: color palette controlling ANSI output
@@ -996,12 +1110,8 @@ class _LogFormatEngine:  # *****************************************************
 
     def count_prefix_chars(self, record):
         """
-        return the count of printable characters before the message text.
-
-
-        :param record: log record to measure
-        :type record: logging.LogRecord
-        :return: printable character count of the prefix
+        :return: printable character count before the message text of the
+                record; with badges, the display column where that text starts
         :rtype: int
         """
         name = record.name
@@ -1028,14 +1138,8 @@ class _LogFormatEngine:  # *****************************************************
 
     def format_time(self, record, datefmt=None):
         """
-        return the formatted and optionally colored timestamp string.
-
-
-        :param record: log record
-        :type record: logging.LogRecord
-        :param datefmt: strftime format override; falls back to ``_datefmt``
-        :type datefmt: str or None
-        :return: formatted timestamp, or empty string when disabled
+        :return: timestamp of the record per ``datefmt`` or the engine's own
+                format, colored; empty string when timestamps are disabled
         :rtype: str
         """
         if self._relative_to is not None:
@@ -1047,12 +1151,8 @@ class _LogFormatEngine:  # *****************************************************
 
     def build_line(self, record):
         """
-        build the main log line from a record's parts.
-
-
-        :param record: log record to format
-        :type record: logging.LogRecord
-        :return: formatted log line
+        :return: main log line of the record, without ``exc_info`` or
+                ``stack_info``
         :rtype: str
         """
         asctime = self.format_time(record)
@@ -1093,20 +1193,28 @@ class _LogFormatEngine:  # *****************************************************
         )
 
     def _fmt_asctime(self, asctime):
-        """color ``asctime`` grey."""
+        """
+        color ``asctime`` grey
+        """
         return self._palette.color_grey(asctime)
 
     def _fmt_level(self, levelno):
-        """build the padded, colored level-name segment."""
+        """
+        build the padded, colored level-name segment
+        """
         padded = _PADDED_LEVELNAME_MAP.get(levelno, str(levelno).ljust(5)[:5])
         return self._palette.color_level(padded, levelno)
 
     def _fmt_badges(self, badges):
-        """build the space-separated, colored badge segment."""
+        """
+        build the space-separated, colored badge segment
+        """
         return " ".join(self._palette.color_badge(b, b) for b in badges)
 
     def _fmt_source(self, name):
-        """build the colored source-label segment."""
+        """
+        build the colored source-label segment
+        """
         if not self._has_source_name(name):
             return self._palette.color_grey(":")
         return "{}{}".format(
@@ -1115,7 +1223,9 @@ class _LogFormatEngine:  # *****************************************************
         )
 
     def _fmt_relative(self, created):
-        """format elapsed time relative to ``_relative_to``."""
+        """
+        format elapsed time relative to ``_relative_to``
+        """
         delta = created - self._relative_to
         sign = "-" if delta < 0 else "+"
         delta = abs(delta)
@@ -1127,7 +1237,7 @@ class _LogFormatEngine:  # *****************************************************
 
 class _LogFormatter(Formatter):  # *********************************************
     """
-    ``logging.Formatter`` adapter wrapping ``_LogFormatEngine``.
+    ``logging.Formatter`` adapter wrapping ``_LogFormatEngine``
 
 
     :param stream: forwarded to ``_AnsiRenderer`` for TTY detection;
@@ -1158,27 +1268,15 @@ class _LogFormatter(Formatter):  # *********************************************
 
     def formatTime(self, record, datefmt=None):
         """
-        delegate timestamp formatting to the engine.
-
-
-        :param record: log record
-        :type record: logging.LogRecord
-        :param datefmt: strftime format override
-        :type datefmt: str or None
-        :return: formatted timestamp, or empty string when disabled
+        :return: timestamp from the engine, honoring the ``datefmt`` override
         :rtype: str
         """
         return self.engine.format_time(record, datefmt)
 
     def format(self, record):
         """
-        produce the complete log line, appending exc_info and stack_info.
-
-
-        :param record: log record
-        :type record: logging.LogRecord
-        :return: fully formatted log line with optional traceback and
-                stack info appended
+        :return: complete log line, with ``exc_info`` and ``stack_info``
+                appended when present
         :rtype: str
         """
         record = logging.makeLogRecord(record.__dict__)
@@ -1227,7 +1325,7 @@ def _expand_tabs(line, start_offset):
 
 class _TabAlignedLine(list):  # ************************************************
     """
-    a line of text split into tab-stop-aligned string blocks.
+    a line of text split into tab-stop-aligned string blocks
     """
 
     TAB_SIZE = 8
@@ -1235,21 +1333,10 @@ class _TabAlignedLine(list):  # ************************************************
     @classmethod
     def parse(cls, line, *, start_offset=0):  # ++++++++++++++++++++++++++++++++
         """
-        split a regular text line into ``TAB_SIZE``-wide blocks.
-
-        the first block is shortened by ``start_offset`` so later blocks
-        still land on ``TAB_SIZE`` column boundaries; the last block
-        holds whatever remains and may be shorter than ``TAB_SIZE``;
-        any literal ``\\t`` chars already in ``line`` are expanded to
-        spaces first, so alignment stays correct
-
-
-        :param line: source line to split
-        :type line: str
-        :param start_offset: column the line begins at; default=0
-        :type start_offset: int, optional
-        :return: new instance holding the split blocks
-        :rtype: TabAlignedLine
+        split a regular text line into ``TAB_SIZE``-wide blocks; the first is
+        shortened by ``start_offset`` so later ones land on ``TAB_SIZE`` column
+        boundaries, the last holds the remainder, and literal tabs in ``line``
+        are expanded first
         """
         line = _expand_tabs(line, start_offset)
 
@@ -1274,17 +1361,8 @@ class _TabAlignedLine(list):  # ************************************************
 
     def render(self, *, insert_prefix=False, prefix_symbol=" "):
         """
-        join the blocks back into a single normal string.
-
-
-        :param insert_prefix: whether to prepend ``start_offset`` copies
-                of ``prefix_symbol`` before the joined blocks;
-                default=False
-        :type insert_prefix: bool, optional
-        :param prefix_symbol: character repeated to build the prefix;
-                default=" "
-        :type prefix_symbol: str, optional
-        :return: the reassembled line
+        :return: the blocks joined into one line, ``start_offset`` copies of
+                ``prefix_symbol`` prepended when ``insert_prefix``
         :rtype: str
         """
         line = "".join(self)
@@ -1298,7 +1376,7 @@ class _TabAlignedLine(list):  # ************************************************
 
 class _DiffOnlyEngine:  # ******************************************************
     """
-    engine for diff-only compression of log message text.
+    engine for diff-only compression of log message text
 
 
     :param formatter: formatter used to measure the prefix width and
@@ -1366,32 +1444,17 @@ class _DiffOnlyEngine:  # ******************************************************
     @staticmethod
     def _is_word_char(ch):
         """
-        report whether ``ch`` is a word character (``0-9A-Za-z`` or ``-_``)
+        :return: if ``ch`` is a word character (``0-9A-Za-z`` or ``-_``)
+        :rtype: bool
         """
         return (ch.isascii() and ch.isalnum()) or ch in "-_"
 
     def _find_cut(self, message, run_s, run_e, prefix_len):
         """
-        find cut position ending the replaceable part of a common run.
-
-        scans backward from the run end for the nearest word-boundary
-        character (any non-word char); the cut lands on that character
-        itself, so the boundary symbol prints intact with the tail.
-        the scan reaches back at most ``_FALLBACK_TAB_SPAN`` tab stops,
-        falling back to that tab-aligned floor when no boundary exists
-        within the span
-
-
-        :param message: full message text being compressed
-        :type message: str
-        :param run_s: start index of the common run
-        :type run_s: int
-        :param run_e: end index (exclusive) of the common run
-        :type run_e: int
-        :param prefix_len: printable prefix width before the message
-        :type prefix_len: int
-        :return: cut index in ``[run_s, run_e]``; text before it is
-                replaceable, text from it stays printed
+        :return: cut index in ``[run_s, run_e]``, text before it replaceable
+                and text from it kept printed; lands on the nearest non-word
+                char scanning back from the run end, at most
+                ``_FALLBACK_TAB_SPAN`` tab stops, else on that tab-aligned floor
         :rtype: int
         """
         block = _TabAlignedLine.TAB_SIZE
@@ -1405,9 +1468,8 @@ class _DiffOnlyEngine:  # ******************************************************
 
     def _compress(self, record, message):
         """
-        compress ``message`` line by line against the matching history
-        lines; only line 1 carries the record prefix, later lines start
-        at column 0
+        compress ``message`` line by line against the matching history lines;
+        only line 1 carries the record prefix, later lines start at column 0
         """
         prefix_len = self._formatter.engine.count_prefix_chars(record)
         lines = message.split("\n")
@@ -1434,14 +1496,11 @@ class _DiffOnlyEngine:  # ******************************************************
 
     def _compress_line(self, message, common, prefix_len):
         """
-        compress positions of one line matching ``common`` into
-        ``〃\\t`` markers.
-
-        the replaceable span (``run_s`` to ``cut``) is split into
-        ``_TabAlignedLine`` blocks anchored at its absolute column, so
-        a short leading block (if any) is the leader, a short trailing
-        block (if any) is the gap, and everything between is a whole
-        replaceable tab stop.
+        compress positions of one line matching ``common`` into ``〃\\t``
+        markers; the replaceable span (``run_s`` to ``cut``) is split into
+        ``_TabAlignedLine`` blocks anchored at its absolute column, so a short
+        leading block (if any) is the leader, a short trailing block (if any)
+        is the gap, and everything between is a whole replaceable tab stop
         """
         n_common = len(common)
         is_common = [
@@ -1467,8 +1526,7 @@ class _DiffOnlyEngine:  # ******************************************************
 
     def _render_run(self, message, run_s, run_e, prefix_len, is_long):
         """
-        render one common run as markers plus its kept tail
-
+        render one common run as markers plus its kept tail;
         ``is_long`` flags a line wider than ``_LONG_LINE_COLS``
         """
         block = _TabAlignedLine.TAB_SIZE
@@ -1519,12 +1577,8 @@ class _DiffOnlyEngine:  # ******************************************************
 
     def process(self, record):
         """
-        process ``record`` and return the (possibly compressed) message.
-
-
-        :param record: log record being processed
-        :type record: logging.LogRecord
-        :return: compressed message, or the original during warmup
+        :return: message of the record compressed against history; unchanged
+                during warmup
         :rtype: str
         """
         message = record.getMessage()
@@ -1541,7 +1595,7 @@ class _DiffOnlyEngine:  # ******************************************************
 
 class _DiffOnlyMsgFilter(logging.Filter):  # ***********************************
     """
-    ``logging.Filter`` adapter that applies ``_DiffOnlyEngine`` to records.
+    ``logging.Filter`` adapter that applies ``_DiffOnlyEngine`` to records
 
 
     :param formatter: forwarded to ``_DiffOnlyEngine`` for prefix-width
@@ -1567,12 +1621,8 @@ class _DiffOnlyMsgFilter(logging.Filter):  # ***********************************
 
     def filter(self, record):
         """
-        apply diff-only compression to ``record.msg`` in place.
-
-
-        :param record: log record to mask in place
-        :type record: logging.LogRecord
-        :return: always ``True``; this filter never drops records
+        :return: always ``True``; the filter compresses ``record.msg`` in place
+                and never drops records
         :rtype: bool
         """
         if self._engine is None:  # compression disabled, pass through
@@ -1665,42 +1715,43 @@ def getLogger(
     enable_propagate=False,
 ):
     """
-    return a configured :class:`KamiLogger` for ``name``, creating it if needed.
+    return a configured :class:`KamiLogger` for ``name``, creating it if
+    needed
 
 
-    :param name: logger name
+    :param name: logger name; default=None, the root logger
     :type name: str, optional
     :param datefmt: strftime format for timestamps;
             default depends on the destination: console prints no
             timestamp, the log file uses ``DATEFMT_DATETIME_MS``;
             an explicit value applies to console and file alike,
             ``None`` disables timestamps on both;
-            ignored when ``relative_to`` is set;
+            ignored when ``relative_to`` is set
     :type datefmt: str or None, optional
-    :param relative_to: Unix timestamp to use as epoch for relative time display;
-            mutually exclusive with ``datefmt``
+    :param relative_to: Unix timestamp to use as epoch for relative time
+            display; mutually exclusive with ``datefmt``; default=None
     :type relative_to: float, optional
-    :param disable_color: disable ANSI color on all handlers
-            and the diff-only filter
+    :param disable_color: whether to disable ANSI color on all handlers
+            and the diff-only filter; default=False
     :type disable_color: bool, optional
-    :param disable_diff_only_compression: whether turn off diff-ony compression
-            and pass records through untouched
+    :param disable_diff_only_compression: whether to turn off diff-only
+            compression and pass records through untouched; default=False
     :type disable_diff_only_compression: bool, optional
-    :param filename: path to a log file; when set, a file handler using the
-            kamilog format is attached, with color always disabled;
-            ``None`` attaches no file handler
+    :param filename: path to a log file; when set, a file handler using
+            the kamilog format is attached, with color always disabled;
+            ``None`` attaches no file handler; default=None
     :type filename: str or None, optional
     :param file_mode: open mode for the log file, forwarded to
-            ``logging.FileHandler``; default=``"a"`` (append)
+            ``logging.FileHandler``; default="a" (append)
     :type file_mode: str, optional
-    :param disable_console: when ``True``, skip the stdout/stderr handlers,
-            yielding a file-only logger; default=``False``
+    :param disable_console: whether to skip the stdout/stderr handlers,
+            yielding a file-only logger; default=False
     :type disable_console: bool, optional
     :param enable_propagate: whether records also propagate to ancestor
-            loggers' handlers; default=``False``
+            loggers' handlers; default=False
     :type enable_propagate: bool, optional
-    :return: a logger with the `name`, create if non-existence;
-            root logger if `name` is `None`
+    :return: the logger named ``name``, created if it does not exist;
+            the root logger if ``name`` is ``None``
     :rtype: KamiLogger
     """
     if datefmt is _DATEFMT_AUTO:  # unset: console silent, file full stamp
@@ -1969,14 +2020,6 @@ _EXTREMITY_QUIET_HELP = "set maximally quiet"
 
 def _flag_option_strings(short_flag, long_flag):
     """
-    build the option-string list for ``parser.add_argument``.
-
-
-    :param short_flag: single letter for the short flag;
-            falsy skips the short flag entirely
-    :type short_flag: str
-    :param long_flag: long flag, eg ``"--verbose"``; always included
-    :type long_flag: str
     :return: ``[long_flag]``, or ``["-{short_flag}", long_flag]`` when
             ``short_flag`` is truthy
     :rtype: list[str]
@@ -2153,19 +2196,20 @@ def set_logging_level_by_namespace(
     namespace, *, verbosity=0, logger=None, logger_name=None
 ):
     """
-    set the logging level of a logger based on verbosity flags.
+    set the logging level of a logger based on verbosity flags
 
 
-    :param namespace: parsed namespace containing ``--verbose`` and/or ``--quiet`` counts
+    :param namespace: parsed namespace containing ``--verbose`` and/or
+            ``--quiet`` counts
     :type namespace: argparse.Namespace
     :param verbosity: base verbosity that namespace's ``--verbose``/``--quiet``
-            counts are added to/subtracted from
-    :type verbosity: int
-    :param logger: logger instance to configure
+            counts are added to/subtracted from; default=0
+    :type verbosity: int, optional
+    :param logger: logger instance to configure; default=None
     :type logger: logging.Logger, optional
     :param logger_name: name of logger to configure;
             ``None`` targets the root logger;
-            ignored when ``logger`` is provided
+            ignored when ``logger`` is provided; default=None
     :type logger_name: str, optional
     """
     _set_logger_level(
@@ -2177,16 +2221,16 @@ def set_logging_level_by_namespace(
 
 def set_logging_level_by_verbosity(verbosity, *, logger=None, logger_name=None):
     """
-    set the logging level of a logger based on a verbosity integer.
+    set the logging level of a logger based on a verbosity integer
 
 
-    :param verbosity:
+    :param verbosity: verbosity integer; higher is more verbose
     :type verbosity: int
-    :param logger: logger instance to configure
+    :param logger: logger instance to configure; default=None
     :type logger: logging.Logger, optional
     :param logger_name: name of logger to configure;
             ``None`` targets the root logger;
-            ignored when ``logger`` is provided
+            ignored when ``logger`` is provided; default=None
     :type logger_name: str, optional
     """
     _set_logger_level(
@@ -2205,10 +2249,10 @@ _PADDING_MAP = {1: "#", 2: "=", 3: "*", 4: "+", 5: "-"}
 
 def _resolve_padding_preset(padding):
     """
+    :raises ValueError: ``padding`` is an int outside 1~5
     :return: padding char for preset ``padding`` (1~5); any other
             ``padding`` unchanged
     :rtype: str
-    :raises ValueError: ``padding`` is an int outside 1~5
     """
     if not isinstance(padding, int):
         return padding
@@ -2268,12 +2312,8 @@ def _gen_comment_banner_generic(
     renderer=None,
 ):
     """
-    return ``content`` padded to ``line_width``
-
-
-    :param mode: text alignment:
-            ``"c"`` centered, ``"l"`` left-justified, ``"r"`` right-justified
-    :type mode: str
+    return ``content`` padded to ``line_width``, aligned per ``mode``:
+    ``"c"`` centered, ``"l"`` left-justified, ``"r"`` right-justified
     """
     padding = _resolve_padding_preset(padding)
     _check_banner_content(content, line_width)
@@ -2308,7 +2348,7 @@ def _gen_comment_banner_generic(
 def gen_comment_banner_centered(*args, **kwargs):
     """
     generate a line with ``content`` centered,
-    filling both sides with ``padding`` to reach ``line_width``.
+    filling both sides with ``padding`` to reach ``line_width``
 
     when the remaining width is odd, the extra character goes to the right
 
@@ -2319,28 +2359,32 @@ def gen_comment_banner_centered(*args, **kwargs):
     :param padding: single printable non-space fill character, or int 1-5
             (1: #, 2: =, 3: *, 4: +, 5: -)
     :type padding: str or int
-    :param line_width: total output width; defaults to ``80``
-    :type line_width: int
+    :param line_width: total output width; default=80
+    :type line_width: int, optional
     :param horizontal_offset: nudge the centered content sideways by this
             many columns; negative shifts left, positive shifts right;
-            defaults to ``0``
-    :type horizontal_offset: int
+            default=0
+    :type horizontal_offset: int, optional
     :param file: output stream, used only for ANSI TTY detection;
-            defaults to ``sys.stdout``
-    :type file: IO
+            default=``sys.stdout``
+    :type file: IO, optional
     :param renderer: ANSI color renderer;
-            if ``None``, created from ``file`` argument
-    :type renderer: AnsiRenderer or None
+            if ``None``, created from ``file`` argument; default=None
+    :type renderer: AnsiRenderer or None, optional
+    :raises ValueError: ``content`` contains ``"\\n"`` or exceeds
+            ``line_width``
+    :raises ValueError: ``padding`` is not exactly one printable non-space
+            character, or is an int outside 1-5
+    :raises ValueError: ``horizontal_offset`` pushes either fill side below
+            zero
     :return: padded line content
     :rtype: str
-    :raises ValueError: if ``content`` contains ``"\\n"`` or exceeds
-            ``line_width``; if ``padding`` is not exactly one printable
-            non-space character or outside range 1-5 if int; if
-            ``horizontal_offset`` pushes either fill side below zero
     :example:
     >>> gen_comment_banner_centered("hi", "=", line_width=20)
     '=======  hi  ======='
-    >>> gen_comment_banner_centered("hi", "=", line_width=20, horizontal_offset=2)
+    >>> gen_comment_banner_centered(
+    ...     "hi", "=", line_width=20, horizontal_offset=2
+    ... )
     '=========  hi  ====='
     >>> gen_comment_banner_centered("hi", 2, line_width=20)
     '=======  hi  ======='
@@ -2351,12 +2395,14 @@ def gen_comment_banner_centered(*args, **kwargs):
 def gen_comment_banner_left_just(*args, **kwargs):
     """
     generate a line with ``content`` left-justified,
-    filling the right with ``padding``.
+    filling the right with ``padding``
 
     see :func:`gen_comment_banner_centered` for parameter and error
-    details.
+    details
 
 
+    :return: padded line content
+    :rtype: str
     :example:
     >>> gen_comment_banner_left_just("hi", "=", line_width=20)
     'hi  ================'
@@ -2369,12 +2415,14 @@ def gen_comment_banner_left_just(*args, **kwargs):
 def gen_comment_banner_right_just(*args, **kwargs):
     """
     generate a line with ``content`` right-justified,
-    filling the left with ``padding``.
+    filling the left with ``padding``
 
     see :func:`gen_comment_banner_centered` for parameter and error
-    details.
+    details
 
 
+    :return: padded line content
+    :rtype: str
     :example:
     >>> gen_comment_banner_right_just("hi", "=", line_width=20)
     '================  hi'
@@ -2388,25 +2436,25 @@ def gen_comment_banner_zero(
     lines, *, line_width=80, file=sys.stdout, renderer=None
 ):
     """
-    generate a multi-line boxed comment banner (CB0).
+    generate a multi-line boxed comment banner (CB0)
 
     wraps each line with `# `, framed by top and bottom `#` rulers
 
 
     :param lines: lines to include in the banner
     :type lines: iterable of str
-    :param line_width: total output width; defaults to ``80``
-    :type line_width: int
+    :param line_width: total output width; default=80
+    :type line_width: int, optional
     :param file: output stream, used only for ANSI TTY detection;
-            defaults to ``sys.stdout``
-    :type file: IO
+            default=``sys.stdout``
+    :type file: IO, optional
     :param renderer: ANSI color renderer;
-            if ``None``, created from ``file`` argument
-    :type renderer: AnsiRenderer or None
-    :return: multi-line boxed banner as a string
-    :rtype: str
+            if ``None``, created from ``file`` argument; default=None
+    :type renderer: AnsiRenderer or None, optional
     :raises ValueError: any line contains ``"\\n"`` or exceeds
             ``line_width - 2`` (reserved for `# ` prefix)
+    :return: multi-line boxed banner as a string
+    :rtype: str
     :example:
     >>> gen_comment_banner_zero(["line 1", "line 2"], line_width=20)
     ####################
@@ -2752,7 +2800,9 @@ def _register_deed_parser(cli_subparser):
 # CLI main parser  #############################################################
 
 class _CliArgumentParser(ArgumentParser):
-    """top-level parser that splits `deed ... -- COMMAND` at the first `--`"""
+    """
+    top-level parser that splits `deed ... -- COMMAND` at the first `--`
+    """
 
     def parse_known_args(self, args=None, namespace=None):
         args = list(sys.argv[1:] if args is None else args)
@@ -2790,7 +2840,7 @@ _register_deed_parser(_cli_subparser)
 
 def kamilog_cli_main():
     """
-    run the kamilog CLI, dispatching to the parsed subcommand's handler.
+    run the kamilog CLI, dispatching to the parsed subcommand's handler
     """
     parsed_args = _cli_parser.parse_args()
     status = parsed_args.func(parsed_args)
