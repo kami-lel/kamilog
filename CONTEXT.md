@@ -1,6 +1,6 @@
 # kamilog CONTEXT
 
-*Last updated: 2026-08-05 - v2.9.3*
+*Last updated: 2026-09-30 - v2.9.4-alpha*
 
 ## Project Overview
 
@@ -14,7 +14,7 @@ Repository: <https://github.com/kami-lel/kamilog>
 kamilog/
 ├── kamilog/
 │   ├── __init__.py          # re-exports all public symbols from kamilog.py
-│   └── kamilog.py           # entire implementation (~2060 lines)
+│   └── kamilog.py           # entire implementation (~2265 lines)
 ├── tests/
 │   ├── cb/                          # comment-banner test suite
 │   │   ├── cb-centered_test.py
@@ -31,10 +31,11 @@ kamilog/
 │   │   └── demo/                    # golden-output tests for examples/verbosity_demo.py
 │   ├── ansi/                        # AnsiRenderer / TTY detection test suite
 │   │   └── demo/                    # golden-output tests for examples/ansi/*
-│   ├── lf/                          # _LogFormatter / _LogFormatEngine test suite
+│   ├── badge/                       # operation badge table / normalizer / KamiLogger badge API
+│   ├── lf/                          # _LogFormatter / _LogFormatEngine test suite (incl. badge display, color, prefix width)
 │   ├── logger/                      # KamiLogger behavior test suite
 │   │   └── demo/                    # golden-output tests for examples/logger/*
-│   ├── dof/                         # _DiffOnlyEngine / _DiffOnlyMsgFilter test suite
+│   ├── dof/                         # _DiffOnlyEngine / _DiffOnlyMsgFilter test suite (incl. multi-line, long-line, badge interaction)
 │   │   └── demo/                    # golden-output tests for examples/logger/*diff_only*
 │   ├── tal/                         # _TabAlignedLine test suite
 │   └── source_quality_test.py       # banned-marker scan (no TODO/FIXME/HACK/BUG)
@@ -111,6 +112,7 @@ Public class that centralizes ANSI color detection and application. Instantiated
 - `is_disabled=False` (keyword-only) forces color off unconditionally at construction, regardless of the stream's TTY state.
 - `color(text, style)` — generic style applier; wraps `text` in the ANSI codes for every flag set in the combined `AnsiStyle` value.
 - `color_level(text, levelno)` — wraps `text` in bold + per-level ANSI color via the internal `_LEVEL2ANSI_COLOR` map.
+- `color_badge(text, badge)` — wraps `text` in the badge's hue from `_NATIVE_BADGES`; any other (custom) badge is grey.
 - `color_grey(text)` — wraps `text` in grey; used for timestamps, source labels, and compression markers.
 - `color_triage_tag(triage_tag)` — colors a triage-tag string (`BUG`/`Bug`/`bug`, `FIXME`/`Fixme`/`fixme`, `TODO`/`Todo`/`todo`, `HACK`/`Hack`/`hack`) via the internal `_TRIAGE_TAG2ANSI_STYLE` map. Each tag type keeps one hue across its three loudness tiers, with contrast (background presence/brightness, bold) escalating for louder tiers. Raises `ValueError` for any other string.
 
@@ -150,6 +152,17 @@ Subclasses `logging.Logger`. Adds eleven convenience methods mapping to the cust
 | `.caution()` | `CAUTION` | 31 |
 | `.fail()` | `FAIL` | 45 |
 
+#### Operation badges
+
+`KamiLogger` also carries operation badges: labels for the mode the whole run is in (`dry`, `force`, `auto` and the rest). kamilog only records and displays them.
+
+- `_NATIVE_BADGES` — module-level table mapping each native label to `(AnsiStyle hue, priority)`; a higher priority prints earlier. Any label absent from it is a custom badge: grey, priority 0.
+- `_normalize_badges(badges)` — private pure function: accepts `None`, a `str` or an iterable, drops duplicates and orders by descending priority (stable for ties; customs keep the order given). Returns a tuple.
+- `set_badges(badges=None)` / `clear_badges()` — replace or unset the run-wide set, stored per logger in `_run_badges` (class default `()`). `set_badges()`, `None` and `[]` all unset it; there is no add or remove of one label.
+- `_log(..., badges=None, inherit_badges=True)` — override that merges per-call badges with the run-wide set (`inherit_badges=False` hides the run-wide set for one record) and stamps the result on the record as `record.badges` through `extra`. It forwards to `super()._log` with `stacklevel + 1`, so `funcName` and `lineno` still point at the caller. Every level method and `log()` accept the kwargs through `**kwargs`.
+
+Design notes are in [`docs/op_badge_design.md`](docs/op_badge_design.md); `OpAction` (`docs/op_action_design.md`) is not implemented.
+
 The full level progression: `DEBUG`(10) → `ENTER`(15) → `SKIP`(16) → `SUCC`(17) → `INFO`(20) → `PASS`(21) → `NOTE`(23) → `TIP`(24) → `DONE`(25) → `HINT`(26) → `IMPORTANT`(27) → `WARNING`(30) → `CAUTION`(31) → `ERROR`(40) → `FAIL`(45) → `CRITICAL`(50).
 
 ### `_LogFormatEngine`
@@ -158,10 +171,10 @@ Holds all core formatting logic, independent of `logging.Formatter`. Instantiate
 
 Responsibilities:
 
-- `count_prefix_chars(record)` — returns the printable character count before the message text for a given record. Accounts for the optional timestamp (relative: always 13 chars; datefmt: rendered `time.strftime` length), the 5-char padded level name, and the source name with colon. ANSI escape codes are excluded. Uses `time.strftime` directly so there is no dependency on `Formatter`.
+- `count_prefix_chars(record)` — returns the printable character count before the message text for a given record. Accounts for the optional timestamp (relative: always 13 chars; datefmt: rendered `time.strftime` length), the 5-char padded level name, and the source name with colon. When the record carries badges the value is a display column, not a character count: the badges start on the first tab stop after the level and the source on the first tab stop strictly after the badges (`_next_tab_stop`), so a literal tab in the line spans several columns. ANSI escape codes are excluded. Uses `time.strftime` directly so there is no dependency on `Formatter`.
 - `format_time(record, datefmt)` — produces the optionally colored timestamp string, or an empty string when disabled.
-- `build_line(record)` — assembles the full `LEVEL source: message` line with optional timestamp prefix. Does not append `exc_info` or `stack_info`.
-- Private helpers `_fmt_asctime`, `_fmt_level`, `_fmt_source`, `_fmt_relative` delegate color application to `self._palette`.
+- `build_line(record)` — assembles the full `LEVEL source: message` line with optional timestamp prefix. When `record.badges` is non-empty (read with a default, so plain `logging` records still work) the single space after the level becomes `\t<badges>\t`, badges joined by single spaces and colored per label (separators uncolored); a line with no badges is byte-identical to before. Does not append `exc_info` or `stack_info`.
+- Private helpers `_fmt_asctime`, `_fmt_level`, `_fmt_badges`, `_fmt_source`, `_next_tab_stop`, `_fmt_relative` delegate color application to `self._palette`.
 
 Level display names: `DEBUG`, `ENTER`, `SKIP `, `INFO `, `PASS `, `SUCC.`, `NOTE `, `TIP  `, `DONE `, `HINT `, `IMPT.`, `WARN.`, `CAUT.`, `ERROR`, `FAIL `, `CRIT.`
 
@@ -202,12 +215,14 @@ Automatically attached to every logger by `getLogger()`. Compresses repeated log
 Algorithm (`_DiffOnlyEngine`):
 
 1. **Warmup**: the first `threshold` messages pass through unchanged (history fills).
-2. **`_common` cache**: after each message, `_update_common()` recomputes a per-position list of characters common to *all* history messages in O(n × threshold).
-3. **Run detection**: on each incoming message, `_compress()` marks positions where the message matches `_common` in O(n).
+2. **`_common` cache**: `_history` holds each message as a list of lines (split on `\n`). After each message, `_update_common()` recomputes `_common`, one per-position list per line index *k*: the characters common to line *k* of *all* history messages, in O(n × threshold). A line missing from any history message has an empty list, so it never compresses.
+3. **Run detection**: on each incoming message, `_compress()` splits it into physical lines and runs `_compress_line()` on each against its own `_common[k]`; only line 1 starts at `count_prefix_chars(record)`, later lines at column 0. The lines are re-joined with `\n`. Within a line, matching positions are marked in O(n).
 4. **Word-boundary cut**: for each contiguous common run, `_find_cut()` scans backward from the run end for the nearest word-boundary character, where a *word* character is `0-9A-Za-z` plus `-` and `_` (`_is_word_char`; any other symbol or whitespace is a boundary). The cut lands **on** the boundary character itself, so the symbol prints intact and the changing token keeps its word stem attached (e.g. `/batch_002.csv` — `export` compressed, `/` preserved).
 5. **2-tab fallback**: the backward scan reaches back at most `_FALLBACK_TAB_SPAN` (2) tab stops from the run end, measured in rendered columns and floored to a tab-aligned column. When no boundary exists within that span (long unbroken tokens: hashes, URLs), the cut falls back to that tab-aligned floor — a mid-word cut, guaranteeing compression never vanishes on long runs.
 6. **Tab-aligned compression**: the replaceable span (`run_s` to `cut`) is split via `_TabAlignedLine.parse(message[run_s:cut], start_offset=prefix_len + run_s)`. A short leading block becomes the *leader* (below), a short trailing block becomes the *gap*, and every full-width block in between compresses into one `_COMPRESSION_MARKER` (`〃\t`) — `〃` (2 wide) + `\t` spans exactly `_TabAlignedLine.TAB_SIZE` (8) visible columns. The gap block (if any) renders as one `_MARKER_CHAR` (`〃`) plus spaces padding exactly to the cut column (spaces only when narrower than `_MARKER_WIDTH`), so every compressed stretch shows a marker and the kept tail always starts at its original rendered column with no leaked common-character fragments. Runs too short for at least one full marker block are printed untouched. Message content that already contains a literal `\t` is expanded to spaces by `_TabAlignedLine.parse` before this split, so embedded tabs never throw off block alignment.
 7. **Leader replacement**: the common characters between the run start and the first tab stop (the *leader*, 0-7 columns) are never printed. A leader of `_LEADER_MARKER_MIN` (4) columns or more renders as its own `〃\t` marker; a shorter non-empty leader becomes a bare `\t` jump, letting the tab occupy the space.
+
+8. **Long-line rule**: `_is_long_line(line, prefix_len)` is true when a physical line's rendered, uncompressed width (prefix with badges and tab stops, plus the raw text with embedded tabs expanded) exceeds `_LONG_LINE_COLS` (100). `_render_run()` then swaps tab-aligned dittos for space-separated ones: each full block is `_LONG_LINE_MARKER` (`〃 `), a leader of `_LEADER_MARKER_MIN` or more and a gap of `_MARKER_WIDTH` or more each become one `〃 `, and bare `\t` jumps and gap padding are dropped. Such a line carries no tabs from the compressor and is narrower than its tab form, but it is not guaranteed to fit in 100 columns. The flag is decided per physical line, so one message can mix both forms.
 
 The original (uncompressed) message is stored in `_history` so compression decisions are always based on the raw text, not prior compressed output.
 
@@ -390,4 +405,4 @@ Verbosity mapping (default level is `DONE` = 25):
 
 ## Known Limitations and Future Work
 
-- Test coverage now spans verbosity helpers, comment-banner functions, `AnsiRenderer`/TTY detection (`tests/ansi/`), `_LogFormatter`/`_LogFormatEngine` (`tests/lf/`), `KamiLogger` (`tests/logger/`), `_DiffOnlyEngine`/`_DiffOnlyMsgFilter` (`tests/dof/`), `_TabAlignedLine` (`tests/tal/`), and the shared `-n`/`-N`/`-C` CLI flags (`tests/cli/`), plus golden-output tests for every `examples/` demo script; the CLI subcommands' pre-existing arguments (mode, padding, width, stderr routing, level resolution, verbosity) still have no dedicated tests.
+- Test coverage now spans verbosity helpers, comment-banner functions, `AnsiRenderer`/TTY detection (`tests/ansi/`), `_LogFormatter`/`_LogFormatEngine` (`tests/lf/`), operation badges (`tests/badge/`), `KamiLogger` (`tests/logger/`), `_DiffOnlyEngine`/`_DiffOnlyMsgFilter` (`tests/dof/`), `_TabAlignedLine` (`tests/tal/`), and the shared `-n`/`-N`/`-C` CLI flags (`tests/cli/`), plus golden-output tests for every `examples/` demo script; the CLI subcommands' pre-existing arguments (mode, padding, width, stderr routing, level resolution, verbosity) still have no dedicated tests.
