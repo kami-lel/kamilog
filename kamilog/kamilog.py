@@ -393,6 +393,9 @@ DATEFMT_TIME_MS = "%H:%M:%S.{ms}"
 DATEFMT_DATETIME = "%Y-%m-%d %H:%M:%S"
 DATEFMT_DATETIME_MS = "%Y-%m-%d %H:%M:%S.{ms}"
 
+# marks datefmt as unset, so each destination picks its own dft
+_DATEFMT_AUTO = object()
+
 
 # Badges  ======================================================================
 # native badge label → (hue, priority); higher priority prints earlier
@@ -1617,7 +1620,7 @@ def _build_log_formatter(
 def getLogger(
     name=None,
     *,
-    datefmt=DATEFMT_TIME,
+    datefmt=_DATEFMT_AUTO,
     relative_to=None,
     disable_color=False,
     disable_diff_only_compression=False,
@@ -1663,6 +1666,9 @@ def getLogger(
             root logger if `name` is `None`
     :rtype: KamiLogger
     """
+    if datefmt is _DATEFMT_AUTO:
+        datefmt = DATEFMT_TIME
+
     logger = logging.getLogger(name)
 
     if not isinstance(logger, KamiLogger):
