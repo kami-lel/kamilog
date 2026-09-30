@@ -191,3 +191,66 @@ class TestSpacedFullBlockDittos:
         line1, line2 = out.split("\n")
         assert line1.startswith("〃\t") and "〃 〃" not in line1
         assert line2.startswith("〃 〃 ") and "〃\t" not in line2
+
+
+class _PrefixEngine:
+    def __init__(self, prefix_len):
+        self._prefix_len = prefix_len
+
+    def count_prefix_chars(self, record):
+        return self._prefix_len
+
+
+class _PrefixFormatter:
+    def __init__(self, prefix_len):
+        self.engine = _PrefixEngine(prefix_len)
+        self.palette = _StubPalette()
+
+
+def _second_with_prefix(width, prefix_len):
+    """compress a line whose message is ``width`` columns wide"""
+    body = "a" * (width - 5) + "/bbb"
+    engine = _DiffOnlyEngine(_PrefixFormatter(prefix_len), threshold=1)
+    engine.process(_StubRecord(body + "X"))
+    return engine.process(_StubRecord(body + "Y"))
+
+
+class TestSpacedLeaderAndGapDittos:
+    @pytest.mark.parametrize("prefix_len", range(0, 9))
+    @pytest.mark.parametrize("width", range(110, 121))
+    def test_long_line_has_no_tabs_or_padding_runs(_, width, prefix_len):
+        out = _second_with_prefix(width, prefix_len)
+        assert "\t" not in out
+        assert "  " not in out
+
+    @pytest.mark.parametrize("prefix_len", range(0, 9))
+    @pytest.mark.parametrize("width", range(110, 121))
+    def test_long_line_keeps_its_tail(_, width, prefix_len):
+        assert _second_with_prefix(width, prefix_len).endswith("/bbbY")
+
+    def test_leader_at_minimum_earns_a_spaced_marker(_):
+        # prefix 4: leader of 4 chars (== _LEADER_MARKER_MIN)
+        with_leader = _second_with_prefix(110, 4)
+        # prefix 5: leader of 3 chars, dropped instead of a bare tab
+        short_leader = _second_with_prefix(110, 5)
+        assert with_leader.count("〃 ") == short_leader.count("〃 ") + 1
+
+    def test_short_leader_is_dropped_not_tabbed(_):
+        out = _second_with_prefix(110, 6)
+        assert not out.startswith("\t")
+        assert out.startswith("〃 ")
+
+    def test_short_line_keeps_leader_tab_and_gap_padding(_):
+        engine = _DiffOnlyEngine(_PrefixFormatter(5), threshold=1)
+        body = "a" * 25 + "/bbb"
+        engine.process(_StubRecord(body + "X"))
+        assert engine.process(_StubRecord(body + "Y")) == (
+            "\t〃\t〃\t〃    /bbbY"
+        )
+
+    def test_gap_of_marker_width_or_more_becomes_one_spaced_marker(_):
+        # every long output ends "<marker> <tail>" or "<block> <tail>";
+        # the tail is always preceded by exactly one space
+        for width in range(110, 121):
+            out = _second_with_prefix(width, 0)
+            assert out.endswith("〃 /bbbY")

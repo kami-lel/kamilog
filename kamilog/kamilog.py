@@ -1145,26 +1145,28 @@ class _DiffOnlyEngine:  # ******************************************************
             return message[run_s:run_e]
         result = []
         gap = len(gap_block)
-        # leader: common chars before the first tab stop are never
-        # printed; short ones become a bare tab jump, longer ones earn
-        # their own marker
-        if len(leader) >= self._LEADER_MARKER_MIN:
-            result.append(
-                self._formatter.palette.color_grey(self._COMPRESSION_MARKER)
-            )
-        elif leader:
-            result.append("\t")
         block_marker = (
             self._LONG_LINE_MARKER if is_long else self._COMPRESSION_MARKER
         )
+        # leader: common chars before the first tab stop are never
+        # printed; short ones become a bare tab jump, longer ones earn
+        # their own marker; a long line has no tab stops to jump to
+        if len(leader) >= self._LEADER_MARKER_MIN:
+            result.append(self._formatter.palette.color_grey(block_marker))
+        elif leader and not is_long:
+            result.append("\t")
         result.append(self._formatter.palette.color_grey(block_marker * k))
-        # partial block: marker + spaces padding to the cut
+        # partial block: marker + spaces padding to the cut; a long line
+        # keeps the marker and its one space, no padding
         if gap >= self._MARKER_WIDTH:
-            result.append(
-                self._formatter.palette.color_grey(self._MARKER_CHAR)
-            )
-            result.append(" " * (gap - self._MARKER_WIDTH))
-        else:
+            if is_long:
+                result.append(self._formatter.palette.color_grey(block_marker))
+            else:
+                result.append(
+                    self._formatter.palette.color_grey(self._MARKER_CHAR)
+                )
+                result.append(" " * (gap - self._MARKER_WIDTH))
+        elif not is_long:
             result.append(" " * gap)
         result.append(message[cut:run_e])
         return "".join(result)
