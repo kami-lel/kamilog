@@ -530,10 +530,45 @@ def _render_deed_message(deed, *args, **kwargs):
     return "".join(parts).rstrip()
 
 
+class _DeedHandle:  # **********************************************************
+    """
+    handle yielded by a tracked deed block, ``with ... as act``;
+    exposes :meth:`set` and :meth:`fail` only
+    """
+
+    def __init__(self, scope):
+        self._scope = scope
+
+    def set(self, **kwargs):
+        """
+        give arguments known only after the deed started.
+
+
+        :param kwargs: argument names of the deed, with their values;
+                an argument still missing at block exit drops its segment
+        :raises TypeError: if a name is unknown or was already given
+                positionally
+        """
+        self._scope.set_late_args(kwargs)
+
+    def fail(self, detail):
+        """
+        mark the deed failed without raising, e.g. a bad exit status;
+        the failure line reads ``fail to <message>: <detail>``
+        and carries no traceback.
+
+
+        :param detail: why the deed failed
+        :type detail: object
+        """
+        self._scope.mark_failed(detail)
+
+
 class _DeedScope:  # ***********************************************************
     """
     context manager of one tracked deed;
     logs one line at block exit: success, or failure if the block raised
+    or the handle marked it failed
     """
 
     def __init__(self, logger, deed, args, options):
@@ -541,36 +576,69 @@ class _DeedScope:  # ***********************************************************
         self._deed = deed
         self._args = args
         self._options = options
+        self._late_args = {}
+        self._fail_detail = None
+        self._is_failed = False
 
     def __enter__(self):
-        return self
+        return _DeedHandle(self)
 
     def __exit__(self, exc_type, exc_value, traceback):
         # only Exception counts; KeyboardInterrupt & SystemExit pass silently
-        if exc_type is None:
+        if exc_type is not None:
+            if not issubclass(exc_type, Exception):
+                return False
+            cause = exc_type.__name__
+            if str(exc_value):
+                cause = "{}: {}".format(cause, exc_value)
+            self._log_failure(cause, (exc_type, exc_value, traceback))
+            return self._options["suppress"]
+        if self._is_failed:
+            self._log_failure(self._fail_detail)
+        else:
             self._log_success()
-        elif issubclass(exc_type, Exception):
-            self._log_failure(exc_type, exc_value, traceback)
         return False
+
+    def set_late_args(self, kwargs):
+        """record arguments given after entry, validating each name"""
+        for key in kwargs:
+            if key not in self._deed.arg_names:
+                raise TypeError(
+                    "{}() got an unexpected argument '{}'".format(
+                        self._deed.name, key
+                    )
+                )
+            if self._deed.arg_names.index(key) < len(self._args):
+                raise TypeError(
+                    "{}() got multiple values for argument '{}'".format(
+                        self._deed.name, key
+                    )
+                )
+        self._late_args.update(kwargs)
+
+    def mark_failed(self, detail):
+        """mark the deed failed as a value; no exception involved"""
+        self._is_failed = True
+        self._fail_detail = detail
+
+    def _render(self):
+        """render the deed wording from entry and late arguments"""
+        return _render_deed_message(self._deed, *self._args, **self._late_args)
 
     def _log_success(self):
         """log the success line at the deed's level"""
         level = self._options["level"]
         level = self._deed.level if level is None else level
-        self._emit(level, _render_deed_message(self._deed, *self._args))
+        self._emit(level, self._render())
 
-    def _log_failure(self, exc_type, exc_value, traceback):
-        """log `fail to <message>: <ExcType>: <detail>` with traceback"""
+    def _log_failure(self, cause, exc_info=None):
+        """log `fail to <message>: <cause>`, with traceback if `exc_info`"""
         err_level = self._options["err_level"]
         err_level = self._deed.err_level if err_level is None else err_level
-        detail = str(exc_value)
-        cause = exc_type.__name__
-        if detail:
-            cause = "{}: {}".format(cause, detail)
-        message = "fail to {}: {}".format(
-            _render_deed_message(self._deed, *self._args), cause
-        )
-        self._emit(err_level, message, (exc_type, exc_value, traceback))
+        message = "fail to {}".format(self._render())
+        if cause is not None and str(cause):
+            message = "{}: {}".format(message, cause)
+        self._emit(err_level, message, exc_info)
 
     def _emit(self, level, message, exc_info=None):
         """log `message`, attributed to the code holding the `with`"""
@@ -604,6 +672,7 @@ def _make_track_method(deed):
         *args,
         level=None,
         err_level=None,
+        suppress=False,
         badges=None,
         is_inheriting_badges=True
     ):
@@ -612,6 +681,7 @@ def _make_track_method(deed):
         options = {
             "level": level,
             "err_level": err_level,
+            "suppress": suppress,
             "badges": badges,
             "is_inheriting_badges": is_inheriting_badges,
         }
@@ -622,7 +692,8 @@ def _make_track_method(deed):
     track_method.__doc__ = """
         track the deed ``{template}``: one line is logged when the block
         exits, at ``level`` on success or at ``err_level`` on an
-        ``Exception``, which then propagates.
+        ``Exception``, which then propagates unless ``suppress``. The block
+        yields a handle with ``set(name=value)`` and ``fail(detail)``.
 
 
         :param args: the deed's own arguments, in order ``{arg_names}``
@@ -631,6 +702,9 @@ def _make_track_method(deed):
         :param err_level: severity of the failure line;
                 default=the deed's error level
         :type err_level: int, optional
+        :param suppress: whether to swallow the exception after logging it;
+                default=False
+        :type suppress: bool, optional
         :param badges: badge labels for this record only; default=None
         :type badges: str or Iterable(str), optional
         :param is_inheriting_badges: whether the run-wide badges apply to
