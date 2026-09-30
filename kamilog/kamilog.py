@@ -969,30 +969,46 @@ class _DiffOnlyEngine:  # ******************************************************
         self._formatter = formatter
         # each entry: one message split into its lines
         self._history = deque(maxlen=threshold)
-        # _common[i] = shared char at position i across all history,
-        # or None where messages diverge or lengths differ
+        # _common[k][i] = shared char at position i of line k across all
+        # history, or None where messages diverge or lengths differ; a
+        # line missing from any history message has an empty list
         self._common = []
 
     def _update_common(self):
         """
         recompute ``_common`` from the current ``_history`` messages
         """
-        history = ["\n".join(lines) for lines in self._history]
+        history = list(self._history)
         if not history:
             self._common = []
             return
-        min_len = min(len(s) for s in history)
-        max_len = max(len(s) for s in history)
-        common: list = []
+        n_lines = max(len(lines) for lines in history)
+        self._common = [
+            self._calc_line_common([lines[k] for lines in history])
+            if all(k < len(lines) for lines in history)
+            else []
+            for k in range(n_lines)
+        ]
+
+    @staticmethod
+    def _calc_line_common(texts):
+        """
+        :return: per-position shared char across ``texts``, ``None``
+                where they diverge or lengths differ
+        :rtype: list[str or None]
+        """
+        min_len = min(len(s) for s in texts)
+        max_len = max(len(s) for s in texts)
+        common = []
         for i in range(max_len):
             if i >= min_len:
-                common.append(None)  # position missing in some messages
+                common.append(None)  # position missing in some texts
             else:
-                ch = history[0][i]
+                ch = texts[0][i]
                 common.append(
-                    ch if all(s[i] == ch for s in history[1:]) else None
+                    ch if all(s[i] == ch for s in texts[1:]) else None
                 )
-        self._common = common
+        return common
 
     @staticmethod
     def _is_word_char(ch):
@@ -1046,11 +1062,12 @@ class _DiffOnlyEngine:  # ******************************************************
         """
         block = _TabAlignedLine.TAB_SIZE
         prefix_len = self._formatter.engine.count_prefix_chars(record)
-        n_common = len(self._common)
+        common = self._common[0] if self._common else []
+        n_common = len(common)
         is_common = [
             i < n_common
-            and self._common[i] is not None
-            and self._common[i] == ch
+            and common[i] is not None
+            and common[i] == ch
             for i, ch in enumerate(message)
         ]
         result = []
