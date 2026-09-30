@@ -80,3 +80,67 @@ class TestLongLineWidthWithRealPrefix:
         line = "x" * room
         assert _DiffOnlyEngine._is_long_line(line, plain) is False
         assert _DiffOnlyEngine._is_long_line(line, badged) is True
+
+
+class _StubEngine:
+    def count_prefix_chars(self, record):
+        return 0
+
+
+class _StubFormatter:
+    def __init__(self):
+        self.engine = _StubEngine()
+        self.palette = _StubPalette()
+
+
+class _StubRecord:
+    def __init__(self, message):
+        self._message = message
+
+    def getMessage(self):
+        return self._message
+
+
+class _SpyEngine(_DiffOnlyEngine):
+    """records the long-line flag handed to every rendered run"""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.flags = []
+
+    def _render_run(self, message, run_s, run_e, prefix_len, is_long):
+        self.flags.append(is_long)
+        return super()._render_run(message, run_s, run_e, prefix_len, is_long)
+
+
+def _spy_second(first, second):
+    engine = _SpyEngine(_StubFormatter(), threshold=1)
+    engine.process(_StubRecord(first))
+    out = engine.process(_StubRecord(second))
+    return engine.flags, out
+
+
+_SHORT = "a" * 16 + "/bbb"
+_LONG = "a" * 60 + "/" + "b" * 60
+
+
+class TestLongFlagPerLine:
+    def test_short_line_flag_is_false(_):
+        flags, _out = _spy_second(_SHORT + "X", _SHORT + "Y")
+        assert flags == [False]
+
+    def test_long_line_flag_is_true(_):
+        flags, _out = _spy_second(_LONG + "X", _LONG + "Y")
+        assert flags == [True]
+
+    def test_flag_is_decided_per_physical_line(_):
+        first = _SHORT + "X\n" + _LONG + "X\n" + _SHORT + "X"
+        second = _SHORT + "Y\n" + _LONG + "Y\n" + _SHORT + "Y"
+        flags, _out = _spy_second(first, second)
+        assert flags == [False, True, False]
+
+    def test_output_is_byte_identical_to_before(_):
+        _flags, out = _spy_second(_LONG + "X", _LONG + "Y")
+        plain = _DiffOnlyEngine(_StubFormatter(), threshold=1)
+        plain.process(_StubRecord(_LONG + "X"))
+        assert out == plain.process(_StubRecord(_LONG + "Y"))

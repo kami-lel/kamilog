@@ -1093,7 +1093,6 @@ class _DiffOnlyEngine:  # ******************************************************
         block (if any) is the gap, and everything between is a whole
         replaceable tab stop.
         """
-        block = _TabAlignedLine.TAB_SIZE
         n_common = len(common)
         is_common = [
             i < n_common
@@ -1101,6 +1100,7 @@ class _DiffOnlyEngine:  # ******************************************************
             and common[i] == ch
             for i, ch in enumerate(message)
         ]
+        is_long = self._is_long_line(message, prefix_len)
         result = []
         i = 0
         msg_len = len(message)
@@ -1112,54 +1112,59 @@ class _DiffOnlyEngine:  # ******************************************************
                 run_s = i
                 while i < msg_len and is_common[i]:
                     i += 1
-                run_e = i
-                cut = self._find_cut(message, run_s, run_e, prefix_len)
-
-                tal_blocks = list(
-                    _TabAlignedLine.parse(
-                        message[run_s:cut], start_offset=prefix_len + run_s
-                    )
+                result.append(
+                    self._render_run(message, run_s, i, prefix_len, is_long)
                 )
-                leader = ""
-                if tal_blocks and len(tal_blocks[0]) < block:
-                    leader = tal_blocks.pop(0)
-                if tal_blocks and len(tal_blocks[-1]) < block:
-                    gap_block = tal_blocks.pop()
-                else:
-                    gap_block = ""
-                k = len(tal_blocks)  # remaining blocks are all full-width
+        return "".join(result)
 
-                if k == 0:
-                    result.append(message[run_s:run_e])
-                else:
-                    gap = len(gap_block)
-                    # leader: common chars before the first tab stop are
-                    # never printed; short ones become a bare tab jump,
-                    # longer ones earn their own marker
-                    if len(leader) >= self._LEADER_MARKER_MIN:
-                        result.append(
-                            self._formatter.palette.color_grey(
-                                self._COMPRESSION_MARKER
-                            )
-                        )
-                    elif leader:
-                        result.append("\t")
-                    result.append(
-                        self._formatter.palette.color_grey(
-                            self._COMPRESSION_MARKER * k
-                        )
-                    )
-                    # partial block: marker + spaces padding to the cut
-                    if gap >= self._MARKER_WIDTH:
-                        result.append(
-                            self._formatter.palette.color_grey(
-                                self._MARKER_CHAR
-                            )
-                        )
-                        result.append(" " * (gap - self._MARKER_WIDTH))
-                    else:
-                        result.append(" " * gap)
-                    result.append(message[cut:run_e])
+    def _render_run(self, message, run_s, run_e, prefix_len, is_long):
+        """
+        render one common run as markers plus its kept tail
+
+        ``is_long`` flags a line wider than ``_LONG_LINE_COLS``
+        """
+        block = _TabAlignedLine.TAB_SIZE
+        cut = self._find_cut(message, run_s, run_e, prefix_len)
+
+        tal_blocks = list(
+            _TabAlignedLine.parse(
+                message[run_s:cut], start_offset=prefix_len + run_s
+            )
+        )
+        leader = ""
+        if tal_blocks and len(tal_blocks[0]) < block:
+            leader = tal_blocks.pop(0)
+        if tal_blocks and len(tal_blocks[-1]) < block:
+            gap_block = tal_blocks.pop()
+        else:
+            gap_block = ""
+        k = len(tal_blocks)  # remaining blocks are all full-width
+
+        if k == 0:
+            return message[run_s:run_e]
+        result = []
+        gap = len(gap_block)
+        # leader: common chars before the first tab stop are never
+        # printed; short ones become a bare tab jump, longer ones earn
+        # their own marker
+        if len(leader) >= self._LEADER_MARKER_MIN:
+            result.append(
+                self._formatter.palette.color_grey(self._COMPRESSION_MARKER)
+            )
+        elif leader:
+            result.append("\t")
+        result.append(
+            self._formatter.palette.color_grey(self._COMPRESSION_MARKER * k)
+        )
+        # partial block: marker + spaces padding to the cut
+        if gap >= self._MARKER_WIDTH:
+            result.append(
+                self._formatter.palette.color_grey(self._MARKER_CHAR)
+            )
+            result.append(" " * (gap - self._MARKER_WIDTH))
+        else:
+            result.append(" " * gap)
+        result.append(message[cut:run_e])
         return "".join(result)
 
     def process(self, record):
