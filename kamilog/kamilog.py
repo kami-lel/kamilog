@@ -400,6 +400,21 @@ _NATIVE_BADGES = {
 }
 
 
+def _normalize_badges(badges):
+    """
+    drop duplicate badges, then order by descending priority;
+            customs rank 0 and keep the order given
+    """
+    if badges is None:
+        return ()
+    if isinstance(badges, str):
+        badges = (badges,)
+    unique = tuple(dict.fromkeys(badges))
+    return tuple(
+        sorted(unique, key=lambda b: -_NATIVE_BADGES.get(b, (None, 0))[1])
+    )
+
+
 class KamiLogger(logging.Logger):  # ===========================================
     """
     logger subclass extending :class:`logging.Logger` with custom levels.
