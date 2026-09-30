@@ -1038,15 +1038,12 @@ class _LogFormatEngine:  # *****************************************************
         :rtype: int
         """
         name = record.name
-        has_name = bool(name and name != "root")
+        has_name = self._has_source_name(name)
 
         if self._relative_to is not None:
             ts_len = len(self._fmt_relative(record.created))
         elif self._datefmt:
-            plain = time.strftime(
-                self._datefmt, time.localtime(record.created)
-            ).replace("{ms}", "{:03d}".format(int(record.msecs)))
-            ts_len = len(plain)
+            ts_len = len(self._strftime_ms(self._datefmt, record))
         else:
             ts_len = 0
 
@@ -1054,16 +1051,13 @@ class _LogFormatEngine:  # *****************************************************
         space_len = 1 if has_name else 0
         source_len = len(name) + 1 if has_name else 1  # "name:" or ":"
 
+        col = ts_len + 1 if ts_len else 0
         badges = getattr(record, "badges", ())
         if badges:
             # level starts on the first tab stop after the badges
-            col = ts_len + 1 if ts_len else 0
-            col = self._next_tab_stop(col + len(" ".join(badges)))
-            return col + level_len + space_len + source_len + 1
-
-        if ts_len:
-            return ts_len + 1 + level_len + space_len + source_len + 1
-        return level_len + space_len + source_len + 1
+            col += len(" ".join(badges))
+            col += _calc_tab_advance(col)
+        return col + level_len + space_len + source_len + 1
 
     def format_time(self, record, datefmt=None):
         """
@@ -1080,10 +1074,7 @@ class _LogFormatEngine:  # *****************************************************
         if self._relative_to is not None:
             return self._fmt_asctime(self._fmt_relative(record.created))
         elif datefmt or self._datefmt:
-            fmt = datefmt or self._datefmt
-            asctime = time.strftime(
-                fmt, time.localtime(record.created)
-            ).replace("{ms}", "{:03d}".format(int(record.msecs)))
+            asctime = self._strftime_ms(datefmt or self._datefmt, record)
             return self._fmt_asctime(asctime)
         return ""
 
@@ -1099,7 +1090,7 @@ class _LogFormatEngine:  # *****************************************************
         """
         asctime = self.format_time(record)
         source = self._fmt_source(record.name)
-        space = " " if record.name and record.name != "root" else ""
+        space = " " if self._has_source_name(record.name) else ""
         badges = getattr(record, "badges", ())
         # badges sit b/t timestamp & level, level on the next tab stop
         badge_seg = "{}\t".format(self._fmt_badges(badges)) if badges else ""
@@ -1116,9 +1107,23 @@ class _LogFormatEngine:  # *****************************************************
     # helpers  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @staticmethod
-    def _next_tab_stop(col):
-        """return the first tab stop strictly after column ``col``."""
-        return (col // _TabAlignedLine.TAB_SIZE + 1) * _TabAlignedLine.TAB_SIZE
+    def _has_source_name(name):
+        """
+        :return: if ``name`` is a real logger name, not empty or root
+        :rtype: bool
+        """
+        return bool(name and name != "root")
+
+    @staticmethod
+    def _strftime_ms(fmt, record):
+        """
+        :return: ``record`` creation time per ``fmt``, ``{ms}`` filled
+                with zero-padded milliseconds
+        :rtype: str
+        """
+        return time.strftime(fmt, time.localtime(record.created)).replace(
+            "{ms}", "{:03d}".format(int(record.msecs))
+        )
 
     def _fmt_asctime(self, asctime):
         """color ``asctime`` grey."""
@@ -1135,7 +1140,7 @@ class _LogFormatEngine:  # *****************************************************
 
     def _fmt_source(self, name):
         """build the colored source-label segment."""
-        if not name or name == "root":
+        if not self._has_source_name(name):
             return self._palette.color_grey(":")
         return "{}{}".format(
             self._palette.color_grey(name),
@@ -1225,10 +1230,40 @@ class _LogFormatter(Formatter):  # *********************************************
 # diff only message   ==========================================================
 
 
+def _calc_tab_advance(col):
+    """
+    :return: columns from ``col`` to the next tab stop, a full
+            ``TAB_SIZE`` when ``col`` already sits on one
+    :rtype: int
+    """
+    return _TabAlignedLine.TAB_SIZE - col % _TabAlignedLine.TAB_SIZE
+
+
+def _expand_tabs(line, start_offset):
+    """
+    :return: ``line`` with each tab replaced by spaces up to the next
+            tab stop, ``line`` beginning at column ``start_offset``
+    :rtype: str
+    """
+    expanded = []
+    col = start_offset
+    for ch in line:
+        if ch == "\t":
+            n_spaces = _calc_tab_advance(col)
+            expanded.append(" " * n_spaces)
+            col += n_spaces
+        else:
+            expanded.append(ch)
+            col += 1
+    return "".join(expanded)
+
+
 class _TabAlignedLine(list):  # ************************************************
     """
     a line of text split into tab-stop-aligned string blocks.
     """
+
+    TAB_SIZE = 8
 
     @classmethod
     def parse(cls, line, *, start_offset=0):  # ++++++++++++++++++++++++++++++++
@@ -1249,25 +1284,13 @@ class _TabAlignedLine(list):  # ************************************************
         :return: new instance holding the split blocks
         :rtype: TabAlignedLine
         """
-        # expand tabs  ---------------------------------------------------------
-        expanded = []
-        col = start_offset
-        for ch in line:
-            if ch == "\t":
-                n_spaces = cls.TAB_SIZE - (col % cls.TAB_SIZE)
-                expanded.append(" " * n_spaces)
-                col += n_spaces
-            else:
-                expanded.append(ch)
-                col += 1
-        line = "".join(expanded)
+        line = _expand_tabs(line, start_offset)
 
         # split blocks  --------------------------------------------------------
         n = len(line)
         blocks = []
 
-        first_len = cls.TAB_SIZE - (start_offset % cls.TAB_SIZE)
-        first_len = min(first_len, n)
+        first_len = min(_calc_tab_advance(start_offset), n)
         pos = first_len
         blocks.append(line[:pos])
 
@@ -1277,8 +1300,6 @@ class _TabAlignedLine(list):  # ************************************************
             pos = end
 
         return cls(blocks, start_offset=start_offset)
-
-    TAB_SIZE = 8
 
     def __init__(self, blocks, *, start_offset=0):
         super().__init__(blocks)
@@ -1440,11 +1461,9 @@ class _DiffOnlyEngine:  # ******************************************************
                 embedded tabs expanded to tab stops
         :rtype: bool
         """
-        block = _TabAlignedLine.TAB_SIZE
-        col = prefix_len
-        for ch in line:
-            col += block - col % block if ch == "\t" else 1
-        return col > cls._LONG_LINE_COLS
+        return prefix_len + len(_expand_tabs(line, prefix_len)) > (
+            cls._LONG_LINE_COLS
+        )
 
     def _compress_line(self, message, common, prefix_len):
         """
@@ -1486,6 +1505,7 @@ class _DiffOnlyEngine:  # ******************************************************
         ``is_long`` flags a line wider than ``_LONG_LINE_COLS``
         """
         block = _TabAlignedLine.TAB_SIZE
+        grey = self._formatter.palette.color_grey
         cut = self._find_cut(message, run_s, run_e, prefix_len)
 
         tal_blocks = list(
@@ -1513,19 +1533,17 @@ class _DiffOnlyEngine:  # ******************************************************
         # printed; short ones become a bare tab jump, longer ones earn
         # their own marker; a long line has no tab stops to jump to
         if len(leader) >= self._LEADER_MARKER_MIN:
-            result.append(self._formatter.palette.color_grey(block_marker))
+            result.append(grey(block_marker))
         elif leader and not is_long:
             result.append("\t")
-        result.append(self._formatter.palette.color_grey(block_marker * k))
+        result.append(grey(block_marker * k))
         # partial block: marker + spaces padding to the cut; a long line
         # keeps the marker and its one space, no padding
         if gap >= self._MARKER_WIDTH:
             if is_long:
-                result.append(self._formatter.palette.color_grey(block_marker))
+                result.append(grey(block_marker))
             else:
-                result.append(
-                    self._formatter.palette.color_grey(self._MARKER_CHAR)
-                )
+                result.append(grey(self._MARKER_CHAR))
                 result.append(" " * (gap - self._MARKER_WIDTH))
         elif not is_long:
             result.append(" " * gap)
