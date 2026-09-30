@@ -65,7 +65,7 @@ __all__ = (
 
 
 # metadata  ####################################################################
-__version__ = "2.9.3"
+__version__ = "2.9.4-alpha"
 __author__ = "kamiLeL"
 
 
@@ -986,9 +986,11 @@ class _DiffOnlyEngine:  # ******************************************************
             return
         n_lines = max(len(lines) for lines in history)
         self._common = [
-            self._calc_line_common([lines[k] for lines in history])
-            if all(k < len(lines) for lines in history)
-            else []
+            (
+                self._calc_line_common([lines[k] for lines in history])
+                if all(k < len(lines) for lines in history)
+                else []
+            )
             for k in range(n_lines)
         ]
 
@@ -1096,9 +1098,7 @@ class _DiffOnlyEngine:  # ******************************************************
         """
         n_common = len(common)
         is_common = [
-            i < n_common
-            and common[i] is not None
-            and common[i] == ch
+            i < n_common and common[i] is not None and common[i] == ch
             for i, ch in enumerate(message)
         ]
         is_long = self._is_long_line(message, prefix_len)
