@@ -1666,8 +1666,10 @@ def getLogger(
             root logger if `name` is `None`
     :rtype: KamiLogger
     """
-    if datefmt is _DATEFMT_AUTO:
-        datefmt = DATEFMT_TIME
+    if datefmt is _DATEFMT_AUTO:  # unset: console silent, file full stamp
+        console_datefmt, file_datefmt = None, DATEFMT_DATETIME_MS
+    else:
+        console_datefmt = file_datefmt = datefmt
 
     logger = logging.getLogger(name)
 
@@ -1681,7 +1683,7 @@ def getLogger(
             _DiffOnlyMsgFilter(
                 _build_log_formatter(
                     sys.stdout,
-                    datefmt=datefmt,
+                    datefmt=console_datefmt,
                     relative_to=relative_to,
                     disable_color=disable_color,
                 ),
@@ -1698,7 +1700,7 @@ def getLogger(
         stdout_handler.setFormatter(
             _build_log_formatter(
                 sys.stdout,
-                datefmt=datefmt,
+                datefmt=console_datefmt,
                 relative_to=relative_to,
                 disable_color=disable_color,
             )
@@ -1709,7 +1711,7 @@ def getLogger(
         stderr_handler.setFormatter(
             _build_log_formatter(
                 sys.stderr,
-                datefmt=datefmt,
+                datefmt=console_datefmt,
                 relative_to=relative_to,
                 disable_color=disable_color,
             )
@@ -1731,7 +1733,7 @@ def getLogger(
             )
             file_handler.setFormatter(
                 _build_log_formatter(
-                    datefmt=datefmt,
+                    datefmt=file_datefmt,
                     relative_to=relative_to,
                     disable_color=True,
                 )
