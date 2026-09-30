@@ -8,18 +8,10 @@ warmup, then 3 compressed
 
 import contextlib
 import io
-import re
 
 import pytest
 
 import kamilog
-
-_TIME_RE = re.compile(r"\d{2}:\d{2}:\d{2}")
-
-
-def _mask_time(text):
-    return _TIME_RE.sub("<TIME>", text)
-
 
 def _run_and_capture(name, messages):
     out, err = io.StringIO(), io.StringIO()
@@ -29,7 +21,7 @@ def _run_and_capture(name, messages):
         log.propagate = False
         for message in messages:
             log.info(message)
-    return _mask_time(out.getvalue()), _mask_time(err.getvalue())
+    return out.getvalue(), err.getvalue()
 
 
 # slash boundary  ###############################################################
@@ -40,12 +32,12 @@ _SLASH_BOUNDARY_MESSAGES = [
     for i in range(1, 7)
 ]
 _SLASH_BOUNDARY_STDOUT = [
-    "<TIME> INFO  stress-demo-scan: scan /srv/data/archive/2024/q1/export/batch_001.csv ok",
-    "<TIME> INFO  stress-demo-scan: scan /srv/data/archive/2024/q1/export/batch_002.csv ok",
-    "<TIME> INFO  stress-demo-scan: scan /srv/data/archive/2024/q1/export/batch_003.csv ok",
-    "<TIME> INFO  stress-demo-scan: 〃\t〃\t〃\t〃\t〃    /batch_004.csv ok",
-    "<TIME> INFO  stress-demo-scan: 〃\t〃\t〃\t〃\t〃    /batch_005.csv ok",
-    "<TIME> INFO  stress-demo-scan: 〃\t〃\t〃\t〃\t〃    /batch_006.csv ok",
+    "INFO  stress-demo-scan: scan /srv/data/archive/2024/q1/export/batch_001.csv ok",
+    "INFO  stress-demo-scan: scan /srv/data/archive/2024/q1/export/batch_002.csv ok",
+    "INFO  stress-demo-scan: scan /srv/data/archive/2024/q1/export/batch_003.csv ok",
+    "INFO  stress-demo-scan: 〃\t〃\t〃\t〃\t〃   /batch_004.csv ok",
+    "INFO  stress-demo-scan: 〃\t〃\t〃\t〃\t〃   /batch_005.csv ok",
+    "INFO  stress-demo-scan: 〃\t〃\t〃\t〃\t〃   /batch_006.csv ok",
 ]
 
 
@@ -71,12 +63,12 @@ _HYPHEN_UNDERSCORE_MESSAGES = [
     "deploy target=prod  job=etl-run_01{}  ok".format(i) for i in range(1, 7)
 ]
 _HYPHEN_UNDERSCORE_STDOUT = [
-    "<TIME> INFO  stress-demo-deploy: deploy target=prod  job=etl-run_011  ok",
-    "<TIME> INFO  stress-demo-deploy: deploy target=prod  job=etl-run_012  ok",
-    "<TIME> INFO  stress-demo-deploy: deploy target=prod  job=etl-run_013  ok",
-    "<TIME> INFO  stress-demo-deploy: 〃\t〃\t〃\t〃=etl-run_014  ok",
-    "<TIME> INFO  stress-demo-deploy: 〃\t〃\t〃\t〃=etl-run_015  ok",
-    "<TIME> INFO  stress-demo-deploy: 〃\t〃\t〃\t〃=etl-run_016  ok",
+    "INFO  stress-demo-deploy: deploy target=prod  job=etl-run_011  ok",
+    "INFO  stress-demo-deploy: deploy target=prod  job=etl-run_012  ok",
+    "INFO  stress-demo-deploy: deploy target=prod  job=etl-run_013  ok",
+    "INFO  stress-demo-deploy: 〃\t〃\t〃\t =etl-run_014  ok",
+    "INFO  stress-demo-deploy: 〃\t〃\t〃\t =etl-run_015  ok",
+    "INFO  stress-demo-deploy: 〃\t〃\t〃\t =etl-run_016  ok",
 ]
 
 
@@ -102,12 +94,12 @@ _EQUALS_BOUNDARY_MESSAGES = [
     "sensor=cpu  temp=21.{}C  humid=55%  st=ok".format(i) for i in range(1, 7)
 ]
 _EQUALS_BOUNDARY_STDOUT = [
-    "<TIME> INFO  stress-demo-sensor: sensor=cpu  temp=21.1C  humid=55%  st=ok",
-    "<TIME> INFO  stress-demo-sensor: sensor=cpu  temp=21.2C  humid=55%  st=ok",
-    "<TIME> INFO  stress-demo-sensor: sensor=cpu  temp=21.3C  humid=55%  st=ok",
-    "<TIME> INFO  stress-demo-sensor: 〃\t〃\t〃    .4〃\t〃\t=ok",
-    "<TIME> INFO  stress-demo-sensor: 〃\t〃\t〃    .5〃\t〃\t=ok",
-    "<TIME> INFO  stress-demo-sensor: 〃\t〃\t〃    .6〃\t〃\t=ok",
+    "INFO  stress-demo-sensor: sensor=cpu  temp=21.1C  humid=55%  st=ok",
+    "INFO  stress-demo-sensor: sensor=cpu  temp=21.2C  humid=55%  st=ok",
+    "INFO  stress-demo-sensor: sensor=cpu  temp=21.3C  humid=55%  st=ok",
+    "INFO  stress-demo-sensor: 〃\t〃\t〃   .4\t〃\t〃     =ok",
+    "INFO  stress-demo-sensor: 〃\t〃\t〃   .5\t〃\t〃     =ok",
+    "INFO  stress-demo-sensor: 〃\t〃\t〃   .6\t〃\t〃     =ok",
 ]
 
 
@@ -133,12 +125,12 @@ _WHITESPACE_BOUNDARY_MESSAGES = [
     "poll queue orders worker heartbeat seq {:03d}".format(i) for i in range(1, 7)
 ]
 _WHITESPACE_BOUNDARY_STDOUT = [
-    "<TIME> INFO  stress-demo-poll: poll queue orders worker heartbeat seq 001",
-    "<TIME> INFO  stress-demo-poll: poll queue orders worker heartbeat seq 002",
-    "<TIME> INFO  stress-demo-poll: poll queue orders worker heartbeat seq 003",
-    "<TIME> INFO  stress-demo-poll: 〃\t〃\t〃\t〃\t〃      004",
-    "<TIME> INFO  stress-demo-poll: 〃\t〃\t〃\t〃\t〃      005",
-    "<TIME> INFO  stress-demo-poll: 〃\t〃\t〃\t〃\t〃      006",
+    "INFO  stress-demo-poll: poll queue orders worker heartbeat seq 001",
+    "INFO  stress-demo-poll: poll queue orders worker heartbeat seq 002",
+    "INFO  stress-demo-poll: poll queue orders worker heartbeat seq 003",
+    "INFO  stress-demo-poll: 〃\t〃\t〃\t〃\t〃     004",
+    "INFO  stress-demo-poll: 〃\t〃\t〃\t〃\t〃     005",
+    "INFO  stress-demo-poll: 〃\t〃\t〃\t〃\t〃     006",
 ]
 
 
@@ -166,12 +158,12 @@ _TWO_TAB_FALLBACK_MESSAGES = [
     for i in range(1, 7)
 ]
 _TWO_TAB_FALLBACK_STDOUT = [
-    "<TIME> INFO  stress-demo-csum: csum sha256:9f8e7d6c5b4a39281706f5e4d3c2b1a09f8e7d6c5b4a392801",
-    "<TIME> INFO  stress-demo-csum: csum sha256:9f8e7d6c5b4a39281706f5e4d3c2b1a09f8e7d6c5b4a392802",
-    "<TIME> INFO  stress-demo-csum: csum sha256:9f8e7d6c5b4a39281706f5e4d3c2b1a09f8e7d6c5b4a392803",
-    "<TIME> INFO  stress-demo-csum: 〃\t〃\t〃\t〃\t〃\t2b1a09f8e7d6c5b4a392804",
-    "<TIME> INFO  stress-demo-csum: 〃\t〃\t〃\t〃\t〃\t2b1a09f8e7d6c5b4a392805",
-    "<TIME> INFO  stress-demo-csum: 〃\t〃\t〃\t〃\t〃\t2b1a09f8e7d6c5b4a392806",
+    "INFO  stress-demo-csum: csum sha256:9f8e7d6c5b4a39281706f5e4d3c2b1a09f8e7d6c5b4a392801",
+    "INFO  stress-demo-csum: csum sha256:9f8e7d6c5b4a39281706f5e4d3c2b1a09f8e7d6c5b4a392802",
+    "INFO  stress-demo-csum: csum sha256:9f8e7d6c5b4a39281706f5e4d3c2b1a09f8e7d6c5b4a392803",
+    "INFO  stress-demo-csum: 〃\t〃\t〃\t〃\t〃\tb1a09f8e7d6c5b4a392804",
+    "INFO  stress-demo-csum: 〃\t〃\t〃\t〃\t〃\tb1a09f8e7d6c5b4a392805",
+    "INFO  stress-demo-csum: 〃\t〃\t〃\t〃\t〃\tb1a09f8e7d6c5b4a392806",
 ]
 
 
@@ -197,12 +189,12 @@ _SHORT_LEADER_MESSAGES = [
     "pump pressure stable flow steady cycle {}".format(i) for i in range(1, 7)
 ]
 _SHORT_LEADER_STDOUT = [
-    "<TIME> INFO  stress-demo-pump: pump pressure stable flow steady cycle 1",
-    "<TIME> INFO  stress-demo-pump: pump pressure stable flow steady cycle 2",
-    "<TIME> INFO  stress-demo-pump: pump pressure stable flow steady cycle 3",
-    "<TIME> INFO  stress-demo-pump: 〃\t〃\t〃\t〃\t〃      4",
-    "<TIME> INFO  stress-demo-pump: 〃\t〃\t〃\t〃\t〃      5",
-    "<TIME> INFO  stress-demo-pump: 〃\t〃\t〃\t〃\t〃      6",
+    "INFO  stress-demo-pump: pump pressure stable flow steady cycle 1",
+    "INFO  stress-demo-pump: pump pressure stable flow steady cycle 2",
+    "INFO  stress-demo-pump: pump pressure stable flow steady cycle 3",
+    "INFO  stress-demo-pump: 〃\t〃\t〃\t〃\t〃     4",
+    "INFO  stress-demo-pump: 〃\t〃\t〃\t〃\t〃     5",
+    "INFO  stress-demo-pump: 〃\t〃\t〃\t〃\t〃     6",
 ]
 
 
@@ -228,12 +220,12 @@ _LONG_LEADER_MESSAGES = [
     "telemetry uplink nominal signal clear frame {}".format(i) for i in range(1, 7)
 ]
 _LONG_LEADER_STDOUT = [
-    "<TIME> INFO  stress-demo-telemetry: telemetry uplink nominal signal clear frame 1",
-    "<TIME> INFO  stress-demo-telemetry: telemetry uplink nominal signal clear frame 2",
-    "<TIME> INFO  stress-demo-telemetry: telemetry uplink nominal signal clear frame 3",
-    "<TIME> INFO  stress-demo-telemetry: \t〃\t〃\t〃\t〃\t〃\t  4",
-    "<TIME> INFO  stress-demo-telemetry: \t〃\t〃\t〃\t〃\t〃\t  5",
-    "<TIME> INFO  stress-demo-telemetry: \t〃\t〃\t〃\t〃\t〃\t  6",
+    "INFO  stress-demo-telemetry: telemetry uplink nominal signal clear frame 1",
+    "INFO  stress-demo-telemetry: telemetry uplink nominal signal clear frame 2",
+    "INFO  stress-demo-telemetry: telemetry uplink nominal signal clear frame 3",
+    "INFO  stress-demo-telemetry: \t〃\t〃\t〃\t〃\t〃\t 4",
+    "INFO  stress-demo-telemetry: \t〃\t〃\t〃\t〃\t〃\t 5",
+    "INFO  stress-demo-telemetry: \t〃\t〃\t〃\t〃\t〃\t 6",
 ]
 
 
@@ -259,12 +251,12 @@ _TOO_SHORT_MESSAGES = [
     "up {}s node{} load {}.{}".format(i * 7, i, i, 9 - i) for i in range(1, 7)
 ]
 _TOO_SHORT_STDOUT = [
-    "<TIME> INFO  stress-demo-up: up 7s node1 load 1.8",
-    "<TIME> INFO  stress-demo-up: up 14s node2 load 2.7",
-    "<TIME> INFO  stress-demo-up: up 21s node3 load 3.6",
-    "<TIME> INFO  stress-demo-up: up 28s node4 load 4.5",
-    "<TIME> INFO  stress-demo-up: up 35s node5 load 5.4",
-    "<TIME> INFO  stress-demo-up: up 42s node6 load 6.3",
+    "INFO  stress-demo-up: up 7s node1 load 1.8",
+    "INFO  stress-demo-up: up 14s node2 load 2.7",
+    "INFO  stress-demo-up: up 21s node3 load 3.6",
+    "INFO  stress-demo-up: up 28s node4 load 4.5",
+    "INFO  stress-demo-up: up 35s node5 load 5.4",
+    "INFO  stress-demo-up: up 42s node6 load 6.3",
 ]
 
 
@@ -290,12 +282,12 @@ _MIDDLE_DIFF_MESSAGES = [
     "copy file_{:03d}.tmp  to /var/backup/daily  ok".format(i) for i in range(1, 7)
 ]
 _MIDDLE_DIFF_STDOUT = [
-    "<TIME> INFO  stress-demo-copy: copy file_001.tmp  to /var/backup/daily  ok",
-    "<TIME> INFO  stress-demo-copy: copy file_002.tmp  to /var/backup/daily  ok",
-    "<TIME> INFO  stress-demo-copy: copy file_003.tmp  to /var/backup/daily  ok",
-    "<TIME> INFO  stress-demo-copy: copy file_004\t〃\t〃\t〃\t  ok",
-    "<TIME> INFO  stress-demo-copy: copy file_005\t〃\t〃\t〃\t  ok",
-    "<TIME> INFO  stress-demo-copy: copy file_006\t〃\t〃\t〃\t  ok",
+    "INFO  stress-demo-copy: copy file_001.tmp  to /var/backup/daily  ok",
+    "INFO  stress-demo-copy: copy file_002.tmp  to /var/backup/daily  ok",
+    "INFO  stress-demo-copy: copy file_003.tmp  to /var/backup/daily  ok",
+    "INFO  stress-demo-copy: copy file_004\t〃\t〃\t〃\t ok",
+    "INFO  stress-demo-copy: copy file_005\t〃\t〃\t〃\t ok",
+    "INFO  stress-demo-copy: copy file_006\t〃\t〃\t〃\t ok",
 ]
 
 
@@ -319,12 +311,12 @@ class TestMiddleDiffCommonHeadAndTail:
 
 _IDENTICAL_LINES_MESSAGES = ["heartbeat gateway alive"] * 6
 _IDENTICAL_LINES_STDOUT = [
-    "<TIME> INFO  stress-demo-heartbeat: heartbeat gateway alive",
-    "<TIME> INFO  stress-demo-heartbeat: heartbeat gateway alive",
-    "<TIME> INFO  stress-demo-heartbeat: heartbeat gateway alive",
-    "<TIME> INFO  stress-demo-heartbeat: \t〃\t〃      alive",
-    "<TIME> INFO  stress-demo-heartbeat: \t〃\t〃      alive",
-    "<TIME> INFO  stress-demo-heartbeat: \t〃\t〃      alive",
+    "INFO  stress-demo-heartbeat: heartbeat gateway alive",
+    "INFO  stress-demo-heartbeat: heartbeat gateway alive",
+    "INFO  stress-demo-heartbeat: heartbeat gateway alive",
+    "INFO  stress-demo-heartbeat: \t〃\t〃     alive",
+    "INFO  stress-demo-heartbeat: \t〃\t〃     alive",
+    "INFO  stress-demo-heartbeat: \t〃\t〃     alive",
 ]
 
 

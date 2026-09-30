@@ -7,18 +7,10 @@ recent log history in `kamilog.py`
 
 import contextlib
 import io
-import re
 
 import pytest
 
 import kamilog
-
-_TIME_RE = re.compile(r"\d{2}:\d{2}:\d{2}")
-
-
-def _mask_time(text):
-    return _TIME_RE.sub("<TIME>", text)
-
 
 def _run_and_capture(name, calls):
     """
@@ -32,7 +24,7 @@ def _run_and_capture(name, calls):
         log.propagate = False
         for method, message in calls:
             getattr(log, method)(message)
-    return _mask_time(out.getvalue()), _mask_time(err.getvalue())
+    return out.getvalue(), err.getvalue()
 
 
 _BASIC_COMPRESSION_CALLS = [
@@ -45,12 +37,12 @@ _BASIC_COMPRESSION_CALLS = [
 ]
 
 _BASIC_COMPRESSION_STDOUT = [
-    "<TIME> INFO  logger-diff-only-demo-sensor: sensor=cpu  load=45.2%  temp=61C  ok",
-    "<TIME> INFO  logger-diff-only-demo-sensor: sensor=cpu  load=47.8%  temp=62C  ok",
-    "<TIME> INFO  logger-diff-only-demo-sensor: sensor=cpu  load=44.1%  temp=60C  ok",
-    "<TIME> INFO  logger-diff-only-demo-sensor: \t〃\t〃   =51.3%  temp=63C  ok",
-    "<TIME> INFO  logger-diff-only-demo-sensor: \t〃\t〃   =49.7%  temp=62C  ok",
-    "<TIME> INFO  logger-diff-only-demo-sensor: \t〃\t〃   =53.0%  temp=64C  ok",
+    "INFO  logger-diff-only-demo-sensor: sensor=cpu  load=45.2%  temp=61C  ok",
+    "INFO  logger-diff-only-demo-sensor: sensor=cpu  load=47.8%  temp=62C  ok",
+    "INFO  logger-diff-only-demo-sensor: sensor=cpu  load=44.1%  temp=60C  ok",
+    "INFO  logger-diff-only-demo-sensor: 〃\t〃\t〃  =51.3%  temp=63C  ok",
+    "INFO  logger-diff-only-demo-sensor: 〃\t〃\t〃  =49.7%  temp=62C  ok",
+    "INFO  logger-diff-only-demo-sensor: 〃\t〃\t〃  =53.0%  temp=64C  ok",
 ]
 
 _PATTERN_BREAK_CALLS = (
@@ -66,19 +58,19 @@ _PATTERN_BREAK_CALLS = (
 )
 
 _PATTERN_BREAK_STDOUT = [
-    "<TIME> INFO  logger-diff-only-demo-sync: sync /home/alice/docs/q1_report.pdf  →  remote:backup  ok",
-    "<TIME> INFO  logger-diff-only-demo-sync: sync /home/alice/docs/q2_report.pdf  →  remote:backup  ok",
-    "<TIME> INFO  logger-diff-only-demo-sync: sync /home/alice/docs/q3_report.pdf  →  remote:backup  ok",
-    "<TIME> INFO  logger-diff-only-demo-sync: 〃\t〃\t〃\t/q4〃\t〃\t〃\t〃\t  ok",
-    "<TIME> INFO  logger-diff-only-demo-sync: 〃\t〃\t〃\t/q5〃\t〃\t〃\t〃\t  ok",
-    "<TIME> INFO  logger-diff-only-demo-sync: sync /home/alice/docs/q6_report.pdf  →  remote:backup  ok",
-    "<TIME> INFO  logger-diff-only-demo-sync: sync /home/alice/docs/q7_report.pdf  →  remote:backup  ok",
-    "<TIME> INFO  logger-diff-only-demo-sync: sync /home/alice/docs/q8_report.pdf  →  remote:backup  ok",
-    "<TIME> INFO  logger-diff-only-demo-sync: 〃\t〃\t〃\t/q9〃\t〃\t〃\t〃\t  ok",
+    "INFO  logger-diff-only-demo-sync: sync /home/alice/docs/q1_report.pdf  →  remote:backup  ok",
+    "INFO  logger-diff-only-demo-sync: sync /home/alice/docs/q2_report.pdf  →  remote:backup  ok",
+    "INFO  logger-diff-only-demo-sync: sync /home/alice/docs/q3_report.pdf  →  remote:backup  ok",
+    "INFO  logger-diff-only-demo-sync: 〃\t〃\t〃     /q4〃\t〃\t〃\t〃\t ok",
+    "INFO  logger-diff-only-demo-sync: 〃\t〃\t〃     /q5〃\t〃\t〃\t〃\t ok",
+    "INFO  logger-diff-only-demo-sync: sync /home/alice/docs/q6_report.pdf  →  remote:backup  ok",
+    "INFO  logger-diff-only-demo-sync: sync /home/alice/docs/q7_report.pdf  →  remote:backup  ok",
+    "INFO  logger-diff-only-demo-sync: sync /home/alice/docs/q8_report.pdf  →  remote:backup  ok",
+    "INFO  logger-diff-only-demo-sync: 〃\t〃\t〃     /q9〃\t〃\t〃\t〃\t ok",
 ]
 
 _PATTERN_BREAK_STDERR = [
-    "<TIME> WARN. logger-diff-only-demo-sync: WARN disk 91 full on remote:backup — sync paused",
+    "WARN. logger-diff-only-demo-sync: WARN disk 91 full on remote:backup — sync paused",
 ]
 
 
