@@ -163,7 +163,7 @@ Subclasses `logging.Logger`. Adds eleven convenience methods mapping to the cust
 - `set_badges(badges=None)` / `clear_badges()` — replace or unset the run-wide set, stored per logger in `_run_badges` (class default `()`). `set_badges()`, `None` and `[]` all unset it; there is no add or remove of one label.
 - `_log(..., badges=None, is_inheriting_badges=True)` — override that merges per-call badges with the run-wide set (`is_inheriting_badges=False` hides the run-wide set for one record) and stamps the result on the record as `record.badges` through `extra`. It forwards to `super()._log` with `stacklevel + 1`, so `funcName` and `lineno` still point at the caller. Every level method and `log()` accept the kwargs through `**kwargs`.
 
-The user-facing guide is [`docs/badge-doc.md`](docs/badge-doc.md); `OpAction` (`docs/op_action_design.md`) is not implemented.
+The user-facing guide is [`docs/badge-doc.md`](docs/badge-doc.md); the operation log methods (`docs/op_action_design.md`, e.g. `create_file`) are not implemented.
 
 The full level progression: `DEBUG`(10) → `ENTER`(15) → `SKIP`(16) → `SUCC`(17) → `INFO`(20) → `PASS`(21) → `NOTE`(23) → `TIP`(24) → `DONE`(25) → `HINT`(26) → `IMPORTANT`(27) → `WARNING`(30) → `CAUTION`(31) → `ERROR`(40) → `FAIL`(45) → `CRITICAL`(50).
 
