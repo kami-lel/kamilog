@@ -18,7 +18,7 @@ from kamilog.kamilog import (
     WARNING,
 )
 
-DOC_PATH = Path(__file__).parents[2] / "docs" / "op_action_design.md"
+DOC_PATH = Path(__file__).parents[2] / "docs" / "deed-doc.md"
 
 EXPECTED_ORDER = (
     "create_file",
@@ -39,18 +39,19 @@ EXPECTED_ORDER = (
 )
 
 
-def _read_doc_rows(heading):
-    """rows of the first markdown table after `heading`, as cell lists"""
+def _read_doc_tables(heading):
+    """tables after `heading`, each as rows of cells without header & rule"""
     text = DOC_PATH.read_text(encoding="utf-8")
-    section = text.split(heading, 1)[1]
-    rows = []
-    for line in section.splitlines():
+    section = text.split(heading, 1)[1].split("\n## ", 1)[0]
+    tables, rows = [], []
+    for line in section.splitlines() + [""]:
         if line.startswith("|"):
             cells = line.strip("|").split("|")
             rows.append([c.strip().strip("`") for c in cells])
         elif rows:
-            break
-    return rows[2:]  # header & rule
+            tables.append(rows[2:])  # header & rule
+            rows = []
+    return tables
 
 
 class TestDeedTable:
@@ -66,11 +67,12 @@ class TestDeedTable:
             fields = tuple(re.findall(r"\{(\w+)\}", deed.template))
             assert fields == deed.arg_names
 
-    def test_templates_match_doc_wording_table(_):
-        rows = _read_doc_rows("### Wording")
+    def test_args_and_templates_match_doc_deeds_table(_):
+        rows = _read_doc_tables("\n## Deeds")[0]
         assert [r[0] for r in rows] == list(EXPECTED_ORDER)
-        for name, _reads, message in rows:
-            assert _DEEDS[name].template == message
+        for name, arg_names, remark in rows:
+            assert _DEEDS[name].arg_names == tuple(arg_names.split(", "))
+            assert _DEEDS[name].template == remark
 
     def test_levels_match_doc_levels_table(_):
         by_label = {
@@ -79,7 +81,7 @@ class TestDeedTable:
             "ERROR": ERROR,
             "SKIP": SKIP,
         }
-        rows = _read_doc_rows("### Levels")
+        rows = _read_doc_tables("\n## Deeds")[1]
         assert [r[0] for r in rows] == list(EXPECTED_ORDER)
         for name, level, err_level in rows:
             assert _DEEDS[name].level == by_label[level]

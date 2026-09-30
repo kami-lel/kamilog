@@ -14,7 +14,7 @@ Repository: <https://github.com/kami-lel/kamilog>
 kamilog/
 ├── kamilog/
 │   ├── __init__.py          # re-exports all public symbols from kamilog.py
-│   └── kamilog.py           # entire implementation (~2265 lines)
+│   └── kamilog.py           # entire implementation (~2740 lines)
 ├── tests/
 │   ├── cb/                          # comment-banner test suite
 │   │   ├── cb-centered_test.py
@@ -32,6 +32,7 @@ kamilog/
 │   ├── ansi/                        # AnsiRenderer / TTY detection test suite
 │   │   └── demo/                    # golden-output tests for examples/ansi/*
 │   ├── badge/                       # badge table / normalizer / KamiLogger badge API
+│   ├── deed/                        # deed table / message rendering / plain & track forms
 │   ├── lf/                          # _LogFormatter / _LogFormatEngine test suite (incl. badge display, color, prefix width)
 │   ├── logger/                      # KamiLogger behavior test suite
 │   │   └── demo/                    # golden-output tests for examples/logger/*
@@ -53,12 +54,14 @@ kamilog/
 │       ├── logger-all_levels_demo.py        # all sixteen log levels with descriptions
 │       ├── logger-timestamps_demo.py        # all four DATEFMT_* formats and relative_to
 │       ├── logger-badge_demo.py             # badges, multi-line & long-line dittos
+│       ├── logger-deed_demo.py              # deed methods: plain, track, handle, suppress
 │       ├── logger-diff_only_demo.py         # _DiffOnlyMsgFilter compression walkthrough
 │       └── logger-diff_only_stress_demo.py  # word-boundary, leader, and embedded-tab
 │                                             # compression scenarios
 ├── docs/
 │   ├── usage_doc.md         # public API reference with examples
 │   ├── badge-doc.md         # user guide to badges and the native badge table
+│   ├── deed-doc.md          # user guide to deed log methods
 │   └── install_guide.md     # installation methods
 ├── scripts/
 │   └── kamilog_shim.sh       # bash `kamilog()` fallback wrapper, meant to be copy-pasted
@@ -163,7 +166,18 @@ Subclasses `logging.Logger`. Adds eleven convenience methods mapping to the cust
 - `set_badges(badges=None)` / `clear_badges()` — replace or unset the run-wide set, stored per logger in `_run_badges` (class default `()`). `set_badges()`, `None` and `[]` all unset it; there is no add or remove of one label.
 - `_log(..., badges=None, is_inheriting_badges=True)` — override that merges per-call badges with the run-wide set (`is_inheriting_badges=False` hides the run-wide set for one record) and stamps the result on the record as `record.badges` through `extra`. It forwards to `super()._log` with `stacklevel + 1`, so `funcName` and `lineno` still point at the caller. Every level method and `log()` accept the kwargs through `**kwargs`.
 
-The user-facing guide is [`docs/badge-doc.md`](docs/badge-doc.md); the operation log methods (`docs/op_action_design.md`, e.g. `create_file`) are not implemented.
+The user-facing guide is [`docs/badge-doc.md`](docs/badge-doc.md); deed log methods are below.
+
+#### Deeds
+
+`KamiLogger` also carries 15 deed methods (`create_file`, `cp_file`, `rm_file`, `download`, `run_command` and the rest): each logs one common deed in a fixed wording. kamilog only records; the caller performs the deed. The user-facing guide is [`docs/deed-doc.md`](docs/deed-doc.md).
+
+- `_Deed` / `_DEEDS` — module-level `namedtuple` and ordered table of the 15 deeds: `name`, `arg_names`, `template` (e.g. `copy {source} -> {destination}`), default `level` and `err_level`. The single source of truth; `tests/deed/deed-table_test.py` pins it against the tables in `docs/deed-doc.md`.
+- `_render_deed_message(deed, *args, **kwargs)` — fills the template; an omitted or `None` argument drops its segment (` -> {destination}`), and an omitted leading argument leaves the verb. Too many, unknown or duplicate arguments raise `TypeError`.
+- plain form — `_make_deed_method(deed)` builds one method per deed, attached to `KamiLogger` with `setattr` at import. It accepts `level`, `badges`, `is_inheriting_badges` and rejects `err_level` and `suppress`; it logs through `_log(..., stacklevel=2)`, so records point at the caller.
+- track form — `KamiLogger.track` is a property returning a `_DeedTrack`, whose per-deed methods (built by `_make_track_method`) return a `_DeedScope` context manager. It logs once at block exit: success at `level`, or `fail to <message>: <ExcType>: <detail>` at `err_level` with the traceback if the block raised an `Exception`. `KeyboardInterrupt` and `SystemExit` log nothing. The exception propagates unless `suppress=True`. `_emit` uses `stacklevel=4` so the record points at the `with` line.
+- `_DeedHandle` — what `with ... as act` yields; exposes `set(**late_args)` and `fail(detail)` only. A late argument still missing at exit drops its segment; `fail` logs `fail to <message>: <detail>` without a traceback, and a raised exception wins over it.
+- CLI — `_register_deed_parser` adds `deed` with one sub-subcommand per deed (kebab-case name, positional arguments, `--level`, `--err-level`, `-C`/`--no-color` via `_no_color_parser`). `_CliArgumentParser` (the type of `_cli_parser`) splits `deed ... -- COMMAND` at the first `--` into `args.tail_command`; argparse alone cannot, because the trailing positionals are optional. Without `--` the plain form runs; with it `_run_deed_command` runs the command inside the track form and `_deed_parser_main` returns its status (127 program missing, 126 not runnable, `128 + N` for signal `N`). `kamilog_cli_main` exits with a non-zero returned status.
 
 The full level progression: `DEBUG`(10) → `ENTER`(15) → `SKIP`(16) → `SUCC`(17) → `INFO`(20) → `PASS`(21) → `NOTE`(23) → `TIP`(24) → `DONE`(25) → `HINT`(26) → `IMPORTANT`(27) → `WARNING`(30) → `CAUTION`(31) → `ERROR`(40) → `FAIL`(45) → `CRITICAL`(50).
 
@@ -289,6 +303,7 @@ Both `cb` and `cb0` follow the Unix pipe pattern: text content is read from stdi
 - `_register_color_grey_parser(cli_subparser)` — builds and attaches the `color-grey` subcommand, inheriting `_common_parser`; fixed to `AnsiStyle.GREY`, equivalent to `color GREY`
 - `_COLOR_GREY_HELP` / `_COLOR_GREY_DESCRIPTION` — shared help and description strings for the subcommand
 - `_register_logger_parser(cli_subparser)` — builds and attaches the `logger` / `l` subcommand, inheriting `_no_color_parser`
+- `_register_deed_parser(cli_subparser)` — builds and attaches the `deed` subcommand and its 15 sub-subcommands, see [Deeds](#deeds)
 - `_logger_parser_main(args)` — handler that resolves `LEVEL` and `--time-format` through `_LOGGER_LEVEL_MAP` / `_LOGGER_TIME_FORMAT_MAP`, calls `getLogger(args.name, datefmt=…)`, applies the verbosity threshold, then logs each stdin line at the resolved level. Each record is emitted with the handler's `"\n"` terminator, so the final record's terminator *is* the output's trailing newline: `_calc_line_end(args, raw)` is assigned to every handler's `terminator` immediately before the last line is logged, making `-n` end the output in `"\n\n"`, `-N` keep or omit the break as raw stdin did, and auto end in exactly one. Earlier records are never touched, so internal breaks always survive
 - `_LOGGER_HELP` / `_LOGGER_DESCRIPTION` — shared help and description strings for the subcommand
 
@@ -407,4 +422,4 @@ Verbosity mapping (default level is `DONE` = 25):
 
 ## Known Limitations and Future Work
 
-- Test coverage now spans verbosity helpers, comment-banner functions, `AnsiRenderer`/TTY detection (`tests/ansi/`), `_LogFormatter`/`_LogFormatEngine` (`tests/lf/`), badges (`tests/badge/`), `KamiLogger` (`tests/logger/`), `_DiffOnlyEngine`/`_DiffOnlyMsgFilter` (`tests/dof/`), `_TabAlignedLine` (`tests/tal/`), and the shared `-n`/`-N`/`-C` CLI flags (`tests/cli/`), plus golden-output tests for every `examples/` demo script; the CLI subcommands' pre-existing arguments (mode, padding, width, stderr routing, level resolution, verbosity) still have no dedicated tests.
+- Test coverage now spans verbosity helpers, comment-banner functions, `AnsiRenderer`/TTY detection (`tests/ansi/`), `_LogFormatter`/`_LogFormatEngine` (`tests/lf/`), badges (`tests/badge/`), deed methods (`tests/deed/`), `KamiLogger` (`tests/logger/`), `_DiffOnlyEngine`/`_DiffOnlyMsgFilter` (`tests/dof/`), `_TabAlignedLine` (`tests/tal/`), and the shared `-n`/`-N`/`-C` CLI flags plus the `deed` subcommand (`tests/cli/`), plus golden-output tests for every `examples/` demo script; the CLI subcommands' pre-existing arguments (mode, padding, width, stderr routing, level resolution, verbosity) still have no dedicated tests.

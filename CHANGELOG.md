@@ -41,6 +41,11 @@ bug using different logger to print & diff only can produce confusing result
 - `AnsiRenderer.color_badge()` and `record.badges` for custom formatters
 - `docs/badge-doc.md`: user guide to badges, with every native badge
 - `logger-badge_demo.py` example with a golden-output test
+- deed log methods: 15 fixed-wording methods on `KamiLogger` (`create_file`, `owr_file`, `cp_file`, `mv_file`, `rm_file`, `create_dir`, `rm_dir`, `pack_files`, `unpack_archive`, `download`, `upload`, `run_command`, `load_config`, `save_config`, `skip_file`), each logging one deed such as `copy a -> b` at its own level; they take `level=`, `badges=` and `is_inheriting_badges=`
+- track form `with logger.track.<method>(...)`: logs at block exit, the success line, or `fail to <deed>: <ExcType>: <detail>` with traceback if the block raised; `err_level=` sets the failure level, `suppress=True` swallows the exception, and the `as act` handle offers `act.set(name=value)` for late arguments and `act.fail(detail)` for failure without an exception
+- `kamilog deed <method>` CLI subcommand for the 15 deeds, with `--level`; `-- COMMAND` runs the command, logs its outcome (`--err-level` sets the failure level) and returns its exit status to the shell
+- `docs/deed-doc.md`: user guide to deed log methods
+- `logger-deed_demo.py` example with a golden-output test
 
 ### Changed
 

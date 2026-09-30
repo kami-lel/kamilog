@@ -131,12 +131,12 @@ def back_up(src, dst):
 Keep the block around the single deed, not a whole script.
 
 - Recover: `suppress=True` logs the failure and lets the program carry on.
-- Late Value: `act.set(dst=name)` supplies an argument known only after the deed starts.
+- Late Value: `act.set(destination=name)` supplies an argument known only after the deed starts.
 - Failure without an Exception: `act.fail("reason")` marks the deed failed, for a command exit status or a bad HTTP status.
 
 ```python
 with logger.track.download(url) as act:
-    act.set(dst=fetch_to_named_file(url))
+    act.set(destination=fetch_to_named_file(url))
 
 with logger.track.run_command("make") as act:
     proc = subprocess.run(["make"])
