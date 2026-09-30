@@ -17,9 +17,10 @@ import logging
 import os
 import sys
 import time
-from collections import deque
+from collections import deque, namedtuple
 from enum import Flag, IntEnum, auto
 from logging import FileHandler, Formatter, StreamHandler
+from string import Formatter as _TemplateParser
 
 __all__ = (
     "kamilog_cli_main",
@@ -429,6 +430,104 @@ def _normalize_badges(badges):
     return tuple(
         sorted(unique, key=lambda b: -_NATIVE_BADGES.get(b, (None, 0))[1])
     )
+
+
+# Deeds  =======================================================================
+_Deed = namedtuple(
+    "_Deed", ("name", "arg_names", "template", "level", "err_level")
+)
+
+
+# deed → fixed wording & severities; see docs/deed-doc.md
+_DEEDS = {
+    d.name: d
+    for d in (
+        _Deed("create_file", ("path",), "create {path}", INFO, ERROR),
+        _Deed("owr_file", ("path",), "overwrite {path}", WARNING, ERROR),
+        _Deed(
+            "cp_file",
+            ("source", "destination"),
+            "copy {source} -> {destination}",
+            INFO,
+            ERROR,
+        ),
+        _Deed(
+            "mv_file",
+            ("source", "destination"),
+            "move {source} -> {destination}",
+            INFO,
+            ERROR,
+        ),
+        _Deed("rm_file", ("path",), "delete {path}", WARNING, WARNING),
+        _Deed("create_dir", ("path",), "create dir {path}", INFO, ERROR),
+        _Deed("rm_dir", ("path",), "delete dir {path}", WARNING, WARNING),
+        _Deed(
+            "pack_files",
+            ("source", "archive"),
+            "pack {source} -> {archive}",
+            INFO,
+            ERROR,
+        ),
+        _Deed(
+            "unpack_archive",
+            ("archive", "destination"),
+            "unpack {archive} -> {destination}",
+            INFO,
+            ERROR,
+        ),
+        _Deed(
+            "download",
+            ("url", "destination"),
+            "download {url} -> {destination}",
+            INFO,
+            ERROR,
+        ),
+        _Deed(
+            "upload",
+            ("source", "url"),
+            "upload {source} -> {url}",
+            INFO,
+            ERROR,
+        ),
+        _Deed("run_command", ("command",), "run {command}", INFO, ERROR),
+        _Deed("load_config", ("path",), "load {path}", INFO, ERROR),
+        _Deed("save_config", ("path",), "save {path}", INFO, ERROR),
+        _Deed("skip_file", ("path",), "skip {path}", SKIP, WARNING),
+    )
+}
+
+
+def _render_deed_message(deed, *args, **kwargs):
+    """
+    render `deed` wording from positional `args` and named `kwargs`;
+            an omitted argument drops its segment, e.g. ` -> {destination}`
+    """
+    if len(args) > len(deed.arg_names):
+        raise TypeError(
+            "{}() takes at most {} arguments ({} given)".format(
+                deed.name, len(deed.arg_names), len(args)
+            )
+        )
+    values = dict(zip(deed.arg_names, args))
+    for key, val in kwargs.items():
+        if key not in deed.arg_names or key in values:
+            raise TypeError(
+                "{}() got an unexpected argument '{}'".format(deed.name, key)
+            )
+        values[key] = val
+
+    # each field carries the literal before it; the 1st literal is the verb
+    parts = []
+    fields = _TemplateParser().parse(deed.template)
+    for i, (literal, field, _, _) in enumerate(fields):
+        is_given = values.get(field) is not None
+        if i == 0:
+            parts.append(literal if is_given else literal.rstrip())
+        if is_given:
+            if i > 0:
+                parts.append(literal)
+            parts.append(str(values[field]))
+    return "".join(parts).rstrip()
 
 
 class KamiLogger(logging.Logger):  # ===========================================
