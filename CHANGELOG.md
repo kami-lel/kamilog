@@ -3,6 +3,7 @@
 <!--
 TODO implement dry run / flag support
 TODO add common operation log
+FIXME main script optimization
 
 Todo long line compression w/ ditto
 Fixme different behavior for time re cli or log file
