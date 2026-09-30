@@ -961,23 +961,14 @@ logging.root.__class__ = KamiLogger
 # log formatting  # ============================================================
 
 
+# stdlib levels padded to 5 chars; custom levels carry their own display
 _PADDED_LEVELNAME_MAP = {
     logging.DEBUG: "DEBUG",
-    _CustomLogLevel.ENTER: _CustomLogLevel.ENTER.display,
-    _CustomLogLevel.SKIP: _CustomLogLevel.SKIP.display,
-    _CustomLogLevel.SUCC: _CustomLogLevel.SUCC.display,
     logging.INFO: "INFO ",
-    _CustomLogLevel.PASS: _CustomLogLevel.PASS.display,
-    _CustomLogLevel.NOTE: _CustomLogLevel.NOTE.display,
-    _CustomLogLevel.TIP: _CustomLogLevel.TIP.display,
-    _CustomLogLevel.DONE: _CustomLogLevel.DONE.display,
-    _CustomLogLevel.HINT: _CustomLogLevel.HINT.display,
-    _CustomLogLevel.IMPORTANT: _CustomLogLevel.IMPORTANT.display,
     logging.WARNING: "WARN.",
-    _CustomLogLevel.CAUTION: _CustomLogLevel.CAUTION.display,
     logging.ERROR: "ERROR",
-    _CustomLogLevel.FAIL: _CustomLogLevel.FAIL.display,
     logging.CRITICAL: "CRIT.",
+    **{lvl: lvl.display for lvl in _CustomLogLevel},
 }
 
 
@@ -1755,25 +1746,22 @@ example:
   echo 'disk full' | kamilog logger error
   echo 'disk full' | kamilog logger error my_module"""
 
-# level Name to numeric level, keyed lowercase
+# lowercase level name → numeric level, ascending by severity
 _LOGGER_LEVEL_MAP = {
-    "debug": DEBUG,
-    "enter": ENTER,
-    "skip": SKIP,
-    "succ": SUCC,
-    "info": INFO,
-    "pass": PASS,
-    "note": NOTE,
-    "tip": TIP,
-    "done": DONE,
-    "hint": HINT,
-    "important": IMPORTANT,
-    "warning": WARNING,
-    "caution": CAUTION,
-    "error": ERROR,
-    "fail": FAIL,
-    "critical": CRITICAL,
+    logging.getLevelName(lvl).lower(): lvl
+    for lvl in sorted(
+        (DEBUG, INFO, WARNING, ERROR, CRITICAL, *_CustomLogLevel)
+    )
 }
+
+
+def _resolve_level_name(name):
+    """
+    :return: numeric level of the case-insensitive level ``name``;
+            ``None`` passes through
+    :rtype: int or None
+    """
+    return None if name is None else _LOGGER_LEVEL_MAP[name.lower()]
 
 
 # time format Name to strftime string, None disables timestamps
@@ -1787,7 +1775,7 @@ _LOGGER_TIME_FORMAT_MAP = {
 
 
 def _logger_parser_main(args):
-    level = _LOGGER_LEVEL_MAP[args.level.lower()]  # resolve Level name
+    level = _resolve_level_name(args.level)
     datefmt = _LOGGER_TIME_FORMAT_MAP[args.time_format]  # resolve Time fmt
     logger = getLogger(
         args.name,
@@ -2034,6 +2022,18 @@ def calc_verbosity(namespace, *, verbosity=0):
     return verbosity
 
 
+# verbosity → level; values beyond ±3 clamp to the ends
+_VERBOSITY2LEVEL = {
+    3: DEBUG,
+    2: ENTER,
+    1: INFO,
+    0: DONE,
+    -1: WARNING,
+    -2: ERROR,
+    -3: CRITICAL,
+}
+
+
 def calc_logging_level(verbosity, *, namespace=None):
     """
     map a verbosity integer to a logging level, optionally offset by
@@ -2052,20 +2052,7 @@ def calc_logging_level(verbosity, *, namespace=None):
     if namespace is not None:
         verbosity = calc_verbosity(namespace, verbosity=verbosity)
 
-    if verbosity >= 3:
-        return logging.DEBUG
-    elif verbosity == 2:
-        return ENTER
-    elif verbosity == 1:
-        return logging.INFO
-    elif verbosity == 0:
-        return DONE
-    elif verbosity == -1:
-        return logging.WARNING
-    elif verbosity == -2:
-        return logging.ERROR
-    else:  # verbosity <= -3
-        return logging.CRITICAL
+    return _VERBOSITY2LEVEL[max(-3, min(3, verbosity))]
 
 
 # set logger level  ------------------------------------------------------------
@@ -2639,11 +2626,8 @@ def _deed_parser_main(args):
 
     logger = getLogger(disable_color=args.no_color)
     logger.setLevel(logging.DEBUG)  # --level alone decides what shows
-    level = err_level = None
-    if args.level is not None:
-        level = _LOGGER_LEVEL_MAP[args.level.lower()]
-    if args.err_level is not None:
-        err_level = _LOGGER_LEVEL_MAP[args.err_level.lower()]
+    level = _resolve_level_name(args.level)
+    err_level = _resolve_level_name(args.err_level)
 
     if tail is None:
         getattr(logger, deed.name)(*deed_args, level=level)
