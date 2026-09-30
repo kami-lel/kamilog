@@ -1844,8 +1844,8 @@ def _register_logger_parser(cli_subparser):
         "-t",
         "--time-format",
         choices=list(_LOGGER_TIME_FORMAT_MAP),
-        default="time",
-        help="timestamp format; default=time",
+        default="no-time",
+        help="timestamp format; default=no-time",
     )
 
     logger_parser.add_argument(
