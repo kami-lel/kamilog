@@ -1,11 +1,13 @@
 """
 logger-timestamps_demo.py
 
-demonstrate all four ``DATEFMT_*`` timestamp formats and ``relative_to``
-elapsed-time display
+demonstrate the default timestamp behavior per destination, all four
+``DATEFMT_*`` timestamp formats and ``relative_to`` elapsed-time display
 """
 
+import os
 import sys
+import tempfile
 import time
 
 import kamilog
@@ -14,6 +16,33 @@ from kamilog.kamilog import AnsiRenderer, gen_comment_banner_centered
 # repeated calls share one renderer instead of re-detecting TTY state
 renderer = AnsiRenderer(sys.stdout)
 
+
+# default  ---------------------------------------------------------------------
+
+print(gen_comment_banner_centered(
+    "default: console vs file", "#", renderer=renderer
+))
+
+with tempfile.TemporaryDirectory() as tmp_dir:
+    log_path = os.path.join(tmp_dir, "app.log")
+
+    # datefmt unset: console prints no timestamp, file uses DATEFMT_DATETIME_MS
+    log_dft = kamilog.getLogger("app.default", filename=log_path)
+    log_dft.setLevel(kamilog.DEBUG)
+    log_dft.propagate = False
+    log_dft.info("console: no timestamp")
+    for handler in log_dft.handlers:
+        handler.flush()
+
+    print("file contents:")
+    with open(log_path, encoding="utf-8") as log_file:
+        print(log_file.read(), end="")
+    log_dft.handlers.clear()  # release the file before the directory goes
+
+
+# datefmt  ---------------------------------------------------------------------
+
+print()
 print(gen_comment_banner_centered("datefmt formats", "#", renderer=renderer))
 
 log_t = kamilog.getLogger("app.time", datefmt=kamilog.DATEFMT_TIME)

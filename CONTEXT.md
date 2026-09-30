@@ -52,7 +52,7 @@ kamilog/
 │   ├── verbosity_demo.py                    # CLI -v/-q flags with custom levels
 │   └── logger/
 │       ├── logger-all_levels_demo.py        # all sixteen log levels with descriptions
-│       ├── logger-timestamps_demo.py        # all four DATEFMT_* formats and relative_to
+│       ├── logger-timestamps_demo.py        # default per destination, all four DATEFMT_* formats, relative_to
 │       ├── logger-badge_demo.py             # badges, multi-line & long-line dittos
 │       ├── logger-deed_demo.py              # deed methods: plain, track, handle, suppress
 │       ├── logger-diff_only_demo.py         # _DiffOnlyMsgFilter compression walkthrough
