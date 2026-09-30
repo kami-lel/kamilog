@@ -202,3 +202,29 @@ def _find_line(marker):
     with open(__file__, encoding="utf-8") as f:
         hits = [i for i, ln in enumerate(f, 1) if ln.rstrip().endswith(marker)]
     return hits[0]
+
+
+class TestArgumentsStringifiedUpFront:
+    def test_late_arg_mutated_later_keeps_text_at_set(_):
+        logger, cap = _make_logger()
+        parts = ["a"]
+        with logger.track.download("http://x") as act:
+            act.set(destination=parts)
+            parts.append("b")
+        assert cap.records[0].getMessage() == "download http://x -> ['a']"
+
+    def test_late_arg_none_still_drops_segment(_):
+        logger, cap = _make_logger()
+        with logger.track.download("http://x") as act:
+            act.set(destination=None)
+        assert cap.records[0].getMessage() == "download http://x"
+
+    def test_late_arg_with_failing_str_raises_at_set(_):
+        class Bad:
+            def __str__(self):
+                raise ValueError("no text")
+
+        logger, _ = _make_logger()
+        with pytest.raises(ValueError):
+            with logger.track.download("http://x") as act:
+                act.set(destination=Bad())

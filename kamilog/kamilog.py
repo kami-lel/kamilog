@@ -507,6 +507,14 @@ _DEEDS = {
 }
 
 
+def _stringify_deed_args(args):
+    """
+    str() each arg once when given, so a later change to the object can not
+            alter the line; None stays None and still drops its segment
+    """
+    return tuple(None if arg is None else str(arg) for arg in args)
+
+
 def _render_deed_message(deed, *args, **kwargs):
     """
     render `deed` wording from positional `args` and named `kwargs`;
@@ -624,7 +632,8 @@ class _DeedScope:  # ***********************************************************
                         self._deed.name, key
                     )
                 )
-        self._late_args.update(kwargs)
+        values = _stringify_deed_args(kwargs.values())
+        self._late_args.update(zip(kwargs, values))
 
     def mark_failed(self, detail):
         """mark the deed failed as a value; no exception involved"""
@@ -686,6 +695,7 @@ def _make_track_method(deed):
         badges=None,
         is_inheriting_badges=True
     ):
+        args = _stringify_deed_args(args)
         # render once so a bad arg raises at the call, not at block exit
         _render_deed_message(deed, *args)
         options = {

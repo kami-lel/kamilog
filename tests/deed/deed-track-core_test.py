@@ -212,3 +212,29 @@ def _find_line(marker):
     with open(__file__, encoding="utf-8") as f:
         hits = [i for i, ln in enumerate(f, 1) if ln.rstrip().endswith(marker)]
     return hits[0]
+
+
+class TestEntryArgumentsStringifiedUpFront:
+    def test_entry_arg_mutated_in_block_keeps_entry_text(_):
+        logger, cap = _make_logger()
+        parts = ["a"]
+        with logger.track.rm_file(parts):
+            parts.append("b")
+        assert cap.records[0].getMessage() == "delete ['a']"
+
+    def test_path_and_int_args_stringify(_):
+        from pathlib import Path
+
+        logger, cap = _make_logger()
+        with logger.track.chmod_file(Path("a.sh"), 755):
+            pass
+        assert cap.records[0].getMessage() == "chmod a.sh 755"
+
+    def test_entry_arg_with_failing_str_raises_at_call(_):
+        class Bad:
+            def __str__(self):
+                raise ValueError("no text")
+
+        logger, _ = _make_logger()
+        with pytest.raises(ValueError):
+            logger.track.rm_file(Bad())
