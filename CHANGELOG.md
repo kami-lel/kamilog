@@ -21,9 +21,6 @@ bug using different logger to print & diff only can produce confusing result
 
 
 
-
-
-
 ## [Unreleased]
 
 ### Added
@@ -38,8 +35,58 @@ bug using different logger to print & diff only can produce confusing result
 
 ### Security
 
-[unreleased]: https://github.com/kami-lel/kamilog/compare/v2.9.3...dev
-[2.9.3]: https://github.com/kami-lel/kamilog/compare/v2.9.2...v2.9.3
+[unreleased]: https://github.com/kami-lel/kamilog/compare/v2.10.0...dev
+
+
+
+
+
+
+
+
+
+
+
+
+
+## [2.10.0] - 2026-09-30
+
+### Added
+
+- badges: run-mode labels (`dry`, `force`, `auto`, or any custom string) set per run with `KamiLogger.set_badges()` / `clear_badges()` or per record with `badges=` and `is_inheriting_badges=`
+- badges print between timestamp and level, sorted by priority and colored per label; lines without badges are unchanged
+- `AnsiRenderer.color_badge()` and `record.badges` for custom formatters
+- 17 deed log methods on `KamiLogger` (`create_file`, `cp_file`, `download`, `run_command`, ~~), each logging one deed in fixed wording; they take `level=`, `badges=`, and `is_inheriting_badges=`
+- track form `with logger.track.<method>(...)` logs the outcome at block exit, including failure with traceback; `err_level=`, `suppress=True`, and the `act.set()` / `act.fail()` handle
+- `kamilog deed <method>` CLI subcommand; `-- COMMAND` runs the command, logs its outcome, and returns its exit status
+- topic guides under `docs/`: `log-doc.md`, `ansi-doc.md`, `banner-doc.md`, `verbosity-doc.md`, `shim-doc.md`, `badge-doc.md`, `deed-doc.md`
+- `logger-badge_demo.py` and `logger-deed_demo.py` examples with golden-output tests
+
+### Changed
+
+- `getLogger()` without `datefmt` prints no console timestamp; a log file (`filename=`) uses `DATEFMT_DATETIME_MS`
+- `kamilog logger` and `kamilog deed` print no timestamp by default; `-t time` restores `HH:MM:SS`
+- diff-only compression handles multi-line messages line by line
+- diff-only compression uses space-separated dittos on lines wider than 100 columns
+- diff-only dittos stay tab-aligned under badges and the shorter console prefix
+- `docs/usage_doc.md` split into the topic guides; `README.md` Usage links all of them
+- installation instructions moved from `docs/install_guide.md` into the `README.md` Install section
+
+> [!WARNING]
+> Console output of `getLogger()` without `datefmt`, and of the `kamilog logger`
+> and `kamilog deed` commands, no longer starts with `HH:MM:SS`; pass
+> `datefmt=kamilog.DATEFMT_TIME` (or `-t time`) to keep it.
+
+[2.10.0]: https://github.com/kami-lel/kamilog/compare/v2.9.3...v2.10.0
+
+
+
+
+
+
+
+
+
 
 
 
@@ -54,7 +101,7 @@ bug using different logger to print & diff only can produce confusing result
 
 - tightened verbosity CLI help text — clearer step flag descriptions, and dropped dynamic option-name interpolation from the max verbose/quiet flags
 
-[2.9.2]: https://github.com/kami-lel/kamilog/compare/v2.9.1...v2.9.2
+[2.9.3]: https://github.com/kami-lel/kamilog/compare/v2.9.2...v2.9.3
 
 
 
@@ -74,8 +121,7 @@ bug using different logger to print & diff only can produce confusing result
 
 - `enable_propagate` option on `getLogger()` — records no longer double-print through an ancestor logger's handlers by default; pass `enable_propagate=True` to restore the stdlib default
 
-[2.9.1]: https://github.com/kami-lel/kamilog/compare/v2.9.0...v2.9.1
-
+[2.9.2]: https://github.com/kami-lel/kamilog/compare/v2.9.1...v2.9.2
 
 
 
@@ -93,6 +139,8 @@ bug using different logger to print & diff only can produce confusing result
 ### Fixed
 
 - `kamilog_shim.sh` no longer appends a trailing newline to `cb`/`cb0` and `logger` output
+
+[2.9.1]: https://github.com/kami-lel/kamilog/compare/v2.9.0...v2.9.1
 
 
 
