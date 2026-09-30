@@ -375,6 +375,31 @@ DATEFMT_DATETIME = "%Y-%m-%d %H:%M:%S"
 DATEFMT_DATETIME_MS = "%Y-%m-%d %H:%M:%S.{ms}"
 
 
+# Operation Badges  ============================================================
+# native badge label → (hue, priority); higher priority prints earlier
+_NATIVE_BADGES = {
+    "dry": (AnsiStyle.BRIGHT_YELLOW, 45),
+    "chk": (AnsiStyle.YELLOW, 44),
+    "mock": (AnsiStyle.YELLOW, 43),
+    "sbx": (AnsiStyle.GREEN, 33),
+    "force": (AnsiStyle.RED, 52),
+    "undo": (AnsiStyle.RED, 51),
+    "unsafe": (AnsiStyle.BRIGHT_RED, 53),
+    "yes": (AnsiStyle.YELLOW, 42),
+    "auto": (AnsiStyle.BLUE, 13),
+    "strict": (AnsiStyle.GREEN, 32),
+    "keep": (AnsiStyle.YELLOW, 41),
+    "fast": (AnsiStyle.GREEN, 31),
+    "retries": (AnsiStyle.CYAN, 25),
+    "resm": (AnsiStyle.CYAN, 24),
+    "new": (AnsiStyle.CYAN, 23),
+    "offl": (AnsiStyle.CYAN, 22),
+    "incr": (AnsiStyle.CYAN, 21),
+    "watch": (AnsiStyle.BLUE, 12),
+    "bg": (AnsiStyle.BLUE, 11),
+}
+
+
 class KamiLogger(logging.Logger):  # ===========================================
     """
     logger subclass extending :class:`logging.Logger` with custom levels.
