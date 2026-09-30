@@ -423,6 +423,9 @@ class KamiLogger(logging.Logger):  # ===========================================
     obtain instances via :func:`getlogger`
     """
 
+    # run-wide badges; instances shadow this on first set_badges call
+    _run_badges = ()
+
     def enter(self, message, *args, **kwargs):
         """
         log at ``ENTER`` level (15): entering a hook or test case.
@@ -525,6 +528,26 @@ class KamiLogger(logging.Logger):  # ===========================================
             self._log(
                 _CustomLogLevel.FAIL, message, args, stacklevel=2, **kwargs
             )
+
+    def set_badges(self, badges=None):
+        """
+        replace the run-wide operation badges
+
+        an omitted, ``None`` or empty ``badges`` unsets every run-wide
+        badge; there is no add or remove of a single badge
+
+
+        :param badges: badge labels for every later record;
+                default=None
+        :type badges: str or Iterable(str), optional
+        """
+        self._run_badges = _normalize_badges(badges)
+
+    def clear_badges(self):
+        """
+        unset every run-wide operation badge
+        """
+        self._run_badges = ()
 
 
 logging.setLoggerClass(KamiLogger)
