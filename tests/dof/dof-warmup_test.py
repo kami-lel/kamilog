@@ -47,7 +47,7 @@ class TestWarmupPassthrough:
         engine = _DiffOnlyEngine(_StubFormatter(), threshold=3)
         engine.process(_StubRecord("first"))
         engine.process(_StubRecord("second"))
-        assert list(engine._history) == ["first", "second"]
+        assert list(engine._history) == [["first"], ["second"]]
 
 
 class TestActivationAfterThreshold:

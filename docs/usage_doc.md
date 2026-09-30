@@ -227,6 +227,20 @@ INFO  sensor: te〃    ture=21.9 humidity=55% status=OK
 
 The filter is invisible during a warmup period (first 3 messages) and resets automatically when the message pattern changes.
 
+#### Multi-line Messages
+
+A message containing `\n` is compared line by line: line *k* is compared with line *k* of the earlier messages, never with a different line. Only the first line follows the record prefix; every later line starts at column 0, so its tab stops are counted from the left edge. A line missing from an earlier message is never compressed.
+
+#### Long Lines
+
+Tab alignment matters less than width once a line is long. When the rendered, uncompressed width of a physical line exceeds 100 columns (prefix, badges and tab stops included, embedded tabs expanded), its dittos are separated by a space instead of a tab:
+
+```
+INFO  sensor: 〃 〃 〃 〃 〃 〃 〃 〃 〃 〃 〃 〃 /token=abc
+```
+
+Such a line carries no tabs and no padding runs from the compressor, so it is narrower than its tab-aligned form, though it is not guaranteed to fit in 100 columns. Each physical line of a multi-line message is judged on its own, and lines at or under 100 columns keep the tab form.
+
 Pass `disable_diff_only_compression=True` to turn compression off entirely, so
 every record prints in full:
 
@@ -236,6 +250,25 @@ log = kamilog.getLogger("myapp", disable_diff_only_compression=True)
 
 
 
+
+
+
+
+
+
+
+### Badges
+
+A badge labels the mode the whole run is in, such as a dry run or an unattended run, and prints before the level on every line:
+
+```python
+log = kamilog.getLogger("copy")
+log.set_badges(["dry", "yes"])            # every later line
+log.done("wrote a.txt", badges="deploy")  # this line only, added to the set
+log.clear_badges()
+```
+
+The full guide, with every native badge, is the [Badges documentation](badge-doc.md).
 
 
 

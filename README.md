@@ -35,6 +35,14 @@ file or another process never leaves you with escape-code garbage.
 `-v`/`-q` flags and seven verbosity steps come for free — no more hand-
 rolling the same `argparse` glue in every project.
 
+#### 🏷️ Badges for the Mode of a Run
+
+Tag a whole run as `dry`, `force`, `auto`, or any custom label with
+`set_badges()`, and every line shows it before the level, colored by
+severity. Repeated lines still compress cleanly, multi-line messages
+included. Q.v. the [badges documentation](docs/badge-doc.md) for every
+native badge and how to set them.
+
 #### 📐 Terminal Banners, Done Right
 
 Clean, fixed-width section banners with centered, left-, or right-justified
@@ -81,3 +89,19 @@ Q.v. [docs/usage_doc.md](docs/usage_doc.md) for full usage documentation.
 Run `kamilog -h` for the full CLI reference — each subcommand's `-h`/`--help` text is the de facto documentation.
 
 Q.v. [examples/](examples/) for runnable scripts demonstrating each feature.
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Contributing
+
+Q.v. [AGENTS.md](AGENTS.md) for commands, conventions, and the pre-merge checklist, and [CONTEXT.md](CONTEXT.md) for architecture and how the pieces fit.

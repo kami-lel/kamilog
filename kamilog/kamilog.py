@@ -15,11 +15,14 @@ from argparse import (
 )
 import logging
 import os
+import shlex
+import subprocess
 import sys
 import time
-from collections import deque
+from collections import deque, namedtuple
 from enum import Flag, IntEnum, auto
 from logging import FileHandler, Formatter, StreamHandler
+from string import Formatter as _TemplateParser
 
 __all__ = (
     "kamilog_cli_main",
@@ -65,7 +68,7 @@ __all__ = (
 
 
 # metadata  ####################################################################
-__version__ = "2.9.3"
+__version__ = "2.9.4-alpha"
 __author__ = "kamiLeL"
 
 
@@ -324,6 +327,22 @@ class AnsiRenderer:  # =========================================================
             return text
         return self.color(text, color | AnsiStyle.BOLD)
 
+    def color_badge(self, text, badge):
+        """
+        apply the badge's hue to ``text``; custom badges get grey
+
+
+        :param text: badge label text to colorize
+        :type text: str
+        :param badge: badge whose hue is used, eg ``"dry"``
+        :type badge: str
+        :return: ``text`` with style applied if color is enabled;
+                otherwise ``text`` unchanged
+        :rtype: str
+        """
+        hue = _NATIVE_BADGES.get(badge, (AnsiStyle.GREY, 0))[0]
+        return self.color(text, hue)
+
     def color_triage_tag(self, triage_tag):
         """
         apply tag-specific ANSI color to ``triage_tag``
@@ -375,6 +394,354 @@ DATEFMT_DATETIME = "%Y-%m-%d %H:%M:%S"
 DATEFMT_DATETIME_MS = "%Y-%m-%d %H:%M:%S.{ms}"
 
 
+# Badges  ======================================================================
+# native badge label → (hue, priority); higher priority prints earlier
+_NATIVE_BADGES = {
+    "dry": (AnsiStyle.BRIGHT_YELLOW, 45),
+    "chk": (AnsiStyle.YELLOW, 44),
+    "mock": (AnsiStyle.YELLOW, 43),
+    "sbx": (AnsiStyle.GREEN, 33),
+    "force": (AnsiStyle.RED, 52),
+    "undo": (AnsiStyle.RED, 51),
+    "unsafe": (AnsiStyle.BRIGHT_RED, 53),
+    "yes": (AnsiStyle.YELLOW, 42),
+    "auto": (AnsiStyle.BLUE, 13),
+    "strict": (AnsiStyle.GREEN, 32),
+    "keep": (AnsiStyle.YELLOW, 41),
+    "fast": (AnsiStyle.GREEN, 31),
+    "retries": (AnsiStyle.CYAN, 25),
+    "resm": (AnsiStyle.CYAN, 24),
+    "new": (AnsiStyle.CYAN, 23),
+    "offl": (AnsiStyle.CYAN, 22),
+    "incr": (AnsiStyle.CYAN, 21),
+    "watch": (AnsiStyle.BLUE, 12),
+    "bg": (AnsiStyle.BLUE, 11),
+}
+
+
+def _normalize_badges(badges):
+    """
+    drop duplicate badges, then order by descending priority;
+            customs rank 0 and keep the order given
+    """
+    if badges is None:
+        return ()
+    if isinstance(badges, str):
+        badges = (badges,)
+    unique = tuple(dict.fromkeys(badges))
+    return tuple(
+        sorted(unique, key=lambda b: -_NATIVE_BADGES.get(b, (None, 0))[1])
+    )
+
+
+# Deeds  =======================================================================
+_Deed = namedtuple(
+    "_Deed", ("name", "arg_names", "template", "level", "err_level")
+)
+
+
+# deed → fixed wording & severities; see docs/deed-doc.md
+_DEEDS = {
+    d.name: d
+    for d in (
+        _Deed("create_file", ("path",), "create {path}", INFO, ERROR),
+        _Deed("owr_file", ("path",), "overwrite {path}", WARNING, ERROR),
+        _Deed("append_file", ("path",), "append {path}", INFO, ERROR),
+        _Deed(
+            "cp_file",
+            ("source", "destination"),
+            "copy {source} -> {destination}",
+            INFO,
+            ERROR,
+        ),
+        _Deed(
+            "mv_file",
+            ("source", "destination"),
+            "move {source} -> {destination}",
+            INFO,
+            ERROR,
+        ),
+        _Deed(
+            "chmod_file",
+            ("path", "mode"),
+            "chmod {path} {mode}",
+            INFO,
+            ERROR,
+        ),
+        _Deed("rm_file", ("path",), "delete {path}", WARNING, WARNING),
+        _Deed("create_dir", ("path",), "create dir {path}", INFO, ERROR),
+        _Deed("rm_dir", ("path",), "delete dir {path}", WARNING, WARNING),
+        _Deed(
+            "pack_files",
+            ("source", "archive"),
+            "pack {source} -> {archive}",
+            INFO,
+            ERROR,
+        ),
+        _Deed(
+            "unpack_archive",
+            ("archive", "destination"),
+            "unpack {archive} -> {destination}",
+            INFO,
+            ERROR,
+        ),
+        _Deed(
+            "download",
+            ("url", "destination"),
+            "download {url} -> {destination}",
+            INFO,
+            ERROR,
+        ),
+        _Deed(
+            "upload",
+            ("source", "url"),
+            "upload {source} -> {url}",
+            INFO,
+            ERROR,
+        ),
+        _Deed("run_command", ("command",), "run {command}", INFO, ERROR),
+        _Deed("load_config", ("path",), "load {path}", INFO, ERROR),
+        _Deed("save_config", ("path",), "save {path}", INFO, ERROR),
+        _Deed("skip_file", ("path",), "skip {path}", SKIP, WARNING),
+    )
+}
+
+
+def _stringify_deed_args(args):
+    """
+    str() each arg once when given, so a later change to the object can not
+            alter the line; None stays None and still drops its segment
+    """
+    return tuple(None if arg is None else str(arg) for arg in args)
+
+
+def _render_deed_message(deed, *args, **kwargs):
+    """
+    render `deed` wording from positional `args` and named `kwargs`;
+            an omitted argument drops its segment, e.g. ` -> {destination}`
+    """
+    if len(args) > len(deed.arg_names):
+        raise TypeError(
+            "{}() takes at most {} arguments ({} given)".format(
+                deed.name, len(deed.arg_names), len(args)
+            )
+        )
+    values = dict(zip(deed.arg_names, args))
+    for key, val in kwargs.items():
+        if key not in deed.arg_names or key in values:
+            raise TypeError(
+                "{}() got an unexpected argument '{}'".format(deed.name, key)
+            )
+        values[key] = val
+
+    # each field carries the literal before it; the 1st literal is the verb
+    parts = []
+    fields = _TemplateParser().parse(deed.template)
+    for i, (literal, field, _, _) in enumerate(fields):
+        is_given = values.get(field) is not None
+        if i == 0:
+            parts.append(literal if is_given else literal.rstrip())
+        if is_given:
+            if i > 0:
+                parts.append(literal)
+            parts.append(str(values[field]))
+    return "".join(parts).rstrip()
+
+
+class _DeedHandle:  # **********************************************************
+    """
+    handle yielded by a tracked deed block, ``with ... as act``;
+    exposes :meth:`set` and :meth:`fail` only
+    """
+
+    def __init__(self, scope):
+        self._scope = scope
+
+    def set(self, **kwargs):
+        """
+        give arguments known only after the deed started.
+
+
+        :param kwargs: argument names of the deed, with their values;
+                an argument still missing at block exit drops its segment
+        :raises TypeError: if a name is unknown or was already given
+                positionally
+        """
+        self._scope.set_late_args(kwargs)
+
+    def fail(self, detail):
+        """
+        mark the deed failed without raising, e.g. a bad exit status;
+        the failure line reads ``fail to <message>: <detail>``
+        and carries no traceback.
+
+
+        :param detail: why the deed failed
+        :type detail: object
+        """
+        self._scope.mark_failed(detail)
+
+
+class _DeedScope:  # ***********************************************************
+    """
+    context manager of one tracked deed;
+    logs one line at block exit: success, or failure if the block raised
+    or the handle marked it failed
+    """
+
+    def __init__(self, logger, deed, args, options):
+        self._logger = logger
+        self._deed = deed
+        self._args = args
+        self._options = options
+        self._late_args = {}
+        self._fail_detail = None
+        self._is_failed = False
+
+    def __enter__(self):
+        return _DeedHandle(self)
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        # only Exception counts; KeyboardInterrupt & SystemExit pass silently
+        if exc_type is not None:
+            if not issubclass(exc_type, Exception):
+                return False
+            cause = exc_type.__name__
+            if str(exc_value):
+                cause = "{}: {}".format(cause, exc_value)
+            self._log_failure(cause, (exc_type, exc_value, traceback))
+            return self._options["suppress"]
+        if self._is_failed:
+            self._log_failure(self._fail_detail)
+        else:
+            self._log_success()
+        return False
+
+    def set_late_args(self, kwargs):
+        """record arguments given after entry, validating each name"""
+        for key in kwargs:
+            if key not in self._deed.arg_names:
+                raise TypeError(
+                    "{}() got an unexpected argument '{}'".format(
+                        self._deed.name, key
+                    )
+                )
+            if self._deed.arg_names.index(key) < len(self._args):
+                raise TypeError(
+                    "{}() got multiple values for argument '{}'".format(
+                        self._deed.name, key
+                    )
+                )
+        values = _stringify_deed_args(kwargs.values())
+        self._late_args.update(zip(kwargs, values))
+
+    def mark_failed(self, detail):
+        """mark the deed failed as a value; no exception involved"""
+        self._is_failed = True
+        self._fail_detail = detail
+
+    def _render(self):
+        """render the deed wording from entry and late arguments"""
+        return _render_deed_message(self._deed, *self._args, **self._late_args)
+
+    def _log_success(self):
+        """log the success line at the deed's level"""
+        level = self._options["level"]
+        level = self._deed.level if level is None else level
+        self._emit(level, self._render())
+
+    def _log_failure(self, cause, exc_info=None):
+        """log `fail to <message>: <cause>`, with traceback if `exc_info`"""
+        err_level = self._options["err_level"]
+        err_level = self._deed.err_level if err_level is None else err_level
+        message = "fail to {}".format(self._render())
+        if cause is not None and str(cause):
+            message = "{}: {}".format(message, cause)
+        self._emit(err_level, message, exc_info)
+
+    def _emit(self, level, message, exc_info=None):
+        """log `message`, attributed to the code holding the `with`"""
+        if self._logger.isEnabledFor(level):
+            self._logger._log(
+                level,
+                message,
+                (),
+                exc_info=exc_info,
+                stacklevel=4,
+                badges=self._options["badges"],
+                is_inheriting_badges=self._options["is_inheriting_badges"],
+            )
+
+
+class _DeedTrack:  # ***********************************************************
+    """
+    namespace behind ``logger.track``;
+    holds one method per deed, each returning a :class:`_DeedScope`
+    """
+
+    def __init__(self, logger):
+        self._logger = logger
+
+
+def _make_track_method(deed):
+    """build the track-form method of `deed` for :class:`_DeedTrack`"""
+
+    def track_method(
+        self,
+        *args,
+        level=None,
+        err_level=None,
+        suppress=False,
+        badges=None,
+        is_inheriting_badges=True
+    ):
+        args = _stringify_deed_args(args)
+        # render once so a bad arg raises at the call, not at block exit
+        _render_deed_message(deed, *args)
+        options = {
+            "level": level,
+            "err_level": err_level,
+            "suppress": suppress,
+            "badges": badges,
+            "is_inheriting_badges": is_inheriting_badges,
+        }
+        return _DeedScope(self._logger, deed, args, options)
+
+    track_method.__name__ = deed.name
+    track_method.__qualname__ = "_DeedTrack.{}".format(deed.name)
+    track_method.__doc__ = """
+        track the deed ``{template}``: one line is logged when the block
+        exits, at ``level`` on success or at ``err_level`` on an
+        ``Exception``, which then propagates unless ``suppress``. The block
+        yields a handle with ``set(name=value)`` and ``fail(detail)``.
+
+
+        :param args: the deed's own arguments, in order ``{arg_names}``
+        :param level: severity of the success line; default=the deed's level
+        :type level: int, optional
+        :param err_level: severity of the failure line;
+                default=the deed's error level
+        :type err_level: int, optional
+        :param suppress: whether to swallow the exception after logging it;
+                default=False
+        :type suppress: bool, optional
+        :param badges: badge labels for this record only; default=None
+        :type badges: str or Iterable(str), optional
+        :param is_inheriting_badges: whether the run-wide badges apply to
+                this record; default=True
+        :type is_inheriting_badges: bool, optional
+        :return: context manager logging the outcome at block exit
+        """.format(
+        template=deed.template, arg_names=", ".join(deed.arg_names)
+    )
+    return track_method
+
+
+for _deed in _DEEDS.values():
+    setattr(_DeedTrack, _deed.name, _make_track_method(_deed))
+del _deed
+
+
 class KamiLogger(logging.Logger):  # ===========================================
     """
     logger subclass extending :class:`logging.Logger` with custom levels.
@@ -382,6 +749,9 @@ class KamiLogger(logging.Logger):  # ===========================================
     provides convenience methods for test and hook workflows;
     obtain instances via :func:`getlogger`
     """
+
+    # run-wide badges; instances shadow this on first set_badges call
+    _run_badges = ()
 
     def enter(self, message, *args, **kwargs):
         """
@@ -486,6 +856,123 @@ class KamiLogger(logging.Logger):  # ===========================================
                 _CustomLogLevel.FAIL, message, args, stacklevel=2, **kwargs
             )
 
+    @property
+    def track(self):
+        """
+        track form of the deed methods, e.g. ``with logger.track.cp_file(a, b)``
+
+        :return: namespace whose methods mirror the plain deed methods
+        :rtype: _DeedTrack
+        """
+        return _DeedTrack(self)
+
+    def set_badges(self, badges=None):
+        """
+        replace the run-wide badges
+
+        an omitted, ``None`` or empty ``badges`` unsets every run-wide
+        badge; there is no add or remove of a single badge
+
+
+        :param badges: badge labels for every later record;
+                default=None
+        :type badges: str or Iterable(str), optional
+        """
+        self._run_badges = _normalize_badges(badges)
+
+    def clear_badges(self):
+        """
+        unset every run-wide badge
+        """
+        self._run_badges = ()
+
+    def _log(
+        self,
+        level,
+        msg,
+        args,
+        exc_info=None,
+        extra=None,
+        stack_info=False,
+        stacklevel=1,
+        badges=None,
+        is_inheriting_badges=True,
+    ):
+        """
+        stamp the record with its effective badges, then log as usual
+
+        per-call ``badges`` add to the run-wide set unless
+        ``is_inheriting_badges`` is false; the result lands on
+        ``record.badges`` as a priority-sorted tuple
+
+
+        :param badges: badge labels for this record only; default=None
+        :type badges: str or Iterable(str), optional
+        :param is_inheriting_badges: whether the run-wide badges apply to this
+                record; default=True
+        :type is_inheriting_badges: bool, optional
+        """
+        run_badges = self._run_badges if is_inheriting_badges else ()
+        extra = dict(extra) if extra else {}
+        extra["badges"] = _normalize_badges(
+            (*run_badges, *_normalize_badges(badges))
+        )
+        # +1 skips this frame so caller info stays correct
+        super()._log(
+            level,
+            msg,
+            args,
+            exc_info=exc_info,
+            extra=extra,
+            stack_info=stack_info,
+            stacklevel=stacklevel + 1,
+        )
+
+
+def _make_deed_method(deed):
+    """build the plain-form method of `deed` for :class:`KamiLogger`"""
+
+    def deed_method(
+        self, *args, level=None, badges=None, is_inheriting_badges=True
+    ):
+        level = deed.level if level is None else level
+        if self.isEnabledFor(level):
+            self._log(
+                level,
+                _render_deed_message(deed, *args),
+                (),
+                stacklevel=2,
+                badges=badges,
+                is_inheriting_badges=is_inheriting_badges,
+            )
+
+    deed_method.__name__ = deed.name
+    deed_method.__qualname__ = "KamiLogger.{}".format(deed.name)
+    deed_method.__doc__ = """
+        log the deed ``{template}`` at ``{level}`` level by default.
+
+
+        :param args: the deed's own arguments, in order ``{arg_names}``;
+                trailing ones may be omitted
+        :param level: severity of the line; default=the deed's level
+        :type level: int, optional
+        :param badges: badge labels for this record only; default=None
+        :type badges: str or Iterable(str), optional
+        :param is_inheriting_badges: whether the run-wide badges apply to
+                this record; default=True
+        :type is_inheriting_badges: bool, optional
+        """.format(
+        template=deed.template,
+        level=logging.getLevelName(deed.level),
+        arg_names=", ".join(deed.arg_names),
+    )
+    return deed_method
+
+
+for _deed in _DEEDS.values():
+    setattr(KamiLogger, _deed.name, _make_deed_method(_deed))
+del _deed
+
 
 logging.setLoggerClass(KamiLogger)
 # root logger exists before setLoggerClass — patch its class directly
@@ -564,6 +1051,13 @@ class _LogFormatEngine:  # *****************************************************
         space_len = 1 if has_name else 0
         source_len = len(name) + 1 if has_name else 1  # "name:" or ":"
 
+        badges = getattr(record, "badges", ())
+        if badges:
+            # level starts on the first tab stop after the badges
+            col = ts_len + 1 if ts_len else 0
+            col = self._next_tab_stop(col + len(" ".join(badges)))
+            return col + level_len + space_len + source_len + 1
+
         if ts_len:
             return ts_len + 1 + level_len + space_len + source_len + 1
         return level_len + space_len + source_len + 1
@@ -603,16 +1097,13 @@ class _LogFormatEngine:  # *****************************************************
         asctime = self.format_time(record)
         source = self._fmt_source(record.name)
         space = " " if record.name and record.name != "root" else ""
-
-        if asctime:
-            return "{} {}{}{} {}".format(
-                asctime,
-                self._fmt_level(record.levelno),
-                space,
-                source,
-                record.getMessage(),
-            )
-        return "{}{}{} {}".format(
+        badges = getattr(record, "badges", ())
+        # badges sit b/t timestamp & level, level on the next tab stop
+        badge_seg = "{}\t".format(self._fmt_badges(badges)) if badges else ""
+        head = "{} ".format(asctime) if asctime else ""
+        return "{}{}{}{}{} {}".format(
+            head,
+            badge_seg,
             self._fmt_level(record.levelno),
             space,
             source,
@@ -620,6 +1111,11 @@ class _LogFormatEngine:  # *****************************************************
         )
 
     # helpers  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @staticmethod
+    def _next_tab_stop(col):
+        """return the first tab stop strictly after column ``col``."""
+        return (col // _TabAlignedLine.TAB_SIZE + 1) * _TabAlignedLine.TAB_SIZE
 
     def _fmt_asctime(self, asctime):
         """color ``asctime`` grey."""
@@ -629,6 +1125,10 @@ class _LogFormatEngine:  # *****************************************************
         """build the padded, colored level-name segment."""
         padded = _PADDED_LEVELNAME_MAP.get(levelno, str(levelno).ljust(5)[:5])
         return self._palette.color_level(padded, levelno)
+
+    def _fmt_badges(self, badges):
+        """build the space-separated, colored badge segment."""
+        return " ".join(self._palette.color_badge(b, b) for b in badges)
 
     def _fmt_source(self, name):
         """build the colored source-label segment."""
@@ -822,12 +1322,16 @@ class _DiffOnlyEngine:  # ******************************************************
     _MARKER_CHAR = "〃"
     _MARKER_WIDTH = 2  # rendered columns of _MARKER_CHAR
     _LEADER_MARKER_MIN = 4  # leader shorter than this becomes bare "\t"
+    _LONG_LINE_COLS = 100  # wider rendered lines drop tab alignment
+    _LONG_LINE_MARKER = "〃 "  # full-block ditto on a long line
 
     def __init__(self, formatter, threshold=3):
         self._formatter = formatter
+        # each entry: one message split into its lines
         self._history = deque(maxlen=threshold)
-        # _common[i] = shared char at position i across all history,
-        # or None where messages diverge or lengths differ
+        # _common[k][i] = shared char at position i of line k across all
+        # history, or None where messages diverge or lengths differ; a
+        # line missing from any history message has an empty list
         self._common = []
 
     def _update_common(self):
@@ -838,18 +1342,35 @@ class _DiffOnlyEngine:  # ******************************************************
         if not history:
             self._common = []
             return
-        min_len = min(len(s) for s in history)
-        max_len = max(len(s) for s in history)
-        common: list = []
+        n_lines = max(len(lines) for lines in history)
+        self._common = [
+            (
+                self._calc_line_common([lines[k] for lines in history])
+                if all(k < len(lines) for lines in history)
+                else []
+            )
+            for k in range(n_lines)
+        ]
+
+    @staticmethod
+    def _calc_line_common(texts):
+        """
+        :return: per-position shared char across ``texts``, ``None``
+                where they diverge or lengths differ
+        :rtype: list[str or None]
+        """
+        min_len = min(len(s) for s in texts)
+        max_len = max(len(s) for s in texts)
+        common = []
         for i in range(max_len):
             if i >= min_len:
-                common.append(None)  # position missing in some messages
+                common.append(None)  # position missing in some texts
             else:
-                ch = history[0][i]
+                ch = texts[0][i]
                 common.append(
-                    ch if all(s[i] == ch for s in history[1:]) else None
+                    ch if all(s[i] == ch for s in texts[1:]) else None
                 )
-        self._common = common
+        return common
 
     @staticmethod
     def _is_word_char(ch):
@@ -893,7 +1414,39 @@ class _DiffOnlyEngine:  # ******************************************************
 
     def _compress(self, record, message):
         """
-        compress positions matching ``_common`` into ``〃\\t`` markers.
+        compress ``message`` line by line against the matching history
+        lines; only line 1 carries the record prefix, later lines start
+        at column 0
+        """
+        prefix_len = self._formatter.engine.count_prefix_chars(record)
+        lines = message.split("\n")
+        return "\n".join(
+            self._compress_line(
+                line,
+                self._common[k] if k < len(self._common) else [],
+                prefix_len if k == 0 else 0,
+            )
+            for k, line in enumerate(lines)
+        )
+
+    @classmethod
+    def _is_long_line(cls, line, prefix_len):
+        """
+        :return: if the rendered, uncompressed ``line`` starting at
+                column ``prefix_len`` ends beyond ``_LONG_LINE_COLS``,
+                embedded tabs expanded to tab stops
+        :rtype: bool
+        """
+        block = _TabAlignedLine.TAB_SIZE
+        col = prefix_len
+        for ch in line:
+            col += block - col % block if ch == "\t" else 1
+        return col > cls._LONG_LINE_COLS
+
+    def _compress_line(self, message, common, prefix_len):
+        """
+        compress positions of one line matching ``common`` into
+        ``〃\\t`` markers.
 
         the replaceable span (``run_s`` to ``cut``) is split into
         ``_TabAlignedLine`` blocks anchored at its absolute column, so
@@ -901,15 +1454,12 @@ class _DiffOnlyEngine:  # ******************************************************
         block (if any) is the gap, and everything between is a whole
         replaceable tab stop.
         """
-        block = _TabAlignedLine.TAB_SIZE
-        prefix_len = self._formatter.engine.count_prefix_chars(record)
-        n_common = len(self._common)
+        n_common = len(common)
         is_common = [
-            i < n_common
-            and self._common[i] is not None
-            and self._common[i] == ch
+            i < n_common and common[i] is not None and common[i] == ch
             for i, ch in enumerate(message)
         ]
+        is_long = self._is_long_line(message, prefix_len)
         result = []
         i = 0
         msg_len = len(message)
@@ -921,54 +1471,62 @@ class _DiffOnlyEngine:  # ******************************************************
                 run_s = i
                 while i < msg_len and is_common[i]:
                     i += 1
-                run_e = i
-                cut = self._find_cut(message, run_s, run_e, prefix_len)
-
-                tal_blocks = list(
-                    _TabAlignedLine.parse(
-                        message[run_s:cut], start_offset=prefix_len + run_s
-                    )
+                result.append(
+                    self._render_run(message, run_s, i, prefix_len, is_long)
                 )
-                leader = ""
-                if tal_blocks and len(tal_blocks[0]) < block:
-                    leader = tal_blocks.pop(0)
-                if tal_blocks and len(tal_blocks[-1]) < block:
-                    gap_block = tal_blocks.pop()
-                else:
-                    gap_block = ""
-                k = len(tal_blocks)  # remaining blocks are all full-width
+        return "".join(result)
 
-                if k == 0:
-                    result.append(message[run_s:run_e])
-                else:
-                    gap = len(gap_block)
-                    # leader: common chars before the first tab stop are
-                    # never printed; short ones become a bare tab jump,
-                    # longer ones earn their own marker
-                    if len(leader) >= self._LEADER_MARKER_MIN:
-                        result.append(
-                            self._formatter.palette.color_grey(
-                                self._COMPRESSION_MARKER
-                            )
-                        )
-                    elif leader:
-                        result.append("\t")
-                    result.append(
-                        self._formatter.palette.color_grey(
-                            self._COMPRESSION_MARKER * k
-                        )
-                    )
-                    # partial block: marker + spaces padding to the cut
-                    if gap >= self._MARKER_WIDTH:
-                        result.append(
-                            self._formatter.palette.color_grey(
-                                self._MARKER_CHAR
-                            )
-                        )
-                        result.append(" " * (gap - self._MARKER_WIDTH))
-                    else:
-                        result.append(" " * gap)
-                    result.append(message[cut:run_e])
+    def _render_run(self, message, run_s, run_e, prefix_len, is_long):
+        """
+        render one common run as markers plus its kept tail
+
+        ``is_long`` flags a line wider than ``_LONG_LINE_COLS``
+        """
+        block = _TabAlignedLine.TAB_SIZE
+        cut = self._find_cut(message, run_s, run_e, prefix_len)
+
+        tal_blocks = list(
+            _TabAlignedLine.parse(
+                message[run_s:cut], start_offset=prefix_len + run_s
+            )
+        )
+        leader = ""
+        if tal_blocks and len(tal_blocks[0]) < block:
+            leader = tal_blocks.pop(0)
+        if tal_blocks and len(tal_blocks[-1]) < block:
+            gap_block = tal_blocks.pop()
+        else:
+            gap_block = ""
+        k = len(tal_blocks)  # remaining blocks are all full-width
+
+        if k == 0:
+            return message[run_s:run_e]
+        result = []
+        gap = len(gap_block)
+        block_marker = (
+            self._LONG_LINE_MARKER if is_long else self._COMPRESSION_MARKER
+        )
+        # leader: common chars before the first tab stop are never
+        # printed; short ones become a bare tab jump, longer ones earn
+        # their own marker; a long line has no tab stops to jump to
+        if len(leader) >= self._LEADER_MARKER_MIN:
+            result.append(self._formatter.palette.color_grey(block_marker))
+        elif leader and not is_long:
+            result.append("\t")
+        result.append(self._formatter.palette.color_grey(block_marker * k))
+        # partial block: marker + spaces padding to the cut; a long line
+        # keeps the marker and its one space, no padding
+        if gap >= self._MARKER_WIDTH:
+            if is_long:
+                result.append(self._formatter.palette.color_grey(block_marker))
+            else:
+                result.append(
+                    self._formatter.palette.color_grey(self._MARKER_CHAR)
+                )
+                result.append(" " * (gap - self._MARKER_WIDTH))
+        elif not is_long:
+            result.append(" " * gap)
+        result.append(message[cut:run_e])
         return "".join(result)
 
     def process(self, record):
@@ -988,7 +1546,7 @@ class _DiffOnlyEngine:  # ******************************************************
         else:
             masked = message
 
-        self._history.append(message)
+        self._history.append(message.split("\n"))
         self._update_common()
         return masked
 
@@ -2031,9 +2589,138 @@ def _register_color_grey_parser(cli_subparser):
     color_grey_parser.set_defaults(func=_color_grey_parser_main)
 
 
+# deed CLI  ====================================================================
+_DEED_HELP = "log one deed, e.g. a file copy, in its fixed wording"
+_DEED_DESCRIPTION = _DEED_HELP + """
+add '-- COMMAND' to run COMMAND and log its outcome instead: exit status 0
+logs success, anything else logs failure, and the status is passed back
+"""
+
+
+def _run_deed_command(command, act):
+    """
+    run the wrapped `command`; mark `act` failed on a non-zero status
+    and return the status as a shell would report it
+    """
+    try:
+        status = subprocess.run(command, check=False).returncode
+    except OSError as exc:
+        act.fail("{}: {}".format(type(exc).__name__, exc))
+        return 127 if isinstance(exc, FileNotFoundError) else 126
+    if status < 0:  # killed by signal, as shells report it
+        status = 128 - status
+    if status:
+        act.fail("exit {}".format(status))
+    return status
+
+
+def _deed_parser_main(args):
+    deed = args.deed
+    tail = args.tail_command
+    deed_args = [getattr(args, name) for name in deed.arg_names]
+    deed_args = [val for val in deed_args if val is not None]
+    if tail is None:
+        if args.err_level is not None:
+            args.deed_parser.error("--err-level needs a command after '--'")
+        if not deed_args:  # only run-command may omit its subject
+            args.deed_parser.error(
+                "the following arguments are required: {}".format(
+                    deed.arg_names[0]
+                )
+            )
+    elif deed.name == "run_command":
+        if deed_args:
+            args.deed_parser.error("the command is given after '--' only")
+        deed_args = [shlex.join(tail)]
+
+    logger = getLogger(disable_color=args.no_color)
+    logger.setLevel(logging.DEBUG)  # --level alone decides what shows
+    level = err_level = None
+    if args.level is not None:
+        level = _LOGGER_LEVEL_MAP[args.level.lower()]
+    if args.err_level is not None:
+        err_level = _LOGGER_LEVEL_MAP[args.err_level.lower()]
+
+    if tail is None:
+        getattr(logger, deed.name)(*deed_args, level=level)
+        return 0
+    tracked = getattr(logger.track, deed.name)(
+        *deed_args, level=level, err_level=err_level
+    )
+    with tracked as act:
+        status = _run_deed_command(tail, act)
+    return status
+
+
+def _register_deed_parser(cli_subparser):
+    """
+    register the ``deed`` subcommand, with one sub-subcommand per deed
+    """
+    deed_parser = cli_subparser.add_parser(
+        "deed",
+        help=_DEED_HELP,
+        description=_DEED_DESCRIPTION,
+        formatter_class=RawDescriptionHelpFormatter,
+    )
+    deed_parser.set_defaults(func=lambda _: deed_parser.print_help())
+    deed_subparser = deed_parser.add_subparsers(title="deeds", metavar="DEED")
+
+    for deed in _DEEDS.values():
+        sub_parser = deed_subparser.add_parser(
+            deed.name.replace("_", "-"),
+            parents=[_no_color_parser],
+            help=deed.template,
+            description="log the deed ``{}``".format(deed.template),
+        )
+        for i, name in enumerate(deed.arg_names):
+            # the subject is required, except that run-command may take its
+            # command after '--'; trailing arguments may be omitted
+            is_optional = i > 0 or deed.name == "run_command"
+            sub_parser.add_argument(
+                name, nargs="?" if is_optional else None, default=None
+            )
+        sub_parser.add_argument(
+            "--level",
+            choices=list(_LOGGER_LEVEL_MAP),
+            default=None,
+            help="level of the success line; default={}".format(
+                logging.getLevelName(deed.level)
+            ),
+        )
+        sub_parser.add_argument(
+            "--err-level",
+            choices=list(_LOGGER_LEVEL_MAP),
+            default=None,
+            help="level of the failure line, with '-- command'; default={}"
+            .format(logging.getLevelName(deed.err_level)),
+        )
+        sub_parser.set_defaults(
+            func=_deed_parser_main,
+            deed=deed,
+            deed_parser=sub_parser,
+            tail_command=None,
+        )
+
+
 # CLI main parser  #############################################################
 
-_cli_parser = ArgumentParser(
+class _CliArgumentParser(ArgumentParser):
+    """top-level parser that splits `deed ... -- COMMAND` at the first `--`"""
+
+    def parse_known_args(self, args=None, namespace=None):
+        args = list(sys.argv[1:] if args is None else args)
+        if args[:1] != ["deed"] or "--" not in args:
+            return super().parse_known_args(args, namespace)
+        idx = args.index("--")
+        head, tail = args[:idx], args[idx + 1 :]
+        if not tail:
+            self.error("expected a command after '--'")
+        namespace, extras = super().parse_known_args(head, namespace)
+        namespace.tail_command = tail
+        return namespace, extras
+
+
+_cli_parser = _CliArgumentParser(
     prog="kamilog[.py]",
     description="kamilog CLI: utilities for formatted output and logging",
 )
@@ -2048,6 +2735,7 @@ _register_color_grey_parser(_cli_subparser)
 _register_comment_banner_parser(_cli_subparser)
 _register_comment_banner_zero_parser(_cli_subparser)
 _register_logger_parser(_cli_subparser)
+_register_deed_parser(_cli_subparser)
 
 
 # Entry Point  #################################################################
@@ -2058,7 +2746,9 @@ def kamilog_cli_main():
     run the kamilog CLI, dispatching to the parsed subcommand's handler.
     """
     parsed_args = _cli_parser.parse_args()
-    parsed_args.func(parsed_args)
+    status = parsed_args.func(parsed_args)
+    if status:  # a wrapped command's exit status goes back to the shell
+        sys.exit(status)
 
 
 if __name__ == "__main__":

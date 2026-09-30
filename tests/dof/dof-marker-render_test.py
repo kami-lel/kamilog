@@ -78,3 +78,17 @@ class TestUnreplaceableShortRun:
         a = "abc"
         b = "abd"
         assert _compress_second(a, b) == "abd"
+
+
+class TestLongLineMarkerForm:
+    def test_line_at_limit_keeps_tab_markers(_):
+        a = "a" * 95 + "/bbb" + "X"
+        b = "a" * 95 + "/bbb" + "Y"
+        assert "〃 〃" not in _compress_second(a, b)
+
+    def test_line_over_limit_uses_spaced_markers(_):
+        a = "a" * 96 + "/bbb" + "X"
+        b = "a" * 96 + "/bbb" + "Y"
+        out = _compress_second(a, b)
+        assert "〃\t" not in out
+        assert out.startswith("<〃 〃 〃 ")
