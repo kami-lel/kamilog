@@ -79,14 +79,14 @@ class TestRecordBadges:
 
     def test_inherit_false_hides_run_wide_for_one_record(_, log, cap):
         log.set_badges(["dry"])
-        log.info("m", inherit_badges=False)
+        log.info("m", is_inheriting_badges=False)
         log.info("m")
         assert cap.records[0].badges == ()
         assert cap.records[1].badges == ("dry",)
 
     def test_inherit_false_keeps_per_call(_, log, cap):
         log.set_badges(["dry"])
-        log.info("m", badges="yes", inherit_badges=False)
+        log.info("m", badges="yes", is_inheriting_badges=False)
         assert cap.records[0].badges == ("yes",)
 
     def test_log_method_accepts_kwargs(_, log, cap):

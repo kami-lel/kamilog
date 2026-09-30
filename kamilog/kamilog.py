@@ -575,23 +575,23 @@ class KamiLogger(logging.Logger):  # ===========================================
         stack_info=False,
         stacklevel=1,
         badges=None,
-        inherit_badges=True,
+        is_inheriting_badges=True,
     ):
         """
         stamp the record with its effective badges, then log as usual
 
         per-call ``badges`` add to the run-wide set unless
-        ``inherit_badges`` is false; the result lands on
+        ``is_inheriting_badges`` is false; the result lands on
         ``record.badges`` as a priority-sorted tuple
 
 
         :param badges: badge labels for this record only; default=None
         :type badges: str or Iterable(str), optional
-        :param inherit_badges: whether the run-wide badges apply to this
+        :param is_inheriting_badges: whether the run-wide badges apply to this
                 record; default=True
-        :type inherit_badges: bool, optional
+        :type is_inheriting_badges: bool, optional
         """
-        run_badges = self._run_badges if inherit_badges else ()
+        run_badges = self._run_badges if is_inheriting_badges else ()
         extra = dict(extra) if extra else {}
         extra["badges"] = _normalize_badges(
             (*run_badges, *_normalize_badges(badges))

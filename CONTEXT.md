@@ -160,7 +160,7 @@ Subclasses `logging.Logger`. Adds eleven convenience methods mapping to the cust
 - `_NATIVE_BADGES` — module-level table mapping each native label to `(AnsiStyle hue, priority)`; a higher priority prints earlier. Any label absent from it is a custom badge: grey, priority 0.
 - `_normalize_badges(badges)` — private pure function: accepts `None`, a `str` or an iterable, drops duplicates and orders by descending priority (stable for ties; customs keep the order given). Returns a tuple.
 - `set_badges(badges=None)` / `clear_badges()` — replace or unset the run-wide set, stored per logger in `_run_badges` (class default `()`). `set_badges()`, `None` and `[]` all unset it; there is no add or remove of one label.
-- `_log(..., badges=None, inherit_badges=True)` — override that merges per-call badges with the run-wide set (`inherit_badges=False` hides the run-wide set for one record) and stamps the result on the record as `record.badges` through `extra`. It forwards to `super()._log` with `stacklevel + 1`, so `funcName` and `lineno` still point at the caller. Every level method and `log()` accept the kwargs through `**kwargs`.
+- `_log(..., badges=None, is_inheriting_badges=True)` — override that merges per-call badges with the run-wide set (`is_inheriting_badges=False` hides the run-wide set for one record) and stamps the result on the record as `record.badges` through `extra`. It forwards to `super()._log` with `stacklevel + 1`, so `funcName` and `lineno` still point at the caller. Every level method and `log()` accept the kwargs through `**kwargs`.
 
 The user-facing guide is [`docs/badge-doc.md`](docs/badge-doc.md); `OpAction` (`docs/op_action_design.md`) is not implemented.
 

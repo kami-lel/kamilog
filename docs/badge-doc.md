@@ -24,12 +24,12 @@ import kamilog
 log = kamilog.getLogger("copy")
 log.setLevel(kamilog.DEBUG)
 
-log.set_badges(["dry", "yes"])                 # every later line, replaces any earlier set
+log.set_badges(["dry", "yes"])  # every later line, replaces any earlier set
 log.done("wrote a.txt")
-log.done("wrote b.txt", badges="deploy")       # this line only, on top of the set
-log.done("wrote c.txt", inherit_badges=False)  # this line only, without the set
+log.done("wrote b.txt", badges="deploy")  # this line only, on top of the set
+log.done("wrote c.txt", is_inheriting_badges=False)  # this line only, without the set
 
-log.clear_badges()                             # same as set_badges(), (None) or ([])
+log.clear_badges()  # same as set_badges(), (None) or ([])
 log.done("wrote d.txt")
 ```
 
@@ -40,7 +40,7 @@ log.done("wrote d.txt")
 13:04:22 DONE  copy: wrote d.txt
 ```
 
-`badges` takes a string or a list, and every level method and `log()` accept it along with `inherit_badges`. On a terminal each native badge is colored by how serious it is; files and `-C` output stay plain.
+`badges` takes a string or a list, and every level method and `log()` accept it along with `is_inheriting_badges`. On a terminal each native badge is colored by how serious it is; files and `-C` output stay plain.
 
 Badges print most serious first, whatever order you give them: `unsafe`, `force`, and `undo` lead, and `watch` and `bg` come last.
 

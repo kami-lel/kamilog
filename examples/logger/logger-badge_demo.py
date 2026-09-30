@@ -24,7 +24,7 @@ log.done("wrote a.txt")
 log.set_badges(["yes", "dry"])
 log.done("wrote b.txt")
 log.done("wrote c.txt", badges="deploy")
-log.done("wrote d.txt", inherit_badges=False)
+log.done("wrote d.txt", is_inheriting_badges=False)
 log.clear_badges()
 log.done("wrote e.txt")
 
