@@ -66,7 +66,7 @@ Pre-merge checklist:
 - [ ] `pytest tests/` passes
 - [ ] `__all__` in both `kamilog.py` and `__init__.py` is up to date
 - [ ] CHANGELOG updated
-- [ ] `docs/usage_doc.md` reflects any API changes
+- [ ] the matching topic guide under `docs/` reflects any API changes
 - [ ] `CONTEXT.md` updated if architecture or module layout changed
 
 ## Documentation Maintenance
@@ -78,8 +78,12 @@ Keep these files in sync with code changes:
 | `CHANGELOG.md` | any user-visible change |
 | `AGENTS.md` | commands, conventions, or constraints change |
 | `CONTEXT.md` | architecture, module layout, or feature set changes |
-| `README.md` | installation steps or requirements change |
-| [`docs/usage_doc.md`](docs/usage_doc.md) | public API or output format changes |
+| `README.md` | installation steps or requirements change, or a file is added to `docs/` (link it there and cross-link it from related guides) |
+| [`docs/log-doc.md`](docs/log-doc.md) | log levels, timestamps, diff-only output, or file output change |
+| [`docs/ansi-doc.md`](docs/ansi-doc.md) | `AnsiStyle` or `AnsiRenderer` change |
+| [`docs/banner-doc.md`](docs/banner-doc.md) | comment banner functions change |
+| [`docs/verbosity-doc.md`](docs/verbosity-doc.md) | verbosity helpers, `-v`/`-q` flags, or level mapping change |
+| [`docs/shim-doc.md`](docs/shim-doc.md) | `scripts/kamilog_shim.sh` or its fallbacks change |
 | [`docs/badge-doc.md`](docs/badge-doc.md) | badge API, native badges, or badge display change |
 | [`docs/deed-doc.md`](docs/deed-doc.md) | deed methods, wording, levels, track form, or `deed` CLI change |
 

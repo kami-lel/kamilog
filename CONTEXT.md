@@ -59,7 +59,11 @@ kamilog/
 │       └── logger-diff_only_stress_demo.py  # word-boundary, leader, and embedded-tab
 │                                             # compression scenarios
 ├── docs/
-│   ├── usage_doc.md         # public API reference with examples
+│   ├── log-doc.md           # user guide to levels, timestamps, diff-only output, file output
+│   ├── ansi-doc.md          # user guide to AnsiStyle and AnsiRenderer
+│   ├── banner-doc.md        # user guide to comment banner functions
+│   ├── verbosity-doc.md     # user guide to -v/-q flags and verbosity helpers
+│   ├── shim-doc.md          # user guide to the kamilog_shim.sh fallback
 │   ├── badge-doc.md         # user guide to badges and the native badge table
 │   └── deed-doc.md          # user guide to deed log methods
 ├── scripts/

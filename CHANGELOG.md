@@ -38,6 +38,7 @@ bug using different logger to print & diff only can produce confusing result
 - `kamilog deed <method>` CLI subcommand for the 17 deeds, with `--level`; `-- COMMAND` runs the command, logs its outcome (`--err-level` sets the failure level) and returns its exit status to the shell
 - deed args are stringified with `str()` once, when the deed is called or `act.set()` gives them, so a later change to the object never alters the line
 - `docs/deed-doc.md`: user guide to deed log methods
+- topic guides `docs/log-doc.md`, `ansi-doc.md`, `banner-doc.md`, `verbosity-doc.md`, `shim-doc.md`, cross-linked w/ each other & `README.md`
 - `logger-deed_demo.py` example with a golden-output test
 
 ### Changed
@@ -47,6 +48,7 @@ bug using different logger to print & diff only can produce confusing result
 - diff-only dittos stay tab-aligned under badges
 - `getLogger()` timestamps now depend on the destination when `datefmt` is not given: the console prints none, and a log file (`filename=`) uses `DATEFMT_DATETIME_MS`; an explicit `datefmt` or `relative_to` still applies to console and file alike
 - `kamilog logger` and `kamilog deed` print no timestamp by default; `-t/--time-format` defaults to `no-time`, and `-t time` restores `HH:MM:SS`
+- `docs/usage_doc.md` split into the topic guides; `README.md` Usage now links all of them, plus a Contributing section
 - installation instructions moved from `docs/install_guide.md` into the `README.md` Install section; the guide is removed
 - diff-only ditto tab stops shift with the shorter console prefix, so a compressed line may cover one more leading character
 - `logger-timestamps_demo.py` opens with a default section: console w/o timestamp vs file w/ `DATEFMT_DATETIME_MS`
