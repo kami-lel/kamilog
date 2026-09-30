@@ -34,10 +34,10 @@ log.done("wrote d.txt")
 ```
 
 ```text
-13:04:22 dry yes	DONE  copy: wrote a.txt
-13:04:22 dry yes deploy	DONE  copy: wrote b.txt
-13:04:22 DONE  copy: wrote c.txt
-13:04:22 DONE  copy: wrote d.txt
+dry yes	DONE  copy: wrote a.txt
+dry yes deploy	DONE  copy: wrote b.txt
+DONE  copy: wrote c.txt
+DONE  copy: wrote d.txt
 ```
 
 `badges` takes a string or a list, and every level method and `log()` accept it along with `is_inheriting_badges`. On a terminal each native badge is colored by how serious it is; files and `-C` output stay plain.

@@ -130,6 +130,8 @@ The sole public entry point. Every call:
 3. Adds stdout and stderr `StreamHandler`s (with `_LogFormatter`) if no handlers exist yet — stdout for `< WARNING`, stderr for `>= WARNING` — unless `disable_console=True`, which skips the pair entirely.
 4. When `filename` is set, adds a `FileHandler` carrying a color-disabled `_LogFormatter` and no level split (all levels land in the one file), idempotently per resolved absolute path.
 
+`datefmt` defaults to the private sentinel `_DATEFMT_AUTO`, resolved once at the top of the call: unset means the console side (both stream handlers and the diff-only filter's formatter) gets `None` (no timestamp) and the file handler gets `DATEFMT_DATETIME_MS`. Any explicit value, `None` included, goes to console and file alike, and `relative_to` always applies to both. The diff-only filter measures the console prefix, so its ditto tab stops follow the console format.
+
 Keyword-only options propagate to those parts:
 
 - `disable_color=False` — forwarded to every `_LogFormatter` (as `disable_color`) and on to `AnsiRenderer(is_disabled=…)`, so all handlers and the diff-only filter emit plain text regardless of TTY state.
@@ -341,7 +343,7 @@ Both `cb` and `cb0` follow the Unix pipe pattern: text content is read from stdi
 - Positional: `LEVEL` — a level name from `_LOGGER_LEVEL_MAP` (`debug`, `enter`, `skip`, `succ`, `info`, `pass`, `note`, `tip`, `done`, `hint`, `important`, `warning`, `caution`, `error`, `fail`, `critical`); `notset` is excluded — `Logger.isEnabledFor(NOTSET)` is always `False`, so a record logged at that level can never actually emit
 - Positional: `LOGGER_NAME` — optional, forwarded to `getLogger()` as the `name` argument; defaults to the root logger when omitted
 - Option: `--verbosity VERBOSITY` — base verbosity offset the `-v`/`-q` counts adjust from (default 3); the resolved level acts as the print threshold, so records below it are dropped
-- Option: `-t, --time-format` — one of `time`, `time-ms`, `datetime`, `datetime-ms`, `no-time` (default `time`), mapped through `_LOGGER_TIME_FORMAT_MAP` to a `datefmt` passed into `getLogger()`; `no-time` maps to `None`
+- Option: `-t, --time-format` — one of `time`, `time-ms`, `datetime`, `datetime-ms`, `no-time` (default `no-time`), mapped through `_LOGGER_TIME_FORMAT_MAP` to a `datefmt` passed into `getLogger()`; `no-time` maps to `None`
 - Option: `-n, --newline` / `-N, --no-newline` — forces / forces off the final stdin line's trailing newline; default auto-detects from whether raw stdin already ends with a newline, via `_common_parser`; earlier records always keep their line breaks
 - Option: `-C, --no-color` — force plain output; forwarded to `getLogger(disable_color=True)`, via `_no_color_parser`
 - Option: `-D, --no-diff-only` — skip diff-only compression; forwarded to `getLogger(disable_diff_only_compression=True)`
@@ -353,7 +355,8 @@ Both `cb` and `cb0` follow the Unix pipe pattern: text content is read from stdi
 
 ```python
 # logger factory
-kamilog.getLogger(name=None, *, datefmt=DATEFMT_TIME, relative_to=None,
+kamilog.getLogger(name=None, *, datefmt=<auto: console none, file DATETIME_MS>,
+                  relative_to=None,
                   disable_color=False, disable_diff_only_compression=False,
                   filename=None, file_mode="a", disable_console=False,
                   enable_propagate=False) -> KamiLogger

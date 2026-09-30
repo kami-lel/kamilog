@@ -158,27 +158,31 @@ log = kamilog.getLogger("myapp", disable_color=True)
 
 ### Timestamp Format
 
-By default, timestamps are shown as `HH:MM:SS` (`DATEFMT_TIME`). Pass a
-different `datefmt` constant to change the format, or `None` to disable
-timestamps:
+By default the timestamp depends on the destination: the console prints no
+timestamp, and a log file (`filename=`) uses `DATEFMT_DATETIME_MS`. Pass a
+`datefmt` constant to set one format for both, or `None` to disable
+timestamps on both:
 
 | Constant | Value | Example |
 |---|---|---|
-| `DATEFMT_TIME` (default) | `"%H:%M:%S"` | `14:30:00 INFO  myapp: message` |
+| `DATEFMT_TIME` | `"%H:%M:%S"` | `14:30:00 INFO  myapp: message` |
 | `DATEFMT_TIME_MS` | `"%H:%M:%S.{ms}"` | `14:30:00.123 INFO  myapp: message` |
 | `DATEFMT_DATETIME` | `"%Y-%m-%d %H:%M:%S"` | `2026-06-15 14:30:00 INFO  myapp: message` |
 | `DATEFMT_DATETIME_MS` | `"%Y-%m-%d %H:%M:%S.{ms}"` | `2026-06-15 14:30:00.123 INFO  myapp: message` |
 | (disabled) | `None` | `INFO  myapp: message` |
 
 ```python
-# Time only (default)
-log = kamilog.getLogger("myapp")
+# Default: no timestamp on the console, DATEFMT_DATETIME_MS in the file
+log = kamilog.getLogger("myapp", filename="myapp.log")
+
+# Time only, on console and file alike
+log = kamilog.getLogger("myapp", datefmt=kamilog.DATEFMT_TIME)
 
 # Date and time
 log = kamilog.getLogger("myapp", datefmt=kamilog.DATEFMT_DATETIME)
 
-# No timestamp
-log = kamilog.getLogger("myapp", datefmt=None)
+# No timestamp anywhere, file included
+log = kamilog.getLogger("myapp", filename="myapp.log", datefmt=None)
 ```
 
 
@@ -188,7 +192,8 @@ log = kamilog.getLogger("myapp", datefmt=None)
 #### Relative Time
 
 Pass a Unix timestamp as `relative_to` to display elapsed time since that
-point instead of wall-clock time. `datefmt` is ignored in this mode.
+point instead of wall-clock time, on console and file alike. `datefmt` is
+ignored in this mode.
 
 ```python
 import time
