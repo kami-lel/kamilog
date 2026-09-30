@@ -964,6 +964,7 @@ class _DiffOnlyEngine:  # ******************************************************
     _MARKER_CHAR = "〃"
     _MARKER_WIDTH = 2  # rendered columns of _MARKER_CHAR
     _LEADER_MARKER_MIN = 4  # leader shorter than this becomes bare "\t"
+    _LONG_LINE_COLS = 100  # wider rendered lines drop tab alignment
 
     def __init__(self, formatter, threshold=3):
         self._formatter = formatter
@@ -1066,6 +1067,20 @@ class _DiffOnlyEngine:  # ******************************************************
             )
             for k, line in enumerate(lines)
         )
+
+    @classmethod
+    def _is_long_line(cls, line, prefix_len):
+        """
+        :return: if the rendered, uncompressed ``line`` starting at
+                column ``prefix_len`` ends beyond ``_LONG_LINE_COLS``,
+                embedded tabs expanded to tab stops
+        :rtype: bool
+        """
+        block = _TabAlignedLine.TAB_SIZE
+        col = prefix_len
+        for ch in line:
+            col += block - col % block if ch == "\t" else 1
+        return col > cls._LONG_LINE_COLS
 
     def _compress_line(self, message, common, prefix_len):
         """
