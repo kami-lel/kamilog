@@ -1,6 +1,10 @@
 # kamilog CHANGELOG
 
 <!--
+Todo implement dry run / flag support
+Todo long line compression w/ ditto
+Fixme different behavior for time re cli or log file
+
 todo cli color-triage-tag
 todo smart time print
 todo cli logger: implement relative time
@@ -39,7 +43,6 @@ bug using different logger to print & diff only can produce confusing result
 ### Security
 
 [unreleased]: https://github.com/kami-lel/kamilog/compare/v2.9.3...dev
-[2.9.3]: https://github.com/kami-lel/kamilog/compare/v2.9.2...v2.9.3
 
 
 
@@ -54,7 +57,7 @@ bug using different logger to print & diff only can produce confusing result
 
 - tightened verbosity CLI help text — clearer step flag descriptions, and dropped dynamic option-name interpolation from the max verbose/quiet flags
 
-[2.9.2]: https://github.com/kami-lel/kamilog/compare/v2.9.1...v2.9.2
+[2.9.3]: https://github.com/kami-lel/kamilog/compare/v2.9.2...v2.9.3
 
 
 
@@ -74,8 +77,7 @@ bug using different logger to print & diff only can produce confusing result
 
 - `enable_propagate` option on `getLogger()` — records no longer double-print through an ancestor logger's handlers by default; pass `enable_propagate=True` to restore the stdlib default
 
-[2.9.1]: https://github.com/kami-lel/kamilog/compare/v2.9.0...v2.9.1
-
+[2.9.2]: https://github.com/kami-lel/kamilog/compare/v2.9.1...v2.9.2
 
 
 
@@ -93,6 +95,8 @@ bug using different logger to print & diff only can produce confusing result
 ### Fixed
 
 - `kamilog_shim.sh` no longer appends a trailing newline to `cb`/`cb0` and `logger` output
+
+[2.9.1]: https://github.com/kami-lel/kamilog/compare/v2.9.0...v2.9.1
 
 
 
