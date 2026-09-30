@@ -21,42 +21,11 @@ bug using different logger to print & diff only can produce confusing result
 
 
 
-
-
-
 ## [Unreleased]
 
 ### Added
 
-- badges: labels for the mode a run is in (`dry`, `force`, `auto` and more, or any custom string); set for a run with `KamiLogger.set_badges()` / `clear_badges()`, or per record with `badges=` and `is_inheriting_badges=` on every level method and `log()`
-- badges print between the timestamp and the level (`time badges<tab>level source: message`), sorted by priority, one hue per native badge on a TTY and magenta for custom ones; lines without badges are unchanged
-- `AnsiRenderer.color_badge()` and `record.badges` for custom formatters
-- `docs/badge-doc.md`: user guide to badges, with every native badge
-- `logger-badge_demo.py` example with a golden-output test
-- deed log methods: 17 fixed-wording methods on `KamiLogger` (`create_file`, `owr_file`, `append_file`, `cp_file`, `mv_file`, `chmod_file`, `rm_file`, `create_dir`, `rm_dir`, `pack_files`, `unpack_archive`, `download`, `upload`, `run_command`, `load_config`, `save_config`, `skip_file`), each logging one deed such as `copy a -> b` at its own level; they take `level=`, `badges=` and `is_inheriting_badges=`
-- track form `with logger.track.<method>(...)`: logs at block exit, the success line, or `fail to <deed>: <ExcType>: <detail>` with traceback if the block raised; `err_level=` sets the failure level, `suppress=True` swallows the exception, and the `as act` handle offers `act.set(name=value)` for late arguments and `act.fail(detail)` for failure without an exception
-- `kamilog deed <method>` CLI subcommand for the 17 deeds, with `--level`; `-- COMMAND` runs the command, logs its outcome (`--err-level` sets the failure level) and returns its exit status to the shell
-- deed args are stringified with `str()` once, when the deed is called or `act.set()` gives them, so a later change to the object never alters the line
-- `docs/deed-doc.md`: user guide to deed log methods
-- topic guides `docs/log-doc.md`, `ansi-doc.md`, `banner-doc.md`, `verbosity-doc.md`, `shim-doc.md`, cross-linked w/ each other & `README.md`
-- `logger-deed_demo.py` example with a golden-output test
-
 ### Changed
-
-- diff-only compression compares a multi-line message line by line, each line against the same line of earlier messages; only line 1 follows the record prefix, later lines start at column 0
-- diff-only compression separates dittos with a space instead of a tab on a line whose rendered width exceeds 100 columns, and drops tab jumps and padding there
-- diff-only dittos stay tab-aligned under badges
-- `getLogger()` timestamps now depend on the destination when `datefmt` is not given: the console prints none, and a log file (`filename=`) uses `DATEFMT_DATETIME_MS`; an explicit `datefmt` or `relative_to` still applies to console and file alike
-- `kamilog logger` and `kamilog deed` print no timestamp by default; `-t/--time-format` defaults to `no-time`, and `-t time` restores `HH:MM:SS`
-- `docs/usage_doc.md` split into the topic guides; `README.md` Usage now links all of them, plus a Contributing section
-- installation instructions moved from `docs/install_guide.md` into the `README.md` Install section; the guide is removed
-- diff-only ditto tab stops shift with the shorter console prefix, so a compressed line may cover one more leading character
-- `logger-timestamps_demo.py` opens with a default section: console w/o timestamp vs file w/ `DATEFMT_DATETIME_MS`
-
-> [!WARNING]
-> Console output of `getLogger()` without `datefmt`, and of the `kamilog logger`
-> and `kamilog deed` commands, no longer starts with `HH:MM:SS`; pass
-> `datefmt=kamilog.DATEFMT_TIME` (or `-t time`) to keep it.
 
 ### Deprecated
 
@@ -66,7 +35,37 @@ bug using different logger to print & diff only can produce confusing result
 
 ### Security
 
-[unreleased]: https://github.com/kami-lel/kamilog/compare/v2.9.3...dev
+[unreleased]: https://github.com/kami-lel/kamilog/compare/v2.10.0...dev
+
+## [2.10.0] - 2026-09-30
+
+### Added
+
+- badges: run-mode labels (`dry`, `force`, `auto`, or any custom string) set per run with `KamiLogger.set_badges()` / `clear_badges()` or per record with `badges=` and `is_inheriting_badges=`
+- badges print between timestamp and level, sorted by priority and colored per label; lines without badges are unchanged
+- `AnsiRenderer.color_badge()` and `record.badges` for custom formatters
+- 17 deed log methods on `KamiLogger` (`create_file`, `cp_file`, `download`, `run_command`, ~~), each logging one deed in fixed wording; they take `level=`, `badges=`, and `is_inheriting_badges=`
+- track form `with logger.track.<method>(...)` logs the outcome at block exit, including failure with traceback; `err_level=`, `suppress=True`, and the `act.set()` / `act.fail()` handle
+- `kamilog deed <method>` CLI subcommand; `-- COMMAND` runs the command, logs its outcome, and returns its exit status
+- topic guides under `docs/`: `log-doc.md`, `ansi-doc.md`, `banner-doc.md`, `verbosity-doc.md`, `shim-doc.md`, `badge-doc.md`, `deed-doc.md`
+- `logger-badge_demo.py` and `logger-deed_demo.py` examples with golden-output tests
+
+### Changed
+
+- `getLogger()` without `datefmt` prints no console timestamp; a log file (`filename=`) uses `DATEFMT_DATETIME_MS`
+- `kamilog logger` and `kamilog deed` print no timestamp by default; `-t time` restores `HH:MM:SS`
+- diff-only compression handles multi-line messages line by line
+- diff-only compression uses space-separated dittos on lines wider than 100 columns
+- diff-only dittos stay tab-aligned under badges and the shorter console prefix
+- `docs/usage_doc.md` split into the topic guides; `README.md` Usage links all of them
+- installation instructions moved from `docs/install_guide.md` into the `README.md` Install section
+
+> [!WARNING]
+> Console output of `getLogger()` without `datefmt`, and of the `kamilog logger`
+> and `kamilog deed` commands, no longer starts with `HH:MM:SS`; pass
+> `datefmt=kamilog.DATEFMT_TIME` (or `-t time`) to keep it.
+
+[2.10.0]: https://github.com/kami-lel/kamilog/compare/v2.9.3...v2.10.0
 
 
 

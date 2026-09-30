@@ -64,7 +64,8 @@ files scannable instead of a wall of text. Q.v. the
 #### 💻 A CLI, Not Just a Library
 
 `kamilog` installs as its own shell command, ready to use without writing
-a line of Python. Scripts that may run where `kamilog` is missing can carry
+a line of Python, including `kamilog deed` for logging a deed from a shell
+script. Scripts that may run where `kamilog` is missing can carry
 the [shell shim](docs/shim-doc.md), which keeps them working either way.
 
 
