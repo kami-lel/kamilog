@@ -42,25 +42,25 @@ class TestBadgeSegment:
         assert line == "DONE  mymodule: wrote a.txt"
         assert "\t" not in line
 
-    def test_one_badge_between_two_tabs(_):
+    def test_one_badge_before_the_level(_):
         line = _engine().build_line(_make_record(badges=("dry",)))
-        assert line == "DONE \tdry\tmymodule: wrote a.txt"
+        assert line == "dry\tDONE  mymodule: wrote a.txt"
 
     def test_several_badges_space_separated(_):
         line = _engine().build_line(_make_record(badges=("dry", "yes")))
-        assert line == "DONE \tdry yes\tmymodule: wrote a.txt"
+        assert line == "dry yes\tDONE  mymodule: wrote a.txt"
 
-    def test_with_timestamp(_):
+    def test_badges_follow_the_timestamp(_):
         record = _make_record(badges=("dry", "yes"))
         line = _engine(DATEFMT_TIME).build_line(record)
         head, rest = line.split(" ", 1)
         assert len(head) == 8
-        assert rest == "DONE \tdry yes\tmymodule: wrote a.txt"
+        assert rest == "dry yes\tDONE  mymodule: wrote a.txt"
 
     def test_root_logger_keeps_bare_colon(_):
         line = _engine().build_line(_make_record("root", ("dry",)))
-        assert line == "DONE \tdry\t: wrote a.txt"
+        assert line == "dry\tDONE : wrote a.txt"
 
     def test_custom_badge_printed_bare(_):
         line = _engine().build_line(_make_record(badges=("deploy",)))
-        assert "\tdeploy\t" in line
+        assert line.startswith("deploy\tDONE")

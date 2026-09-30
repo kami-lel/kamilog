@@ -92,7 +92,7 @@ class TestDittoAlignmentUnderBadges:
         assert _display_cols(lines[3][:marker]) >= message_col
         if badges:
             label = " ".join(badges)
-            assert lines[3].index("\t{}\t".format(label)) < marker
+            assert lines[3].index("{}\t".format(label)) < marker
 
     def test_no_badges_prints_no_added_tabs_in_the_prefix(_, tmp_path):
         lines = _log_lines(tmp_path, ["hello"], badges=())
@@ -136,8 +136,7 @@ class TestDittoAlignmentUnderBadges:
         lines = path.read_text().split("\n")[:-1]
         assert "〃" in lines[3]
         # the line's own prefix decides the column: 4th line has one badge
-        with_badge = "\tdry\t"
-        assert with_badge in lines[3]
+        assert "dry\t" in lines[3]
         ref = _tail_col(lines[1], _TAIL + "X")
         assert _tail_col(lines[3], _TAIL + "Y") == ref
 

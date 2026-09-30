@@ -2,7 +2,7 @@
 logger-badge_demo.py
 
 demonstrate badges together with diff-only compression: badge
-labels between two tabs after the level, per-line compression of a
+labels between the timestamp and the level, per-line compression of a
 multi-line message, and space-separated dittos on a long line
 """
 

@@ -38,10 +38,10 @@ rolling the same `argparse` glue in every project.
 #### 🏷️ Badges for the Mode of a Run
 
 Tag a whole run as `dry`, `force`, `auto`, or any custom label with
-`set_badges()`, and every line shows it right after the level, colored by
+`set_badges()`, and every line shows it before the level, colored by
 severity. Repeated lines still compress cleanly, multi-line messages
-included. The [badge reference](docs/badge-doc.md) lists every native badge
-and how badges print.
+included. Q.v. the [badges documentation](docs/badge-doc.md) for every
+native badge and how to set them.
 
 #### 📐 Terminal Banners, Done Right
 

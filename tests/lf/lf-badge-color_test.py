@@ -64,12 +64,12 @@ class TestBuildLineBadgeColor:
     def test_each_badge_colored_separators_plain(_):
         line = _build_line(("dry", "x"))
         colored = "\033[93mdry\033[0m \033[90mx\033[0m"
-        assert "\t{}\t".format(colored) in line
+        assert line.startswith("{}\t".format(colored))
 
     def test_plain_output_has_bare_labels(_):
         line = _build_line(("dry", "yes"), is_tty=False)
         assert "\033" not in line
-        assert "\tdry yes\t" in line
+        assert line.startswith("dry yes\tDONE")
 
     def test_no_badges_adds_no_tabs(_):
         assert "\t" not in _build_line((), is_tty=False)

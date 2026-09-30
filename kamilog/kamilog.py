@@ -687,11 +687,10 @@ class _LogFormatEngine:  # *****************************************************
 
         badges = getattr(record, "badges", ())
         if badges:
-            # badges & source each start on the next tab stop
+            # level starts on the first tab stop after the badges
             col = ts_len + 1 if ts_len else 0
-            col = self._next_tab_stop(col + level_len)
             col = self._next_tab_stop(col + len(" ".join(badges)))
-            return col + source_len + 1
+            return col + level_len + space_len + source_len + 1
 
         if ts_len:
             return ts_len + 1 + level_len + space_len + source_len + 1
@@ -733,19 +732,12 @@ class _LogFormatEngine:  # *****************************************************
         source = self._fmt_source(record.name)
         space = " " if record.name and record.name != "root" else ""
         badges = getattr(record, "badges", ())
-        if badges:
-            # badges sit b/t level & source, each side on a tab stop
-            space = "\t{}\t".format(self._fmt_badges(badges))
-
-        if asctime:
-            return "{} {}{}{} {}".format(
-                asctime,
-                self._fmt_level(record.levelno),
-                space,
-                source,
-                record.getMessage(),
-            )
-        return "{}{}{} {}".format(
+        # badges sit b/t timestamp & level, level on the next tab stop
+        badge_seg = "{}\t".format(self._fmt_badges(badges)) if badges else ""
+        head = "{} ".format(asctime) if asctime else ""
+        return "{}{}{}{}{} {}".format(
+            head,
+            badge_seg,
             self._fmt_level(record.levelno),
             space,
             source,

@@ -162,7 +162,7 @@ Subclasses `logging.Logger`. Adds eleven convenience methods mapping to the cust
 - `set_badges(badges=None)` / `clear_badges()` — replace or unset the run-wide set, stored per logger in `_run_badges` (class default `()`). `set_badges()`, `None` and `[]` all unset it; there is no add or remove of one label.
 - `_log(..., badges=None, inherit_badges=True)` — override that merges per-call badges with the run-wide set (`inherit_badges=False` hides the run-wide set for one record) and stamps the result on the record as `record.badges` through `extra`. It forwards to `super()._log` with `stacklevel + 1`, so `funcName` and `lineno` still point at the caller. Every level method and `log()` accept the kwargs through `**kwargs`.
 
-The full reference is [`docs/badge-doc.md`](docs/badge-doc.md); `OpAction` (`docs/op_action_design.md`) is not implemented.
+The user-facing guide is [`docs/badge-doc.md`](docs/badge-doc.md); `OpAction` (`docs/op_action_design.md`) is not implemented.
 
 The full level progression: `DEBUG`(10) → `ENTER`(15) → `SKIP`(16) → `SUCC`(17) → `INFO`(20) → `PASS`(21) → `NOTE`(23) → `TIP`(24) → `DONE`(25) → `HINT`(26) → `IMPORTANT`(27) → `WARNING`(30) → `CAUTION`(31) → `ERROR`(40) → `FAIL`(45) → `CRITICAL`(50).
 
@@ -172,9 +172,9 @@ Holds all core formatting logic, independent of `logging.Formatter`. Instantiate
 
 Responsibilities:
 
-- `count_prefix_chars(record)` — returns the printable character count before the message text for a given record. Accounts for the optional timestamp (relative: always 13 chars; datefmt: rendered `time.strftime` length), the 5-char padded level name, and the source name with colon. When the record carries badges the value is a display column, not a character count: the badges start on the first tab stop after the level and the source on the first tab stop strictly after the badges (`_next_tab_stop`), so a literal tab in the line spans several columns. ANSI escape codes are excluded. Uses `time.strftime` directly so there is no dependency on `Formatter`.
+- `count_prefix_chars(record)` — returns the printable character count before the message text for a given record. Accounts for the optional timestamp (relative: always 13 chars; datefmt: rendered `time.strftime` length), the 5-char padded level name, and the source name with colon. When the record carries badges the value is a display column, not a character count: the badges follow the timestamp and the level starts on the first tab stop strictly after the badges (`_next_tab_stop`), so a literal tab in the line spans several columns. ANSI escape codes are excluded. Uses `time.strftime` directly so there is no dependency on `Formatter`.
 - `format_time(record, datefmt)` — produces the optionally colored timestamp string, or an empty string when disabled.
-- `build_line(record)` — assembles the full `LEVEL source: message` line with optional timestamp prefix. When `record.badges` is non-empty (read with a default, so plain `logging` records still work) the single space after the level becomes `\t<badges>\t`, badges joined by single spaces and colored per label (separators uncolored); a line with no badges is byte-identical to before. Does not append `exc_info` or `stack_info`.
+- `build_line(record)` — assembles the full `LEVEL source: message` line with optional timestamp prefix. When `record.badges` is non-empty (read with a default, so plain `logging` records still work) `<badges>\t` is inserted between the timestamp and the level, badges joined by single spaces and colored per label (separators uncolored); a line with no badges is byte-identical to before. Does not append `exc_info` or `stack_info`.
 - Private helpers `_fmt_asctime`, `_fmt_level`, `_fmt_badges`, `_fmt_source`, `_next_tab_stop`, `_fmt_relative` delegate color application to `self._palette`.
 
 Level display names: `DEBUG`, `ENTER`, `SKIP `, `INFO `, `PASS `, `SUCC.`, `NOTE `, `TIP  `, `DONE `, `HINT `, `IMPT.`, `WARN.`, `CAUT.`, `ERROR`, `FAIL `, `CRIT.`

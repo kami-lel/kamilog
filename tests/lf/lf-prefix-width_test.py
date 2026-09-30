@@ -105,29 +105,29 @@ class TestPrefixWidthWithBadges:
     def test_root_no_timestamp_one_badge(_):
         engine = _LogFormatEngine(_StubPalette(), datefmt=None)
         record = _make_record("root", badges=("dry",))
-        assert engine.count_prefix_chars(record) == 18
+        assert engine.count_prefix_chars(record) == 15
 
     def test_named_no_timestamp_one_badge(_):
         engine = _LogFormatEngine(_StubPalette(), datefmt=None)
         record = _make_record("mymodule", badges=("dry",))
-        assert engine.count_prefix_chars(record) == 26
+        assert engine.count_prefix_chars(record) == 24
 
     def test_root_with_timestamp_one_badge(_):
         engine = _LogFormatEngine(_StubPalette(), datefmt=DATEFMT_TIME)
         record = _make_record("root", badges=("dry",))
-        assert engine.count_prefix_chars(record) == 26
+        assert engine.count_prefix_chars(record) == 23
 
     def test_badge_ending_before_stop_uses_that_stop(_):
-        # 7 chars: 8 + 7 = 15, next stop 16, then ":" and a space
+        # 7 chars end at col 7, level on stop 8, then 5 + ":" + a space
         engine = _LogFormatEngine(_StubPalette(), datefmt=None)
         record = _make_record("root", badges=("retries",))
-        assert engine.count_prefix_chars(record) == 18
+        assert engine.count_prefix_chars(record) == 15
 
-    def test_badge_ending_on_stop_pushes_source_a_full_stop(_):
-        # 8 chars: 8 + 8 = 16, strictly after gives 24
+    def test_badge_ending_on_stop_pushes_level_a_full_stop(_):
+        # 8 chars end on col 8, strictly after gives stop 16
         engine = _LogFormatEngine(_StubPalette(), datefmt=None)
         record = _make_record("root", badges=("abcdefgh",))
-        assert engine.count_prefix_chars(record) == 26
+        assert engine.count_prefix_chars(record) == 23
 
     def test_empty_badges_same_as_none(_):
         engine = _LogFormatEngine(_StubPalette(), datefmt=None)
