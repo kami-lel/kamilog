@@ -64,8 +64,10 @@ The remark is the text that appears in the log.
 | --- | --- | --- |
 | `create_file` | path | `create {path}` |
 | `owr_file` | path | `overwrite {path}` |
+| `append_file` | path | `append {path}` |
 | `cp_file` | source, destination | `copy {source} -> {destination}` |
 | `mv_file` | source, destination | `move {source} -> {destination}` |
+| `chmod_file` | path, mode | `chmod {path} {mode}` |
 | `rm_file` | path | `delete {path}` |
 | `create_dir` | path | `create dir {path}` |
 | `rm_dir` | path | `delete dir {path}` |
@@ -78,6 +80,8 @@ The remark is the text that appears in the log.
 | `save_config` | path | `save {path}` |
 | `skip_file` | path | `skip {path}` |
 
+Pass `chmod_file`'s mode as a string, such as `"755"` or `"+x"`: kamilog prints it as given, so an integer like `0o755` would show as `493`.
+
 A deed logs at `WARNING` when it is destructive, and at `INFO` or `SKIP` otherwise.
 A failed deed logs at `ERROR`, or at `WARNING` when the run can safely go on.
 
@@ -85,8 +89,10 @@ A failed deed logs at `ERROR`, or at `WARNING` when the run can safely go on.
 | --- | --- | --- |
 | `create_file` | `INFO` | `ERROR` |
 | `owr_file` | `WARNING` | `ERROR` |
+| `append_file` | `INFO` | `ERROR` |
 | `cp_file` | `INFO` | `ERROR` |
 | `mv_file` | `INFO` | `ERROR` |
+| `chmod_file` | `INFO` | `ERROR` |
 | `rm_file` | `WARNING` | `WARNING` |
 | `create_dir` | `INFO` | `ERROR` |
 | `rm_dir` | `WARNING` | `WARNING` |

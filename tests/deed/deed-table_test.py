@@ -23,8 +23,10 @@ DOC_PATH = Path(__file__).parents[2] / "docs" / "deed-doc.md"
 EXPECTED_ORDER = (
     "create_file",
     "owr_file",
+    "append_file",
     "cp_file",
     "mv_file",
+    "chmod_file",
     "rm_file",
     "create_dir",
     "rm_dir",
@@ -55,7 +57,7 @@ def _read_doc_tables(heading):
 
 
 class TestDeedTable:
-    def test_fifteen_deeds_in_doc_order(_):
+    def test_seventeen_deeds_in_doc_order(_):
         assert tuple(_DEEDS) == EXPECTED_ORDER
 
     def test_name_matches_key(_):
@@ -94,8 +96,10 @@ class TestRenderDeedMessage:
         [
             ("create_file", ("out/a.txt",), "create out/a.txt"),
             ("owr_file", ("out/a.txt",), "overwrite out/a.txt"),
+            ("append_file", ("out/a.txt",), "append out/a.txt"),
             ("cp_file", ("a", "b"), "copy a -> b"),
             ("mv_file", ("a", "b"), "move a -> b"),
+            ("chmod_file", ("a.sh", "755"), "chmod a.sh 755"),
             ("rm_file", ("a",), "delete a"),
             ("create_dir", ("d",), "create dir d"),
             ("rm_dir", ("d",), "delete dir d"),
@@ -117,6 +121,7 @@ class TestRenderDeedMessage:
         [
             ("cp_file", ("a",), "copy a"),
             ("mv_file", ("a",), "move a"),
+            ("chmod_file", ("a.sh",), "chmod a.sh"),
             ("pack_files", ("src",), "pack src"),
             ("unpack_archive", ("a.tgz",), "unpack a.tgz"),
             ("download", ("http://x/a",), "download http://x/a"),

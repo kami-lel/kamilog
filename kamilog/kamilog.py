@@ -446,6 +446,7 @@ _DEEDS = {
     for d in (
         _Deed("create_file", ("path",), "create {path}", INFO, ERROR),
         _Deed("owr_file", ("path",), "overwrite {path}", WARNING, ERROR),
+        _Deed("append_file", ("path",), "append {path}", INFO, ERROR),
         _Deed(
             "cp_file",
             ("source", "destination"),
@@ -457,6 +458,13 @@ _DEEDS = {
             "mv_file",
             ("source", "destination"),
             "move {source} -> {destination}",
+            INFO,
+            ERROR,
+        ),
+        _Deed(
+            "chmod_file",
+            ("path", "mode"),
+            "chmod {path} {mode}",
             INFO,
             ERROR,
         ),
