@@ -1,7 +1,7 @@
 # kamilog CHANGELOG
 
 <!--
-Fixme different behavior for time re cli or log file
+FIXME different behavior for time re cli or log file
 
 Fixme main script optimization
 Fixme split usage doc
