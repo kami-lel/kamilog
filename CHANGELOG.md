@@ -37,6 +37,18 @@ bug using different logger to print & diff only can produce confusing result
 
 [unreleased]: https://github.com/kami-lel/kamilog/compare/v2.10.0...dev
 
+
+
+
+
+
+
+
+
+
+
+
+
 ## [2.10.0] - 2026-09-30
 
 ### Added
@@ -66,6 +78,15 @@ bug using different logger to print & diff only can produce confusing result
 > `datefmt=kamilog.DATEFMT_TIME` (or `-t time`) to keep it.
 
 [2.10.0]: https://github.com/kami-lel/kamilog/compare/v2.9.3...v2.10.0
+
+
+
+
+
+
+
+
+
 
 
 
