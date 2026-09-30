@@ -1,109 +1,119 @@
-# Badges
+# Badges Documentation
 
 A **badge** is a short label that says what mode the whole run is in: a dry run, an unattended run, a forced run. Set it once, and every log line carries it, so nobody reading the output has to wonder whether anything was really changed.
 
 kamilog only shows badges. It never makes anything dry or forced; your code does that.
 
-## Quick Start
+
+
+
+
+
+
+
+
+
+
+
+
+## Usage
 
 ```python
 import kamilog
 
 log = kamilog.getLogger("copy")
-log.set_badges(["dry", "yes"])
+log.setLevel(kamilog.DEBUG)
+
+log.set_badges(["dry", "yes"])                 # every later line, replaces any earlier set
 log.done("wrote a.txt")
+log.done("wrote b.txt", badges="deploy")       # this line only, on top of the set
+log.done("wrote c.txt", inherit_badges=False)  # this line only, without the set
+
+log.clear_badges()                             # same as set_badges(), (None) or ([])
+log.done("wrote d.txt")
 ```
 
 ```text
 13:04:22 dry yes	DONE  copy: wrote a.txt
+13:04:22 dry yes deploy	DONE  copy: wrote b.txt
+13:04:22 DONE  copy: wrote c.txt
+13:04:22 DONE  copy: wrote d.txt
 ```
 
-The badges sit between the time and the level. A tab follows them, so the level lines up across lines with different badges.
+`badges` takes a string or a list, and every level method and `log()` accept it along with `inherit_badges`. On a terminal each native badge is colored by how serious it is; files and `-C` output stay plain.
 
-## Setting Badges
+Badges print most serious first, whatever order you give them: `unsafe`, `force`, and `undo` lead, and `watch` and `bg` come last.
 
-```python
-log.set_badges(["dry", "chk"])           # every later line
-log.done("...", badges="deploy")         # this line only, on top of the run's badges
-log.done("...", badges=["dry", "yes"])   # a str or a list of str
-log.done("...", inherit_badges=False)    # this line only, without the run's badges
 
-log.clear_badges()                       # remove all run-wide badges
-```
 
-- Run-wide: `set_badges()` replaces the whole set each time; to change it, call it again with the full new list
-- Clearing: `clear_badges()`, `set_badges()`, `set_badges(None)`, and `set_badges([])` all remove every run-wide badge
-- Per line: `badges=` adds to the run-wide badges for that one line
-- Skipping: `inherit_badges=False` leaves the run-wide badges out of one line and keeps them for the next
-- Duplicates: a badge given twice prints once
-- Every level method and `log()` accept `badges=` and `inherit_badges=`
 
-## How Badges Print
 
-- A line with no badges looks exactly as it did before badges existed
-- Badges print in order of seriousness, the most serious first, whatever order you gave them: `unsafe`, `force`, and `undo` lead; `watch` and `bg` come last
-- On a terminal each native badge is colored by how serious it is; in files and with `-C`, badges print as plain text
-- Timestamps, if enabled, stay at the start of the line
+
+
+
+
+
+
+
 
 ## Native Badges
 
-### Effect
+Effect:
 
-| Badge | Color | Reads as |
-| --- | --- | --- |
-| `dry` | bright yellow | nothing is changed, only reported |
-| `chk` | yellow | state verified, not modified |
-| `mock` | yellow | the action hit a stand-in, not the real system |
-| `sbx` | green | the run is isolated, so nothing outlives it |
+| Badge | CLI Analogue | Color | Remark |
+| --- | --- | --- | --- |
+| `dry` | `--dry-run`, `rsync -n` | `BRIGHT_YELLOW` | nothing is changed, only reported |
+| `chk` | `ansible --check`, `black --check` | `YELLOW` | short for *check*; state verified, not modified |
+| `mock` | stubbed or fake backend | `YELLOW` | the action hit a stand-in, not the real system |
+| `sbx` | `docker run --rm`, throwaway environment | `GREEN` | short for *sandbox*; the run is isolated, so nothing outlives it |
 
-### Safety
+Safety:
 
-| Badge | Color | Reads as |
-| --- | --- | --- |
-| `unsafe` | bright red | verification was skipped |
-| `force` | red | guards were bypassed |
-| `undo` | red | a prior run is being reversed |
+| Badge | CLI Analogue | Color | Remark |
+| --- | --- | --- | --- |
+| `unsafe` | `git --no-verify`, `curl -k` | `BRIGHT_RED` | verification was skipped |
+| `force` | `-f`, `git push --force` | `RED` | guards were bypassed |
+| `undo` | `--rollback` | `RED` | a prior run is being reversed |
 
-### Prompting
+Prompting:
 
-| Badge | Color | Reads as |
-| --- | --- | --- |
-| `yes` | yellow | prompts were auto-answered |
-| `auto` | blue | no human is present |
+| Badge | CLI Analogue | Color | Remark |
+| --- | --- | --- | --- |
+| `yes` | `-y`, `apt -y` | `YELLOW` | prompts were auto-answered |
+| `auto` | `--non-interactive`, CI, cron | `BLUE` | short for *automatic*; no human is present |
 
-### Error Policy
+Error Policy:
 
-| Badge | Color | Reads as |
-| --- | --- | --- |
-| `strict` | green | warnings count as failures |
-| `keep` | yellow | failures logged, run continues |
-| `fast` | green | the first failure stops the run |
-| `retries` | cyan | failed steps are attempted again |
+| Badge | CLI Analogue | Color | Remark |
+| --- | --- | --- | --- |
+| `strict` | `--strict`, `-Werror` | `GREEN` | warnings count as failures |
+| `keep` | `make -k`, `--continue-on-error` | `YELLOW` | failures logged, run continues |
+| `fast` | `pytest -x`, `set -e` | `GREEN` | the first failure stops the run |
+| `retries` | `curl --retry`, `--retries N` | `CYAN` | failed steps are attempted again |
 
-### Execution
+Execution:
 
-| Badge | Color | Reads as |
-| --- | --- | --- |
-| `resm` | cyan | continuing an interrupted run |
-| `new` | cyan | previous state ignored, starting over |
-| `offl` | cyan | no network, cached data only |
-| `incr` | cyan | only what changed is processed |
-| `watch` | blue | re-runs on change |
-| `bg` | blue | the run is detached from the terminal |
+| Badge | CLI Analogue | Color | Remark |
+| --- | --- | --- | --- |
+| `resm` | `wget -c`, `rsync --partial` | `CYAN` | short for *resume*; continuing an interrupted run |
+| `new` | `--no-cache`, `--fresh` | `CYAN` | previous state ignored, starting over |
+| `offl` | `pip --no-index`, `npm --offline` | `CYAN` | short for *offline*; no network, cached data only |
+| `incr` | `rsync`, only changed items | `CYAN` | short for *incremental*; only what changed is processed |
+| `watch` | `--watch` | `BLUE` | re-runs on change |
+| `bg` | `docker -d`, `&` | `BLUE` | short for *background*; the run is detached from the terminal |
+
+
+
+
+
+
+
+
+
+
+
+
 
 ## Custom Badges
 
-Any other string is a custom badge, and it needs no declaration: `log.set_badges(["deploy"])` just works. Custom badges print in grey, after the native ones, in the order you gave them.
-
-kamilog does not check names, so a misspelled native badge such as `"forse"` prints as a grey custom badge. It does not check combinations either; `dry` next to `force` is printed as given.
-
-## With Repeated Lines
-
-Badges work with kamilog's [diff-only output](usage_doc.md#diff-only-output): repeated lines still collapse to what changed, and the `〃` markers stay aligned under any set of badges. Multi-line messages are compared line by line, and a very long line (over 100 columns) uses spaces between markers instead of tabs.
-
-```text
-13:04:22 force dry auto	INFO  sync: sync /home/alice/docs/q3_report.pdf  ->  remote:backup  ok
-13:04:22 force dry auto	INFO  sync: 〃	〃	〃	 /q4〃	〃	〃	〃	〃  ok
-```
-
-A runnable version is in [logger-badge_demo.py](../examples/logger/logger-badge_demo.py).
+Any other string works as a badge, with no declaration, and prints grey after the native ones. Names are not checked, so a misspelled native badge such as `"forse"` prints as a grey custom one.
