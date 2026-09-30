@@ -549,6 +549,48 @@ class KamiLogger(logging.Logger):  # ===========================================
         """
         self._run_badges = ()
 
+    def _log(
+        self,
+        level,
+        msg,
+        args,
+        exc_info=None,
+        extra=None,
+        stack_info=False,
+        stacklevel=1,
+        badges=None,
+        inherit_badges=True,
+    ):
+        """
+        stamp the record with its effective badges, then log as usual
+
+        per-call ``badges`` add to the run-wide set unless
+        ``inherit_badges`` is false; the result lands on
+        ``record.badges`` as a priority-sorted tuple
+
+
+        :param badges: badge labels for this record only; default=None
+        :type badges: str or Iterable(str), optional
+        :param inherit_badges: whether the run-wide badges apply to this
+                record; default=True
+        :type inherit_badges: bool, optional
+        """
+        run_badges = self._run_badges if inherit_badges else ()
+        extra = dict(extra) if extra else {}
+        extra["badges"] = _normalize_badges(
+            (*run_badges, *_normalize_badges(badges))
+        )
+        # +1 skips this frame so caller info stays correct
+        super()._log(
+            level,
+            msg,
+            args,
+            exc_info=exc_info,
+            extra=extra,
+            stack_info=stack_info,
+            stacklevel=stacklevel + 1,
+        )
+
 
 logging.setLoggerClass(KamiLogger)
 # root logger exists before setLoggerClass — patch its class directly
