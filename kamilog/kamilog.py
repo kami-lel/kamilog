@@ -340,7 +340,7 @@ class AnsiRenderer:  # =========================================================
 
     def color_badge(self, text, badge):
         """
-        apply the badge's hue to ``text``; custom badges get grey
+        apply the badge's hue to ``text``; custom badges get magenta
 
 
         :param text: badge label text to colorize
@@ -351,7 +351,7 @@ class AnsiRenderer:  # =========================================================
                 otherwise ``text`` unchanged
         :rtype: str
         """
-        hue = _NATIVE_BADGES.get(badge, (AnsiStyle.GREY, 0))[0]
+        hue = _NATIVE_BADGES.get(badge, (AnsiStyle.MAGENTA, 0))[0]
         return self.color(text, hue)
 
     def color_triage_tag(self, triage_tag):

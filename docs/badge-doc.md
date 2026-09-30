@@ -118,7 +118,7 @@ Execution:
 
 ## Custom Badges
 
-Any other string works as a badge, with no declaration, and prints grey after the native ones. Names are not checked, so a misspelled native badge such as `"forse"` prints as a grey custom one.
+Any other string works as a badge, with no declaration, and prints magenta after the native ones. Names are not checked, so a misspelled native badge such as `"forse"` prints as a magenta custom one.
 
 A nightly sync job run by cron, pushing to the `eu-west` region, mixes native and custom badges:
 
@@ -136,4 +136,4 @@ log.done("synced 120 files")
 auto keep eu-west	DONE  sync: synced 120 files
 ```
 
-`auto` and `keep` are native and lead, colored by severity, while `eu-west` is custom and follows in grey.
+`auto` and `keep` are native and lead, colored by severity, while `eu-west` is custom and follows in magenta.

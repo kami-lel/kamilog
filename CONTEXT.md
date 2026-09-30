@@ -116,7 +116,7 @@ Public class that centralizes ANSI color detection and application. Instantiated
 - `is_disabled=False` (keyword-only) forces color off unconditionally at construction, regardless of the stream's TTY state.
 - `color(text, style)` — generic style applier; wraps `text` in the ANSI codes for every flag set in the combined `AnsiStyle` value.
 - `color_level(text, levelno)` — wraps `text` in bold + per-level ANSI color via the internal `_LEVEL2ANSI_COLOR` map.
-- `color_badge(text, badge)` — wraps `text` in the badge's hue from `_NATIVE_BADGES`; any other (custom) badge is grey.
+- `color_badge(text, badge)` — wraps `text` in the badge's hue from `_NATIVE_BADGES`; any other (custom) badge is magenta.
 - `color_grey(text)` — wraps `text` in grey; used for timestamps, source labels, and compression markers.
 - `color_triage_tag(triage_tag)` — colors a triage-tag string (`BUG`/`Bug`/`bug`, `FIXME`/`Fixme`/`fixme`, `TODO`/`Todo`/`todo`, `HACK`/`Hack`/`hack`) via the internal `_TRIAGE_TAG2ANSI_STYLE` map. Each tag type keeps one hue across its three loudness tiers, with contrast (background presence/brightness, bold) escalating for louder tiers. Raises `ValueError` for any other string.
 
@@ -162,7 +162,7 @@ Subclasses `logging.Logger`. Adds eleven convenience methods mapping to the cust
 
 `KamiLogger` also carries badges: labels for the mode the whole run is in (`dry`, `force`, `auto` and the rest). kamilog only records and displays them.
 
-- `_NATIVE_BADGES` — module-level table mapping each native label to `(AnsiStyle hue, priority)`; a higher priority prints earlier. Any label absent from it is a custom badge: grey, priority 0.
+- `_NATIVE_BADGES` — module-level table mapping each native label to `(AnsiStyle hue, priority)`; a higher priority prints earlier. Any label absent from it is a custom badge: magenta, priority 0.
 - `_normalize_badges(badges)` — private pure function: accepts `None`, a `str` or an iterable, drops duplicates and orders by descending priority (stable for ties; customs keep the order given). Returns a tuple.
 - `set_badges(badges=None)` / `clear_badges()` — replace or unset the run-wide set, stored per logger in `_run_badges` (class default `()`). `set_badges()`, `None` and `[]` all unset it; there is no add or remove of one label.
 - `_log(..., badges=None, is_inheriting_badges=True)` — override that merges per-call badges with the run-wide set (`is_inheriting_badges=False` hides the run-wide set for one record) and stamps the result on the record as `record.badges` through `extra`. It forwards to `super()._log` with `stacklevel + 1`, so `funcName` and `lineno` still point at the caller. Every level method and `log()` accept the kwargs through `**kwargs`.
