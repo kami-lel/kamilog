@@ -518,6 +518,26 @@ def _stringify_deed_args(args):
     return tuple(None if arg is None else str(arg) for arg in args)
 
 
+def _raise_unexpected_deed_arg(deed, key):
+    """
+    raise ``TypeError`` for argument ``key`` that ``deed`` does not accept
+    """
+    raise TypeError(
+        "{}() got an unexpected argument '{}'".format(deed.name, key)
+    )
+
+
+def _bind_deed_methods(cls, make_method, qualname_prefix):
+    """
+    attach one method per deed to ``cls``, built by ``make_method``
+    """
+    for deed in _DEEDS.values():
+        method = make_method(deed)
+        method.__name__ = deed.name
+        method.__qualname__ = "{}.{}".format(qualname_prefix, deed.name)
+        setattr(cls, deed.name, method)
+
+
 def _render_deed_message(deed, *args, **kwargs):
     """
     render `deed` wording from positional `args` and named `kwargs`;
@@ -532,9 +552,7 @@ def _render_deed_message(deed, *args, **kwargs):
     values = dict(zip(deed.arg_names, args))
     for key, val in kwargs.items():
         if key not in deed.arg_names or key in values:
-            raise TypeError(
-                "{}() got an unexpected argument '{}'".format(deed.name, key)
-            )
+            _raise_unexpected_deed_arg(deed, key)
         values[key] = val
 
     # each field carries the literal before it; the 1st literal is the verb
@@ -624,11 +642,7 @@ class _DeedScope:  # ***********************************************************
         """record arguments given after entry, validating each name"""
         for key in kwargs:
             if key not in self._deed.arg_names:
-                raise TypeError(
-                    "{}() got an unexpected argument '{}'".format(
-                        self._deed.name, key
-                    )
-                )
+                _raise_unexpected_deed_arg(self._deed, key)
             if self._deed.arg_names.index(key) < len(self._args):
                 raise TypeError(
                     "{}() got multiple values for argument '{}'".format(
@@ -664,16 +678,15 @@ class _DeedScope:  # ***********************************************************
 
     def _emit(self, level, message, exc_info=None):
         """log `message`, attributed to the code holding the `with`"""
-        if self._logger.isEnabledFor(level):
-            self._logger._log(
-                level,
-                message,
-                (),
-                exc_info=exc_info,
-                stacklevel=4,
-                badges=self._options["badges"],
-                is_inheriting_badges=self._options["is_inheriting_badges"],
-            )
+        self._logger._log_if_enabled(
+            level,
+            message,
+            (),
+            4,
+            exc_info=exc_info,
+            badges=self._options["badges"],
+            is_inheriting_badges=self._options["is_inheriting_badges"],
+        )
 
 
 class _DeedTrack:  # ***********************************************************
@@ -710,8 +723,6 @@ def _make_track_method(deed):
         }
         return _DeedScope(self._logger, deed, args, options)
 
-    track_method.__name__ = deed.name
-    track_method.__qualname__ = "_DeedTrack.{}".format(deed.name)
     track_method.__doc__ = """
         track the deed ``{template}``: one line is logged when the block
         exits, at ``level`` on success or at ``err_level`` on an
@@ -740,9 +751,7 @@ def _make_track_method(deed):
     return track_method
 
 
-for _deed in _DEEDS.values():
-    setattr(_DeedTrack, _deed.name, _make_track_method(_deed))
-del _deed
+_bind_deed_methods(_DeedTrack, _make_track_method, "_DeedTrack")
 
 
 class KamiLogger(logging.Logger):  # ===========================================
@@ -760,104 +769,67 @@ class KamiLogger(logging.Logger):  # ===========================================
         """
         log at ``ENTER`` level (15): entering a hook or test case.
         """
-        if self.isEnabledFor(_CustomLogLevel.ENTER):
-            self._log(
-                _CustomLogLevel.ENTER, message, args, stacklevel=2, **kwargs
-            )
+        self._log_if_enabled(ENTER, message, args, 2, **kwargs)
 
     def skip(self, message, *args, **kwargs):
         """
         log at ``SKIP`` level (16): skipping a hook or test case.
         """
-        if self.isEnabledFor(_CustomLogLevel.SKIP):
-            self._log(
-                _CustomLogLevel.SKIP, message, args, stacklevel=2, **kwargs
-            )
+        self._log_if_enabled(SKIP, message, args, 2, **kwargs)
 
     def succ(self, message, *args, **kwargs):
         """
         log at ``SUCC`` level (17): task or operation succeeded.
         """
-        if self.isEnabledFor(_CustomLogLevel.SUCC):
-            self._log(
-                _CustomLogLevel.SUCC, message, args, stacklevel=2, **kwargs
-            )
+        self._log_if_enabled(SUCC, message, args, 2, **kwargs)
 
     def pass_(self, message, *args, **kwargs):
         """
         log at ``PASS`` level (21): hook or test case passed.
         """
-        if self.isEnabledFor(_CustomLogLevel.PASS):
-            self._log(
-                _CustomLogLevel.PASS, message, args, stacklevel=2, **kwargs
-            )
+        self._log_if_enabled(PASS, message, args, 2, **kwargs)
 
     def note(self, message, *args, **kwargs):
         """
         log at ``NOTE`` level (23): general aside worth noting.
         """
-        if self.isEnabledFor(_CustomLogLevel.NOTE):
-            self._log(
-                _CustomLogLevel.NOTE, message, args, stacklevel=2, **kwargs
-            )
+        self._log_if_enabled(NOTE, message, args, 2, **kwargs)
 
     def tip(self, message, *args, **kwargs):
         """
         log at ``TIP`` level (24): actionable suggestion.
         """
-        if self.isEnabledFor(_CustomLogLevel.TIP):
-            self._log(
-                _CustomLogLevel.TIP, message, args, stacklevel=2, **kwargs
-            )
+        self._log_if_enabled(TIP, message, args, 2, **kwargs)
 
     def done(self, message, *args, **kwargs):
         """
         log at ``DONE`` level (25): task or operation completed.
         """
-        if self.isEnabledFor(_CustomLogLevel.DONE):
-            self._log(
-                _CustomLogLevel.DONE, message, args, stacklevel=2, **kwargs
-            )
+        self._log_if_enabled(DONE, message, args, 2, **kwargs)
 
     def hint(self, message, *args, **kwargs):
         """
         log at ``HINT`` level (26): subtle, barely-there cue.
         """
-        if self.isEnabledFor(_CustomLogLevel.HINT):
-            self._log(
-                _CustomLogLevel.HINT, message, args, stacklevel=2, **kwargs
-            )
+        self._log_if_enabled(HINT, message, args, 2, **kwargs)
 
     def important(self, message, *args, **kwargs):
         """
         log at ``IMPORTANT`` level (27): emphasized information.
         """
-        if self.isEnabledFor(_CustomLogLevel.IMPORTANT):
-            self._log(
-                _CustomLogLevel.IMPORTANT,
-                message,
-                args,
-                stacklevel=2,
-                **kwargs,
-            )
+        self._log_if_enabled(IMPORTANT, message, args, 2, **kwargs)
 
     def caution(self, message, *args, **kwargs):
         """
         log at ``CAUTION`` level (31): risk of a negative outcome.
         """
-        if self.isEnabledFor(_CustomLogLevel.CAUTION):
-            self._log(
-                _CustomLogLevel.CAUTION, message, args, stacklevel=2, **kwargs
-            )
+        self._log_if_enabled(CAUTION, message, args, 2, **kwargs)
 
     def fail(self, message, *args, **kwargs):
         """
         log at ``FAIL`` level (45): hook or test case failed.
         """
-        if self.isEnabledFor(_CustomLogLevel.FAIL):
-            self._log(
-                _CustomLogLevel.FAIL, message, args, stacklevel=2, **kwargs
-            )
+        self._log_if_enabled(FAIL, message, args, 2, **kwargs)
 
     @property
     def track(self):
@@ -888,6 +860,14 @@ class KamiLogger(logging.Logger):  # ===========================================
         unset every run-wide badge
         """
         self._run_badges = ()
+
+    def _log_if_enabled(self, level, msg, args, stacklevel, **kwargs):
+        """
+        log at ``level`` if enabled; ``stacklevel`` counts from the
+                method calling this helper, as if it called ``_log``
+        """
+        if self.isEnabledFor(level):
+            self._log(level, msg, args, stacklevel=stacklevel + 1, **kwargs)
 
     def _log(
         self,
@@ -949,8 +929,6 @@ def _make_deed_method(deed):
                 is_inheriting_badges=is_inheriting_badges,
             )
 
-    deed_method.__name__ = deed.name
-    deed_method.__qualname__ = "KamiLogger.{}".format(deed.name)
     deed_method.__doc__ = """
         log the deed ``{template}`` at ``{level}`` level by default.
 
@@ -972,9 +950,7 @@ def _make_deed_method(deed):
     return deed_method
 
 
-for _deed in _DEEDS.values():
-    setattr(KamiLogger, _deed.name, _make_deed_method(_deed))
-del _deed
+_bind_deed_methods(KamiLogger, _make_deed_method, "KamiLogger")
 
 
 logging.setLoggerClass(KamiLogger)

@@ -4,8 +4,11 @@ logger-custom-levels_test.py
 tests for `KamiLogger` custom level methods in `kamilog.py`
 """
 
+import inspect
 import logging
 import uuid
+
+import pytest
 
 from kamilog.kamilog import _CustomLogLevel
 
@@ -117,3 +120,31 @@ class TestCustomLevelGating:
         caplog.set_level(_CustomLogLevel.SKIP, logger=logger.name)
         logger.succ("should appear too")
         assert len(caplog.records) == 1
+
+
+class TestCustomLevelCallSite:
+    @pytest.mark.parametrize(
+        "method",
+        (
+            "enter",
+            "skip",
+            "succ",
+            "pass_",
+            "note",
+            "tip",
+            "done",
+            "hint",
+            "important",
+            "caution",
+            "fail",
+        ),
+    )
+    def test_record_points_at_caller(_, caplog, method):
+        logger = _fresh_logger()
+        caplog.set_level(logging.DEBUG, logger=logger.name)
+        getattr(logger, method)("msg")
+        call_lineno = inspect.currentframe().f_lineno - 1
+        rec = caplog.records[0]
+        assert rec.filename == "logger-custom-levels_test.py"
+        assert rec.funcName == "test_record_points_at_caller"
+        assert rec.lineno == call_lineno
