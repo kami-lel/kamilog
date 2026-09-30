@@ -1897,6 +1897,33 @@ def _flag_option_strings(short_flag, long_flag):
     return [long_flag]
 
 
+def _add_step_argument(parser, short_flag, long_flag, help_template):
+    """
+    add a counting option to ``parser``, its help naming the flags bound
+    """
+    opts = _flag_option_strings(short_flag, long_flag)
+    parser.add_argument(
+        *opts,
+        action="count",
+        default=0,
+        help=help_template.format(opt="/".join(opts)),
+    )
+
+
+def _add_extremity_argument(parser, short_flag, long_flag, dest, help_text):
+    """
+    add an option to ``parser`` that sets ``dest`` to the extreme
+    """
+    parser.add_argument(
+        *_flag_option_strings(short_flag, long_flag),
+        dest=dest,
+        action="store_const",
+        const=_EXTREME_VERBOSITY,
+        default=0,
+        help=help_text,
+    )
+
+
 def add_verbose_arguments(
     parser,
     *,
@@ -1947,61 +1974,32 @@ def add_verbose_arguments(
     :raises ValueError: step_flags and extremity_flags are the same
             non-empty pair, which would bind one flag letter twice
     """
-    if step_flags not in _VERBOSE_FLAG_CHOICES:
-        raise ValueError(
-            "param step_flags {!r} must be one of {!r}".format(
-                step_flags, _VERBOSE_FLAG_CHOICES
+    for param, flags in (
+        ("step_flags", step_flags),
+        ("extremity_flags", extremity_flags),
+    ):
+        if flags not in _VERBOSE_FLAG_CHOICES:
+            raise ValueError(
+                "param {} {!r} must be one of {!r}".format(
+                    param, flags, _VERBOSE_FLAG_CHOICES
+                )
             )
-        )
-    if extremity_flags not in _VERBOSE_FLAG_CHOICES:
-        raise ValueError(
-            "param extremity_flags {!r} must be one of {!r}".format(
-                extremity_flags, _VERBOSE_FLAG_CHOICES
-            )
-        )
     if step_flags and step_flags == extremity_flags:
         raise ValueError(
             "param step_flags and extremity_flags conflict: "
             "both are {!r}".format(step_flags)
         )
 
-    v_flag, q_flag = step_flags if step_flags else ("", "")
-    ev_flag, eq_flag = extremity_flags if extremity_flags else ("", "")
+    v_flag, q_flag = step_flags or ("", "")
+    ev_flag, eq_flag = extremity_flags or ("", "")
 
-    # step flag  -----------------------------------------------------------
-    verbose_opts = _flag_option_strings(v_flag, "--verbose")
-    quiet_opts = _flag_option_strings(q_flag, "--quiet")
-    parser.add_argument(
-        *verbose_opts,
-        action="count",
-        default=0,
-        help=_STEP_VERBOSE_HELP.format(opt="/".join(verbose_opts)),
+    _add_step_argument(parser, v_flag, "--verbose", _STEP_VERBOSE_HELP)
+    _add_step_argument(parser, q_flag, "--quiet", _STEP_QUIET_HELP)
+    _add_extremity_argument(
+        parser, ev_flag, "--max-verbose", "verbose", _EXTREMITY_VERBOSE_HELP
     )
-    parser.add_argument(
-        *quiet_opts,
-        action="count",
-        default=0,
-        help=_STEP_QUIET_HELP.format(opt="/".join(quiet_opts)),
-    )
-
-    # extremity flag  --------------------------------------------------------
-    max_verbose_opts = _flag_option_strings(ev_flag, "--max-verbose")
-    max_quiet_opts = _flag_option_strings(eq_flag, "--max-quiet")
-    parser.add_argument(
-        *max_verbose_opts,
-        dest="verbose",
-        action="store_const",
-        const=_EXTREME_VERBOSITY,
-        default=0,
-        help=_EXTREMITY_VERBOSE_HELP,
-    )
-    parser.add_argument(
-        *max_quiet_opts,
-        dest="quiet",
-        action="store_const",
-        const=_EXTREME_VERBOSITY,
-        default=0,
-        help=_EXTREMITY_QUIET_HELP,
+    _add_extremity_argument(
+        parser, eq_flag, "--max-quiet", "quiet", _EXTREMITY_QUIET_HELP
     )
 
 
@@ -2116,6 +2114,60 @@ _CONTENT_SPACING = "  "
 _PADDING_MAP = {1: "#", 2: "=", 3: "*", 4: "+", 5: "-"}
 
 
+def _resolve_padding_preset(padding):
+    """
+    :return: padding char for preset ``padding`` (1~5); any other
+            ``padding`` unchanged
+    :rtype: str
+    :raises ValueError: ``padding`` is an int outside 1~5
+    """
+    if not isinstance(padding, int):
+        return padding
+    if padding not in _PADDING_MAP:
+        raise ValueError("param padding int must be 1~5")
+    return _PADDING_MAP[padding]
+
+
+def _check_banner_content(content, line_width):
+    """
+    raise ``ValueError`` unless ``content`` is one line fitting ``line_width``
+    """
+    if "\n" in content:
+        raise ValueError("param content must be a single line")
+    if len(content) > line_width:
+        raise ValueError(
+            "param content length {} exceeds line_width {}".format(
+                len(content), line_width
+            )
+        )
+
+
+def _check_padding_char(padding):
+    """
+    raise ``ValueError`` unless ``padding`` is one printable non-space char
+    """
+    if len(padding) != 1:
+        raise ValueError("param padding must be a single character")
+    if not padding.isprintable() or padding == " ":
+        raise ValueError("param padding must be a normal printable character")
+
+
+def _grey_fill(renderer, padding, n):
+    """
+    :return: ``padding`` repeated ``n`` times, colored grey
+    :rtype: str
+    """
+    return renderer.color_grey(padding * n)
+
+
+def _resolve_renderer(renderer, file):
+    """
+    :return: ``renderer``, or a new one for ``file`` when ``None``
+    :rtype: AnsiRenderer
+    """
+    return AnsiRenderer(file) if renderer is None else renderer
+
+
 def _gen_comment_banner_generic(
     mode,
     content,
@@ -2134,57 +2186,31 @@ def _gen_comment_banner_generic(
             ``"c"`` centered, ``"l"`` left-justified, ``"r"`` right-justified
     :type mode: str
     """
-    if isinstance(padding, int):
-        if padding not in _PADDING_MAP:
-            raise ValueError("param padding int must be 1~5")
-        padding = _PADDING_MAP[padding]
+    padding = _resolve_padding_preset(padding)
+    _check_banner_content(content, line_width)
+    _check_padding_char(padding)
+    renderer = _resolve_renderer(renderer, file)
 
-    if "\n" in content:
-        raise ValueError("param content must be a single line")
-    if len(content) > line_width:
-        raise ValueError(
-            "param content length {} exceeds line_width {}".format(
-                len(content), line_width
-            )
-        )
-    if len(padding) != 1:
-        raise ValueError("param padding must be a single character")
-    if not padding.isprintable() or padding == " ":
-        raise ValueError("param padding must be a normal printable character")
-
-    if renderer is None:
-        renderer = AnsiRenderer(file)
-
-    if mode == "l":  # left justified
+    if mode in ("l", "r"):
         remaining = line_width - len(content) - len(_CONTENT_SPACING)
-        padded_content = (
-            content
-            + _CONTENT_SPACING
-            + renderer.color_grey(padding * remaining)
-        )
-    elif mode == "r":  # right justified
-        remaining = line_width - len(content) - len(_CONTENT_SPACING)
-        padded_content = (
-            renderer.color_grey(padding * remaining)
-            + _CONTENT_SPACING
-            + content
-        )
-    else:  # centered (mode == "c")
-        remaining = line_width - len(content) - len(_CONTENT_SPACING) * 2
-        # horizontal_offset nudges Content sideways: -1 left, +1 right
-        left = remaining // 2 + horizontal_offset
-        right = remaining - left
-        if left < 0 or right < 0:
-            raise ValueError("param horizontal_offset out of range")
-        padded_content = (
-            renderer.color_grey(padding * left)
-            + _CONTENT_SPACING
-            + content
-            + _CONTENT_SPACING
-            + renderer.color_grey(padding * right)
-        )
+        fill = _grey_fill(renderer, padding, remaining)
+        if mode == "l":
+            return content + _CONTENT_SPACING + fill
+        return fill + _CONTENT_SPACING + content
 
-    return padded_content
+    # centered; horizontal_offset shifts content: -1 left, +1 right
+    remaining = line_width - len(content) - len(_CONTENT_SPACING) * 2
+    left = remaining // 2 + horizontal_offset
+    right = remaining - left
+    if left < 0 or right < 0:
+        raise ValueError("param horizontal_offset out of range")
+    return (
+        _grey_fill(renderer, padding, left)
+        + _CONTENT_SPACING
+        + content
+        + _CONTENT_SPACING
+        + _grey_fill(renderer, padding, right)
+    )
 
 
 # Comment Banner Public API  ===================================================
@@ -2299,8 +2325,7 @@ def gen_comment_banner_zero(
     # line 2
     ####################
     """
-    if renderer is None:
-        renderer = AnsiRenderer(file)
+    renderer = _resolve_renderer(renderer, file)
 
     ruler = renderer.color_grey("#" * line_width)
     formatted_lines = [ruler]
