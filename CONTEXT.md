@@ -31,7 +31,7 @@ kamilog/
 │   │   └── demo/                    # golden-output tests for examples/verbosity_demo.py
 │   ├── ansi/                        # AnsiRenderer / TTY detection test suite
 │   │   └── demo/                    # golden-output tests for examples/ansi/*
-│   ├── badge/                       # operation badge table / normalizer / KamiLogger badge API
+│   ├── badge/                       # badge table / normalizer / KamiLogger badge API
 │   ├── lf/                          # _LogFormatter / _LogFormatEngine test suite (incl. badge display, color, prefix width)
 │   ├── logger/                      # KamiLogger behavior test suite
 │   │   └── demo/                    # golden-output tests for examples/logger/*
@@ -52,7 +52,7 @@ kamilog/
 │   └── logger/
 │       ├── logger-all_levels_demo.py        # all sixteen log levels with descriptions
 │       ├── logger-timestamps_demo.py        # all four DATEFMT_* formats and relative_to
-│       ├── logger-badge_demo.py             # operation badges, multi-line & long-line dittos
+│       ├── logger-badge_demo.py             # badges, multi-line & long-line dittos
 │       ├── logger-diff_only_demo.py         # _DiffOnlyMsgFilter compression walkthrough
 │       └── logger-diff_only_stress_demo.py  # word-boundary, leader, and embedded-tab
 │                                             # compression scenarios
@@ -153,16 +153,16 @@ Subclasses `logging.Logger`. Adds eleven convenience methods mapping to the cust
 | `.caution()` | `CAUTION` | 31 |
 | `.fail()` | `FAIL` | 45 |
 
-#### Operation badges
+#### Badges
 
-`KamiLogger` also carries operation badges: labels for the mode the whole run is in (`dry`, `force`, `auto` and the rest). kamilog only records and displays them.
+`KamiLogger` also carries badges: labels for the mode the whole run is in (`dry`, `force`, `auto` and the rest). kamilog only records and displays them.
 
 - `_NATIVE_BADGES` — module-level table mapping each native label to `(AnsiStyle hue, priority)`; a higher priority prints earlier. Any label absent from it is a custom badge: grey, priority 0.
 - `_normalize_badges(badges)` — private pure function: accepts `None`, a `str` or an iterable, drops duplicates and orders by descending priority (stable for ties; customs keep the order given). Returns a tuple.
 - `set_badges(badges=None)` / `clear_badges()` — replace or unset the run-wide set, stored per logger in `_run_badges` (class default `()`). `set_badges()`, `None` and `[]` all unset it; there is no add or remove of one label.
 - `_log(..., badges=None, inherit_badges=True)` — override that merges per-call badges with the run-wide set (`inherit_badges=False` hides the run-wide set for one record) and stamps the result on the record as `record.badges` through `extra`. It forwards to `super()._log` with `stacklevel + 1`, so `funcName` and `lineno` still point at the caller. Every level method and `log()` accept the kwargs through `**kwargs`.
 
-Design notes are in [`docs/op_badge_design.md`](docs/op_badge_design.md); `OpAction` (`docs/op_action_design.md`) is not implemented.
+The full reference is [`docs/badge-doc.md`](docs/badge-doc.md); `OpAction` (`docs/op_action_design.md`) is not implemented.
 
 The full level progression: `DEBUG`(10) → `ENTER`(15) → `SKIP`(16) → `SUCC`(17) → `INFO`(20) → `PASS`(21) → `NOTE`(23) → `TIP`(24) → `DONE`(25) → `HINT`(26) → `IMPORTANT`(27) → `WARNING`(30) → `CAUTION`(31) → `ERROR`(40) → `FAIL`(45) → `CRITICAL`(50).
 
@@ -406,4 +406,4 @@ Verbosity mapping (default level is `DONE` = 25):
 
 ## Known Limitations and Future Work
 
-- Test coverage now spans verbosity helpers, comment-banner functions, `AnsiRenderer`/TTY detection (`tests/ansi/`), `_LogFormatter`/`_LogFormatEngine` (`tests/lf/`), operation badges (`tests/badge/`), `KamiLogger` (`tests/logger/`), `_DiffOnlyEngine`/`_DiffOnlyMsgFilter` (`tests/dof/`), `_TabAlignedLine` (`tests/tal/`), and the shared `-n`/`-N`/`-C` CLI flags (`tests/cli/`), plus golden-output tests for every `examples/` demo script; the CLI subcommands' pre-existing arguments (mode, padding, width, stderr routing, level resolution, verbosity) still have no dedicated tests.
+- Test coverage now spans verbosity helpers, comment-banner functions, `AnsiRenderer`/TTY detection (`tests/ansi/`), `_LogFormatter`/`_LogFormatEngine` (`tests/lf/`), badges (`tests/badge/`), `KamiLogger` (`tests/logger/`), `_DiffOnlyEngine`/`_DiffOnlyMsgFilter` (`tests/dof/`), `_TabAlignedLine` (`tests/tal/`), and the shared `-n`/`-N`/`-C` CLI flags (`tests/cli/`), plus golden-output tests for every `examples/` demo script; the CLI subcommands' pre-existing arguments (mode, padding, width, stderr routing, level resolution, verbosity) still have no dedicated tests.

@@ -257,9 +257,9 @@ log = kamilog.getLogger("myapp", disable_diff_only_compression=True)
 
 
 
-### Operation Badges
+### Badges
 
-An operation badge labels the mode the whole run is in, such as a dry run or an unattended run. kamilog only records and displays badges; it never makes an operation dry or forced, since the caller's code does that.
+A badge labels the mode the whole run is in, such as a dry run or an unattended run. kamilog only records and displays badges; it never makes an operation dry or forced, since the caller's code does that.
 
 ```python
 import kamilog
@@ -300,7 +300,7 @@ Native badges, with the hue used on a TTY and the priority (higher prints earlie
 | Error Policy | `strict` green 32, `keep` yellow 41, `fast` green 31, `retries` cyan 25 |
 | Execution | `resm` cyan 24, `new` cyan 23, `offl` cyan 22, `incr` cyan 21, `watch` blue 12, `bg` blue 11 |
 
-The [Operation Badges design](op_badge_design.md) lists what each native badge means.
+The [Badges reference](badge-doc.md) lists what each native badge means.
 
 Badges compose with diff-only output: the compressor measures the badged prefix, so dittos stay on their tab stops, per line for multi-line messages, and switch to spaces on long lines.
 

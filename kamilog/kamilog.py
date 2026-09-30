@@ -391,7 +391,7 @@ DATEFMT_DATETIME = "%Y-%m-%d %H:%M:%S"
 DATEFMT_DATETIME_MS = "%Y-%m-%d %H:%M:%S.{ms}"
 
 
-# Operation Badges  ============================================================
+# Badges  ======================================================================
 # native badge label → (hue, priority); higher priority prints earlier
 _NATIVE_BADGES = {
     "dry": (AnsiStyle.BRIGHT_YELLOW, 45),
@@ -547,7 +547,7 @@ class KamiLogger(logging.Logger):  # ===========================================
 
     def set_badges(self, badges=None):
         """
-        replace the run-wide operation badges
+        replace the run-wide badges
 
         an omitted, ``None`` or empty ``badges`` unsets every run-wide
         badge; there is no add or remove of a single badge
@@ -561,7 +561,7 @@ class KamiLogger(logging.Logger):  # ===========================================
 
     def clear_badges(self):
         """
-        unset every run-wide operation badge
+        unset every run-wide badge
         """
         self._run_badges = ()
 

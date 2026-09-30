@@ -1,8 +1,8 @@
-# Operation Badges
+# Badges
 
-*Status: implemented*
+reference for badges in kamilog: what they are, how to set them, how they print, and how they combine with diff-only output.
 
-An **operation badge** labels the mode the whole run is in, such as a dry run or an unattended run. Badges combine, and they are usually set once for a run. kamilog only records and displays them; it never makes an operation dry or forced, since the caller's code does that.
+A **badge** labels the mode the whole run is in, such as a dry run or an unattended run. Badges combine, and they are usually set once for a run. kamilog only records and displays them; it never makes an operation dry or forced, since the caller's code does that.
 
 Two terms are used throughout:
 
@@ -38,7 +38,7 @@ The diff-only compressor measures the badged prefix in display columns, so its `
 - Multi-line messages: line *k* is compared with line *k* of the earlier messages; only line 1 follows the prefix, later lines start at column 0.
 - Long lines: when a physical line's rendered, uncompressed width, badges and tab stops included, exceeds 100 columns, its dittos are separated by a space instead of a tab.
 
-## API Sketch
+## API
 
 ```python
 log.set_badges(["dry", "chk"])                    # every later record
@@ -59,6 +59,7 @@ log.done("...", inherit_badges=False)             # this record: run-wide off
 - Custom badge default: grey, with priority `0`, after every native badge; custom badges keep the order given among themselves.
 - Native labels: the names in the tables below get their defined hue; nothing validates them, so a typo prints as a grey custom badge.
 - No conflict checking: kamilog is a log wrapper, so contradictory combinations are printed as given.
+- Record attribute: the resolved, priority-sorted tuple is stored on each record as `record.badges`, so custom formatters and filters can read it; records from plain `logging` loggers have no such attribute.
 
 ## Native Badges
 
