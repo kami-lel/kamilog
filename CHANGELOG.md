@@ -1,8 +1,6 @@
 # kamilog CHANGELOG
 
 <!--
-FIXME split usage doc
-FIXME use `-` in doc
 HACK rm emoji
 
 todo cli color-triage-tag
