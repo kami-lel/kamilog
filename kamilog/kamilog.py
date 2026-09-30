@@ -2569,6 +2569,58 @@ def _register_color_grey_parser(cli_subparser):
     color_grey_parser.set_defaults(func=_color_grey_parser_main)
 
 
+# deed CLI  ====================================================================
+_DEED_HELP = "log one deed, e.g. a file copy, in its fixed wording"
+
+
+def _deed_parser_main(args):
+    deed = args.deed
+    logger = getLogger(disable_color=args.no_color)
+    logger.setLevel(logging.DEBUG)  # --level alone decides what shows
+    level = None
+    if args.level is not None:
+        level = _LOGGER_LEVEL_MAP[args.level.lower()]
+    deed_args = [getattr(args, name) for name in deed.arg_names]
+    getattr(logger, deed.name)(
+        *(val for val in deed_args if val is not None), level=level
+    )
+
+
+def _register_deed_parser(cli_subparser):
+    """
+    register the ``deed`` subcommand, with one sub-subcommand per deed
+    """
+    deed_parser = cli_subparser.add_parser(
+        "deed",
+        help=_DEED_HELP,
+        description=_DEED_HELP,
+    )
+    deed_parser.set_defaults(func=lambda _: deed_parser.print_help())
+    deed_subparser = deed_parser.add_subparsers(title="deeds", metavar="DEED")
+
+    for deed in _DEEDS.values():
+        sub_parser = deed_subparser.add_parser(
+            deed.name.replace("_", "-"),
+            parents=[_no_color_parser],
+            help=deed.template,
+            description="log the deed ``{}``".format(deed.template),
+        )
+        for i, name in enumerate(deed.arg_names):
+            # the subject is required; trailing arguments may be omitted
+            sub_parser.add_argument(
+                name, nargs=None if i == 0 else "?", default=None
+            )
+        sub_parser.add_argument(
+            "--level",
+            choices=list(_LOGGER_LEVEL_MAP),
+            default=None,
+            help="level of the success line; default={}".format(
+                logging.getLevelName(deed.level)
+            ),
+        )
+        sub_parser.set_defaults(func=_deed_parser_main, deed=deed)
+
+
 # CLI main parser  #############################################################
 
 _cli_parser = ArgumentParser(
@@ -2586,6 +2638,7 @@ _register_color_grey_parser(_cli_subparser)
 _register_comment_banner_parser(_cli_subparser)
 _register_comment_banner_zero_parser(_cli_subparser)
 _register_logger_parser(_cli_subparser)
+_register_deed_parser(_cli_subparser)
 
 
 # Entry Point  #################################################################
