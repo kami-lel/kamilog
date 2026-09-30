@@ -685,6 +685,14 @@ class _LogFormatEngine:  # *****************************************************
         space_len = 1 if has_name else 0
         source_len = len(name) + 1 if has_name else 1  # "name:" or ":"
 
+        badges = getattr(record, "badges", ())
+        if badges:
+            # badges & source each start on the next tab stop
+            col = ts_len + 1 if ts_len else 0
+            col = self._next_tab_stop(col + level_len)
+            col = self._next_tab_stop(col + len(" ".join(badges)))
+            return col + source_len + 1
+
         if ts_len:
             return ts_len + 1 + level_len + space_len + source_len + 1
         return level_len + space_len + source_len + 1
@@ -745,6 +753,11 @@ class _LogFormatEngine:  # *****************************************************
         )
 
     # helpers  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @staticmethod
+    def _next_tab_stop(col):
+        """return the first tab stop strictly after column ``col``."""
+        return (col // _TabAlignedLine.TAB_SIZE + 1) * _TabAlignedLine.TAB_SIZE
 
     def _fmt_asctime(self, asctime):
         """color ``asctime`` grey."""
