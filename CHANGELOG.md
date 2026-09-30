@@ -51,6 +51,7 @@ bug using different logger to print & diff only can produce confusing result
 - diff-only dittos stay tab-aligned under badges
 - `getLogger()` timestamps now depend on the destination when `datefmt` is not given: the console prints none, and a log file (`filename=`) uses `DATEFMT_DATETIME_MS`; an explicit `datefmt` or `relative_to` still applies to console and file alike
 - `kamilog logger` and `kamilog deed` print no timestamp by default; `-t/--time-format` defaults to `no-time`, and `-t time` restores `HH:MM:SS`
+- installation instructions moved from `docs/install_guide.md` into the `README.md` Install section; the guide is removed
 - diff-only ditto tab stops shift with the shorter console prefix, so a compressed line may cover one more leading character
 - `logger-timestamps_demo.py` opens with a default section: console w/o timestamp vs file w/ `DATEFMT_DATETIME_MS`
 

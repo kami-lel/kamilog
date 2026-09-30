@@ -61,8 +61,7 @@ kamilog/
 ├── docs/
 │   ├── usage_doc.md         # public API reference with examples
 │   ├── badge-doc.md         # user guide to badges and the native badge table
-│   ├── deed-doc.md          # user guide to deed log methods
-│   └── install_guide.md     # installation methods
+│   └── deed-doc.md          # user guide to deed log methods
 ├── scripts/
 │   └── kamilog_shim.sh       # bash `kamilog()` fallback wrapper, meant to be copy-pasted
 │                             # or sourced into a caller's own script

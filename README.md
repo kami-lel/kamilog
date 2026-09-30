@@ -1,4 +1,4 @@
-# kamilog README
+# kamilog
 
 A lightweight Python logging wrapper with structured output, custom log levels, combinable ANSI color styling, and flexible timestamp options.
 
@@ -68,7 +68,48 @@ a line of Python.
 
 ## Install
 
-Q.v. [docs/install_guide.md](docs/install_guide.md) for installation instructions.
+#### Package Install
+
+Install via `pip`. This also registers the `kamilog` shell command (`console_scripts` entry point) automatically.
+
+Clone and install:
+
+```bash
+git clone https://github.com/kami-lel/kamilog.git
+cd kamilog
+pip install .
+```
+
+Or install directly from GitHub:
+
+```bash
+pip install git+https://github.com/kami-lel/kamilog.git
+```
+
+#### Copy Install
+
+Embed kamilog directly into your project, no `pip` required.
+
+Copy the single file into your project root:
+
+```
+your_project/
+├── kamilog.py
+└── main.py
+```
+
+Or copy the entire folder into your project's source directory:
+
+```
+your_project/
+├── project_abc/
+│   ├── kamilog/
+│   │   ├── __init__.py
+│   │   └── kamilog.py
+│   ├── module_a/
+│   └── module_b/
+└── pyproject.toml
+```
 
 
 
@@ -89,19 +130,3 @@ Q.v. [docs/usage_doc.md](docs/usage_doc.md) for full usage documentation.
 Run `kamilog -h` for the full CLI reference — each subcommand's `-h`/`--help` text is the de facto documentation.
 
 Q.v. [examples/](examples/) for runnable scripts demonstrating each feature.
-
-
-
-
-
-
-
-
-
-
-
-
-
-## Contributing
-
-Q.v. [AGENTS.md](AGENTS.md) for commands, conventions, and the pre-merge checklist, and [CONTEXT.md](CONTEXT.md) for architecture and how the pieces fit.
