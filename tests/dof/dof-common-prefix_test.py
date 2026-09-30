@@ -11,7 +11,8 @@ from kamilog.kamilog import _DiffOnlyEngine
 
 def _make_engine(history):
     engine = _DiffOnlyEngine.__new__(_DiffOnlyEngine)
-    engine._history = deque(history, maxlen=max(len(history), 1))
+    lines = [m.split("\n") for m in history]
+    engine._history = deque(lines, maxlen=max(len(history), 1))
     return engine
 
 

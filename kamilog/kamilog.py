@@ -967,6 +967,7 @@ class _DiffOnlyEngine:  # ******************************************************
 
     def __init__(self, formatter, threshold=3):
         self._formatter = formatter
+        # each entry: one message split into its lines
         self._history = deque(maxlen=threshold)
         # _common[i] = shared char at position i across all history,
         # or None where messages diverge or lengths differ
@@ -976,7 +977,7 @@ class _DiffOnlyEngine:  # ******************************************************
         """
         recompute ``_common`` from the current ``_history`` messages
         """
-        history = list(self._history)
+        history = ["\n".join(lines) for lines in self._history]
         if not history:
             self._common = []
             return
@@ -1130,7 +1131,7 @@ class _DiffOnlyEngine:  # ******************************************************
         else:
             masked = message
 
-        self._history.append(message)
+        self._history.append(message.split("\n"))
         self._update_common()
         return masked
 
