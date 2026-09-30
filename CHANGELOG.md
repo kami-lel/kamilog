@@ -1,8 +1,6 @@
 # kamilog CHANGELOG
 
 <!--
-TODO add common operation log
-
 Fixme different behavior for time re cli or log file
 
 Fixme main script optimization
