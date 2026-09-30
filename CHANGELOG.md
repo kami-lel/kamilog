@@ -1,7 +1,6 @@
 # kamilog CHANGELOG
 
 <!--
-TODO implement dry run / flag support
 TODO add common operation log
 
 Todo long line compression w/ ditto
@@ -41,6 +40,7 @@ bug using different logger to print & diff only can produce confusing result
 - badges: labels for the mode a run is in (`dry`, `force`, `auto` and more, or any custom string); set for a run with `KamiLogger.set_badges()` / `clear_badges()`, or per record with `badges=` and `is_inheriting_badges=` on every level method and `log()`
 - badges print between the timestamp and the level (`time badges<tab>level source: message`), sorted by priority, one hue per native badge on a TTY and grey for custom ones; lines without badges are unchanged
 - `AnsiRenderer.color_badge()` and `record.badges` for custom formatters
+- `docs/badge-doc.md`: user guide to badges, with every native badge
 - `logger-badge_demo.py` example with a golden-output test
 
 ### Changed

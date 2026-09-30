@@ -78,8 +78,9 @@ Keep these files in sync with code changes:
 | `CHANGELOG.md` | any user-visible change |
 | `AGENTS.md` | commands, conventions, or constraints change |
 | `CONTEXT.md` | architecture, module layout, or feature set changes |
-| `docs/usage_doc.md` | public API or output format changes |
-| `docs/install_guide.md` | installation steps or requirements change |
+| [`docs/usage_doc.md`](docs/usage_doc.md) | public API or output format changes |
+| [`docs/badge-doc.md`](docs/badge-doc.md) | badge API, native badges, or badge display change |
+| [`docs/install_guide.md`](docs/install_guide.md) | installation steps or requirements change |
 
 ## Security Considerations
 

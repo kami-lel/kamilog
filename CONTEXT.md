@@ -58,6 +58,7 @@ kamilog/
 │                                             # compression scenarios
 ├── docs/
 │   ├── usage_doc.md         # public API reference with examples
+│   ├── badge-doc.md         # user guide to badges and the native badge table
 │   └── install_guide.md     # installation methods
 ├── scripts/
 │   └── kamilog_shim.sh       # bash `kamilog()` fallback wrapper, meant to be copy-pasted
