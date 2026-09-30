@@ -1734,6 +1734,96 @@ def getLogger(
     return logger
 
 
+# shared parsers  ==============================================================
+
+_common_parser = ArgumentParser(add_help=False)
+_newline_group = _common_parser.add_mutually_exclusive_group()
+_newline_group.add_argument(
+    "-n",
+    "--newline",
+    dest="newline",
+    action="store_true",
+    default=None,
+    help="always append a trailing newline after output",
+)
+_newline_group.add_argument(
+    "-N",
+    "--no-newline",
+    dest="newline",
+    action="store_false",
+    default=None,
+    help="never append a trailing newline after output",
+)
+_no_color_parser = ArgumentParser(add_help=False, parents=[_common_parser])
+_no_color_parser.add_argument(
+    "-C",
+    "--no-color",
+    action="store_true",
+    help="disable ANSI color output",
+)
+
+_line_width_parser = ArgumentParser(add_help=False, parents=[_no_color_parser])
+_line_width_parser.add_argument(
+    "-w",
+    "--line-width",
+    type=int,
+    default=80,
+    metavar="LINE_WIDTH",
+    help="total character width of output line; default 80",
+)
+
+
+def _calc_line_end(args, stdin_content=""):
+    """
+    decide the trailing-newline ``end`` string: stdin's own newline,
+    if any, plus one when ``-n`` and none when ``-N``; with neither
+    flag the output ends in exactly one newline
+    """
+    kept = "\n" if stdin_content.endswith("\n") else ""
+    if args.newline is True:
+        return kept + "\n"
+    if args.newline is False:
+        return kept
+    return "\n"
+
+
+def _read_stdin_line():
+    """
+    :return: the next stdin line raw, and without its trailing newline
+    :rtype: tuple(str, str)
+    """
+    raw = sys.stdin.readline()
+    return raw, raw.rstrip("\n")
+
+
+def _print_output(args, text, raw):
+    """
+    print ``text`` to stdout, ended per ``-n/-N`` and the newline of ``raw``
+    """
+    print(text, file=sys.stdout, end=_calc_line_end(args, raw))
+
+
+def _add_subcommand(
+    cli_subparser, name, alias, parents, help_text, description, func
+):
+    """
+    :return: new subparser ``name``, with ``func`` as handler unless
+            ``None``, and ``alias`` unless empty
+    :rtype: argparse.ArgumentParser
+    """
+    subparser = cli_subparser.add_parser(
+        name,
+        parents=parents,
+        help=help_text,
+        description=description,
+        formatter_class=RawDescriptionHelpFormatter,
+        aliases=[alias] if alias else [],
+    )
+    if func is not None:
+        subparser.set_defaults(func=func)
+    return subparser
+
+
 # logger CLI  ==================================================================
 
 
@@ -1805,13 +1895,14 @@ def _register_logger_parser(cli_subparser):
     """
     register the ``logger`` subcommand on ``cli_subparser``
     """
-    logger_parser = cli_subparser.add_parser(
+    logger_parser = _add_subcommand(
+        cli_subparser,
         "logger",
-        parents=[_no_color_parser],
-        help=_LOGGER_HELP,
-        description=_LOGGER_DESCRIPTION,
-        formatter_class=RawDescriptionHelpFormatter,
-        aliases=["l"],
+        "l",
+        [_no_color_parser],
+        _LOGGER_HELP,
+        _LOGGER_DESCRIPTION,
+        _logger_parser_main,
     )
 
     logger_parser.add_argument(
@@ -1849,8 +1940,6 @@ def _register_logger_parser(cli_subparser):
         action="store_true",
         help="disable diff-only message compression",
     )
-
-    logger_parser.set_defaults(func=_logger_parser_main)
 
 
 # Verbosity  ###################################################################
@@ -2345,62 +2434,17 @@ def gen_comment_banner_zero(
     return "\n".join(formatted_lines)
 
 
-# shared parsers  ==============================================================
-
-_common_parser = ArgumentParser(add_help=False)
-_newline_group = _common_parser.add_mutually_exclusive_group()
-_newline_group.add_argument(
-    "-n",
-    "--newline",
-    dest="newline",
-    action="store_true",
-    default=None,
-    help="always append a trailing newline after output",
-)
-_newline_group.add_argument(
-    "-N",
-    "--no-newline",
-    dest="newline",
-    action="store_false",
-    default=None,
-    help="never append a trailing newline after output",
-)
-_no_color_parser = ArgumentParser(add_help=False, parents=[_common_parser])
-_no_color_parser.add_argument(
-    "-C",
-    "--no-color",
-    action="store_true",
-    help="disable ANSI color output",
-)
-
-_line_width_parser = ArgumentParser(add_help=False, parents=[_no_color_parser])
-_line_width_parser.add_argument(
-    "-w",
-    "--line-width",
-    type=int,
-    default=80,
-    metavar="LINE_WIDTH",
-    help="total character width of output line; default 80",
-)
-
-
-def _calc_line_end(args, stdin_content=""):
-    """
-    decide the trailing-newline ``end`` string: stdin's own newline,
-    if any, plus one when ``-n`` and none when ``-N``; with neither
-    flag the output ends in exactly one newline
-    """
-    kept = "\n" if stdin_content.endswith("\n") else ""
-    if args.newline is True:
-        return kept + "\n"
-    if args.newline is False:
-        return kept
-    return "\n"
-
-
 # comment banner parser  =======================================================
 
 _COMMENT_BANNER_HELP = "print stdin content padded to line width"
+
+
+_COMMENT_BANNER_DESCRIPTION = _COMMENT_BANNER_HELP + """
+
+content is read from stdin, as a single line
+
+example:
+  echo 'hello world' | kamilog cb c '=' -w 20"""
 
 
 def _comment_banner_parser_main(args):
@@ -2408,8 +2452,7 @@ def _comment_banner_parser_main(args):
     mode = mode_map.get(args.mode, args.mode)
     file = sys.stdout
     renderer = AnsiRenderer(file, is_disabled=args.no_color)
-    raw = sys.stdin.readline()  # single line from stdin
-    content = raw.rstrip("\n")
+    raw, content = _read_stdin_line()
     padding = int(args.padding) if args.padding in "12345" else args.padding
     line = _gen_comment_banner_generic(
         mode,
@@ -2419,25 +2462,21 @@ def _comment_banner_parser_main(args):
         file=file,
         renderer=renderer,
     )
-    print(line, file=file, end=_calc_line_end(args, raw))
+    _print_output(args, line, raw)
 
 
 def _register_comment_banner_parser(cli_subparser):
     """
     register the ``comment_banner`` subcommand on ``cli_subparser``
     """
-    comment_banner_parser = cli_subparser.add_parser(
+    comment_banner_parser = _add_subcommand(
+        cli_subparser,
         "comment_banner",
-        parents=[_line_width_parser],
-        help=_COMMENT_BANNER_HELP,
-        description=(
-            _COMMENT_BANNER_HELP
-            + "\n\ncontent is read from stdin, as a single line\n\n"
-            "example:\n"
-            "  echo 'hello world' | kamilog cb c '=' -w 20"
-        ),
-        formatter_class=RawDescriptionHelpFormatter,
-        aliases=["cb"],
+        "cb",
+        [_line_width_parser],
+        _COMMENT_BANNER_HELP,
+        _COMMENT_BANNER_DESCRIPTION,
+        _comment_banner_parser_main,
     )
 
     comment_banner_parser.add_argument(
@@ -2453,12 +2492,18 @@ def _register_comment_banner_parser(cli_subparser):
         help="fill char, or int 1~5 for CB1~CB5 preset (1:#/2:=/3:*/4:+/5:-)",
     )
 
-    comment_banner_parser.set_defaults(func=_comment_banner_parser_main)
-
 
 # cb0 parser  ==================================================================
 
 _CB0_HELP = "print multi-line boxed comment banner (CB0)"
+
+
+_CB0_DESCRIPTION = _CB0_HELP + """
+
+lines are read from stdin, one banner line per stdin line
+
+example:
+  printf 'line 1\\nline 2\\n' | kamilog cb0 -w 20"""
 
 
 def _comment_banner_zero_parser_main(args):
@@ -2472,29 +2517,21 @@ def _comment_banner_zero_parser_main(args):
         file=file,
         renderer=renderer,
     )
-    print(banner, file=file, end=_calc_line_end(args, raw))
+    _print_output(args, banner, raw)
 
 
 def _register_comment_banner_zero_parser(cli_subparser):
     """
     register the ``comment_banner_zero`` subcommand on ``cli_subparser``
     """
-    comment_banner_zero_parser = cli_subparser.add_parser(
+    _add_subcommand(
+        cli_subparser,
         "comment_banner_zero",
-        parents=[_line_width_parser],
-        help=_CB0_HELP,
-        description=(
-            _CB0_HELP
-            + "\n\nlines are read from stdin, one banner line per stdin line"
-            "\n\nexample:\n"
-            "  printf 'line 1\\nline 2\\n' | kamilog cb0 -w 20"
-        ),
-        formatter_class=RawDescriptionHelpFormatter,
-        aliases=["cb0"],
-    )
-
-    comment_banner_zero_parser.set_defaults(
-        func=_comment_banner_zero_parser_main
+        "cb0",
+        [_line_width_parser],
+        _CB0_HELP,
+        _CB0_DESCRIPTION,
+        _comment_banner_zero_parser_main,
     )
 
 
@@ -2528,7 +2565,7 @@ def _parse_ansi_style(raw):
     try:
         return AnsiStyle.parse(raw)
     except ValueError as e:
-        raise ArgumentTypeError(str(e))
+        raise ArgumentTypeError(str(e)) from e
 
 
 def _print_colored_stdin_line(args, style):
@@ -2538,10 +2575,8 @@ def _print_colored_stdin_line(args, style):
     """
     file = sys.stdout
     renderer = AnsiRenderer(file)
-    raw = sys.stdin.readline()  # single line from stdin
-    content = raw.rstrip("\n")
-    colored = renderer.color(content, style)
-    print(colored, file=file, end=_calc_line_end(args, raw))
+    raw, content = _read_stdin_line()
+    _print_output(args, renderer.color(content, style), raw)
 
 
 def _color_parser_main(args):
@@ -2555,13 +2590,14 @@ def _register_color_parser(cli_subparser):
     """
     register the ``color`` subcommand on ``cli_subparser``
     """
-    color_parser = cli_subparser.add_parser(
+    color_parser = _add_subcommand(
+        cli_subparser,
         "color",
-        parents=[_common_parser],
-        help=_COLOR_HELP,
-        description=_COLOR_DESCRIPTION,
-        formatter_class=RawDescriptionHelpFormatter,
-        aliases=["c"],
+        "c",
+        [_common_parser],
+        _COLOR_HELP,
+        _COLOR_DESCRIPTION,
+        _color_parser_main,
     )
 
     color_parser.add_argument(
@@ -2571,8 +2607,6 @@ def _register_color_parser(cli_subparser):
         type=_parse_ansi_style,
         help="1+ ANSI styles, v.s.",
     )
-
-    color_parser.set_defaults(func=_color_parser_main)
 
 
 # color-grey parser  ===========================================================
@@ -2597,16 +2631,15 @@ def _register_color_grey_parser(cli_subparser):
     """
     register the ``color-grey`` subcommand on ``cli_subparser``
     """
-    color_grey_parser = cli_subparser.add_parser(
+    _add_subcommand(
+        cli_subparser,
         "color-grey",
-        parents=[_common_parser],
-        help=_COLOR_GREY_HELP,
-        description=_COLOR_GREY_DESCRIPTION,
-        formatter_class=RawDescriptionHelpFormatter,
-        aliases=["cg"],
+        "cg",
+        [_common_parser],
+        _COLOR_GREY_HELP,
+        _COLOR_GREY_DESCRIPTION,
+        _color_grey_parser_main,
     )
-
-    color_grey_parser.set_defaults(func=_color_grey_parser_main)
 
 
 # deed CLI  ====================================================================
@@ -2673,11 +2706,8 @@ def _register_deed_parser(cli_subparser):
     """
     register the ``deed`` subcommand, with one sub-subcommand per deed
     """
-    deed_parser = cli_subparser.add_parser(
-        "deed",
-        help=_DEED_HELP,
-        description=_DEED_DESCRIPTION,
-        formatter_class=RawDescriptionHelpFormatter,
+    deed_parser = _add_subcommand(
+        cli_subparser, "deed", None, [], _DEED_HELP, _DEED_DESCRIPTION, None
     )
     deed_parser.set_defaults(func=lambda _: deed_parser.print_help())
     deed_subparser = deed_parser.add_subparsers(title="deeds", metavar="DEED")
