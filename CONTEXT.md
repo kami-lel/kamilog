@@ -52,6 +52,7 @@ kamilog/
 │   └── logger/
 │       ├── logger-all_levels_demo.py        # all sixteen log levels with descriptions
 │       ├── logger-timestamps_demo.py        # all four DATEFMT_* formats and relative_to
+│       ├── logger-badge_demo.py             # operation badges, multi-line & long-line dittos
 │       ├── logger-diff_only_demo.py         # _DiffOnlyMsgFilter compression walkthrough
 │       └── logger-diff_only_stress_demo.py  # word-boundary, leader, and embedded-tab
 │                                             # compression scenarios
