@@ -227,6 +227,20 @@ INFO  sensor: te〃    ture=21.9 humidity=55% status=OK
 
 The filter is invisible during a warmup period (first 3 messages) and resets automatically when the message pattern changes.
 
+#### Multi-line Messages
+
+A message containing `\n` is compared line by line: line *k* is compared with line *k* of the earlier messages, never with a different line. Only the first line follows the record prefix; every later line starts at column 0, so its tab stops are counted from the left edge. A line missing from an earlier message is never compressed.
+
+#### Long Lines
+
+Tab alignment matters less than width once a line is long. When the rendered, uncompressed width of a physical line exceeds 100 columns (prefix, badges and tab stops included, embedded tabs expanded), its dittos are separated by a space instead of a tab:
+
+```
+INFO  sensor: 〃 〃 〃 〃 〃 〃 〃 〃 〃 〃 〃 〃 /token=abc
+```
+
+Such a line carries no tabs and no padding runs from the compressor, so it is narrower than its tab-aligned form, though it is not guaranteed to fit in 100 columns. Each physical line of a multi-line message is judged on its own, and lines at or under 100 columns keep the tab form.
+
 Pass `disable_diff_only_compression=True` to turn compression off entirely, so
 every record prints in full:
 
@@ -236,6 +250,59 @@ log = kamilog.getLogger("myapp", disable_diff_only_compression=True)
 
 
 
+
+
+
+
+
+
+
+### Operation Badges
+
+An operation badge labels the mode the whole run is in, such as a dry run or an unattended run. kamilog only records and displays badges; it never makes an operation dry or forced, since the caller's code does that.
+
+```python
+import kamilog
+
+log = kamilog.getLogger("copy")
+log.set_badges(["dry", "yes"])            # every later record
+log.done("wrote a.txt")
+log.done("wrote b.txt", badges="deploy")  # this record only, added to the set
+log.done("wrote c.txt", inherit_badges=False)  # this record: no run-wide set
+log.clear_badges()                        # unset all
+```
+
+Badges print after the level, between two tabs. A line with no badges prints exactly as before, with no added tabs:
+
+```
+13:04:22 DONE  copy: wrote c.txt
+13:04:22 DONE \tdry yes\tcopy: wrote a.txt
+13:04:22 DONE \tdry yes deploy\tcopy: wrote b.txt
+```
+
+(`\t` above stands for a real tab character.) The badges start on the first tab stop after the level, and the source and message on the first tab stop strictly after the badges, so lines whose badges end within the same stop share a message column. Files and `-C` output keep the bare labels and real tabs.
+
+- `badges`: a `str` or an iterable of `str`, accepted by every level method and by `log()`; a per-call badge is added to the run-wide set for that record only
+- `set_badges`: replaces the run-wide set; `set_badges()`, `set_badges(None)` and `set_badges([])` all unset it, exactly as `clear_badges()` does; there is no add or remove of a single badge
+- `inherit_badges`: `False` hides the run-wide set for one record and leaves it intact
+- Order: labels print by descending priority, whatever order they were given; ties, and all custom badges, keep the order given
+- Duplicates: a label is printed once, however often it is given
+- Custom badges: any other string, printed grey with priority 0 after every native badge; nothing validates names, so a typo prints as a grey custom badge
+- `record.badges`: the resolved priority-sorted tuple, available to custom formatters and filters
+
+Native badges, with the hue used on a TTY and the priority (higher prints earlier):
+
+| Group | Badges |
+| --- | --- |
+| Effect | `dry` bright yellow 45, `chk` yellow 44, `mock` yellow 43, `sbx` green 33 |
+| Safety | `unsafe` bright red 53, `force` red 52, `undo` red 51 |
+| Prompting | `yes` yellow 42, `auto` blue 13 |
+| Error Policy | `strict` green 32, `keep` yellow 41, `fast` green 31, `retries` cyan 25 |
+| Execution | `resm` cyan 24, `new` cyan 23, `offl` cyan 22, `incr` cyan 21, `watch` blue 12, `bg` blue 11 |
+
+The [Operation Badges design](op_badge_design.md) lists what each native badge means.
+
+Badges compose with diff-only output: the compressor measures the badged prefix, so dittos stay on their tab stops, per line for multi-line messages, and switch to spaces on long lines.
 
 
 
