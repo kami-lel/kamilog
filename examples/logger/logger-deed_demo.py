@@ -27,6 +27,8 @@ print(gen_comment_banner_centered("plain form", "#", renderer=renderer))
 
 log.create_file("out/a.txt")
 log.cp_file("a.txt", "backup/a.txt")
+log.append_file("out/a.txt")
+log.chmod_file("run.sh", "755")
 log.download("https://example.com/a.zip")
 log.rm_file("tmp/a.txt")
 log.rm_file("tmp/b.txt", level=kamilog.INFO)

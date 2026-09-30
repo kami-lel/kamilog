@@ -82,6 +82,8 @@ The remark is the text that appears in the log.
 
 Pass `chmod_file`'s mode as a string, such as `"755"` or `"+x"`: kamilog prints it as given, so an integer like `0o755` would show as `493`.
 
+Every arg goes through `str()` once, when the deed is called or when `act.set` gives it. The line then keeps that text, even if the object changes before the block ends. `None` counts as omitted.
+
 A deed logs at `WARNING` when it is destructive, and at `INFO` or `SKIP` otherwise.
 A failed deed logs at `ERROR`, or at `WARNING` when the run can safely go on.
 
