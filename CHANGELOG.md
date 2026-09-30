@@ -1,9 +1,9 @@
 # kamilog CHANGELOG
 
 <!--
-FIXME main script optimization
 FIXME split usage doc
 FIXME use `-` in doc
+HACK rm emoji
 
 todo cli color-triage-tag
 todo smart time print
