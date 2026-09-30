@@ -324,6 +324,22 @@ class AnsiRenderer:  # =========================================================
             return text
         return self.color(text, color | AnsiStyle.BOLD)
 
+    def color_badge(self, text, badge):
+        """
+        apply the badge's hue to ``text``; custom badges get grey
+
+
+        :param text: badge label text to colorize
+        :type text: str
+        :param badge: badge whose hue is used, eg ``"dry"``
+        :type badge: str
+        :return: ``text`` with style applied if color is enabled;
+                otherwise ``text`` unchanged
+        :rtype: str
+        """
+        hue = _NATIVE_BADGES.get(badge, (AnsiStyle.GREY, 0))[0]
+        return self.color(text, hue)
+
     def color_triage_tag(self, triage_tag):
         """
         apply tag-specific ANSI color to ``triage_tag``
@@ -711,7 +727,7 @@ class _LogFormatEngine:  # *****************************************************
         badges = getattr(record, "badges", ())
         if badges:
             # badges sit b/t level & source, each side on a tab stop
-            space = "\t{}\t".format(" ".join(badges))
+            space = "\t{}\t".format(self._fmt_badges(badges))
 
         if asctime:
             return "{} {}{}{} {}".format(
@@ -738,6 +754,10 @@ class _LogFormatEngine:  # *****************************************************
         """build the padded, colored level-name segment."""
         padded = _PADDED_LEVELNAME_MAP.get(levelno, str(levelno).ljust(5)[:5])
         return self._palette.color_level(padded, levelno)
+
+    def _fmt_badges(self, badges):
+        """build the space-separated, colored badge segment."""
+        return " ".join(self._palette.color_badge(b, b) for b in badges)
 
     def _fmt_source(self, name):
         """build the colored source-label segment."""

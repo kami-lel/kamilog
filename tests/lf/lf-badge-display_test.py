@@ -16,6 +16,9 @@ class _StubPalette:
     def color_level(self, text, levelno):
         return text
 
+    def color_badge(self, text, badge):
+        return text
+
 
 def _make_record(name="mymodule", badges=None, levelno=25):
     msg = "wrote a.txt"
