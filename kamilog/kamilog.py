@@ -15,6 +15,8 @@ from argparse import (
 )
 import logging
 import os
+import shlex
+import subprocess
 import sys
 import time
 from collections import deque, namedtuple
@@ -2571,19 +2573,65 @@ def _register_color_grey_parser(cli_subparser):
 
 # deed CLI  ====================================================================
 _DEED_HELP = "log one deed, e.g. a file copy, in its fixed wording"
+_DEED_DESCRIPTION = _DEED_HELP + """
+add '-- COMMAND' to run COMMAND and log its outcome instead: exit status 0
+logs success, anything else logs failure, and the status is passed back
+"""
+
+
+def _run_deed_command(command, act):
+    """
+    run the wrapped `command`; mark `act` failed on a non-zero status
+    and return the status as a shell would report it
+    """
+    try:
+        status = subprocess.run(command, check=False).returncode
+    except OSError as exc:
+        act.fail("{}: {}".format(type(exc).__name__, exc))
+        return 127 if isinstance(exc, FileNotFoundError) else 126
+    if status < 0:  # killed by signal, as shells report it
+        status = 128 - status
+    if status:
+        act.fail("exit {}".format(status))
+    return status
 
 
 def _deed_parser_main(args):
     deed = args.deed
+    tail = args.tail_command
+    deed_args = [getattr(args, name) for name in deed.arg_names]
+    deed_args = [val for val in deed_args if val is not None]
+    if tail is None:
+        if args.err_level is not None:
+            args.deed_parser.error("--err-level needs a command after '--'")
+        if not deed_args:  # only run-command may omit its subject
+            args.deed_parser.error(
+                "the following arguments are required: {}".format(
+                    deed.arg_names[0]
+                )
+            )
+    elif deed.name == "run_command":
+        if deed_args:
+            args.deed_parser.error("the command is given after '--' only")
+        deed_args = [shlex.join(tail)]
+
     logger = getLogger(disable_color=args.no_color)
     logger.setLevel(logging.DEBUG)  # --level alone decides what shows
-    level = None
+    level = err_level = None
     if args.level is not None:
         level = _LOGGER_LEVEL_MAP[args.level.lower()]
-    deed_args = [getattr(args, name) for name in deed.arg_names]
-    getattr(logger, deed.name)(
-        *(val for val in deed_args if val is not None), level=level
+    if args.err_level is not None:
+        err_level = _LOGGER_LEVEL_MAP[args.err_level.lower()]
+
+    if tail is None:
+        getattr(logger, deed.name)(*deed_args, level=level)
+        return 0
+    tracked = getattr(logger.track, deed.name)(
+        *deed_args, level=level, err_level=err_level
     )
+    with tracked as act:
+        status = _run_deed_command(tail, act)
+    return status
 
 
 def _register_deed_parser(cli_subparser):
@@ -2593,7 +2641,8 @@ def _register_deed_parser(cli_subparser):
     deed_parser = cli_subparser.add_parser(
         "deed",
         help=_DEED_HELP,
-        description=_DEED_HELP,
+        description=_DEED_DESCRIPTION,
+        formatter_class=RawDescriptionHelpFormatter,
     )
     deed_parser.set_defaults(func=lambda _: deed_parser.print_help())
     deed_subparser = deed_parser.add_subparsers(title="deeds", metavar="DEED")
@@ -2606,9 +2655,11 @@ def _register_deed_parser(cli_subparser):
             description="log the deed ``{}``".format(deed.template),
         )
         for i, name in enumerate(deed.arg_names):
-            # the subject is required; trailing arguments may be omitted
+            # the subject is required, except that run-command may take its
+            # command after '--'; trailing arguments may be omitted
+            is_optional = i > 0 or deed.name == "run_command"
             sub_parser.add_argument(
-                name, nargs=None if i == 0 else "?", default=None
+                name, nargs="?" if is_optional else None, default=None
             )
         sub_parser.add_argument(
             "--level",
@@ -2618,12 +2669,40 @@ def _register_deed_parser(cli_subparser):
                 logging.getLevelName(deed.level)
             ),
         )
-        sub_parser.set_defaults(func=_deed_parser_main, deed=deed)
+        sub_parser.add_argument(
+            "--err-level",
+            choices=list(_LOGGER_LEVEL_MAP),
+            default=None,
+            help="level of the failure line, with '-- command'; default={}"
+            .format(logging.getLevelName(deed.err_level)),
+        )
+        sub_parser.set_defaults(
+            func=_deed_parser_main,
+            deed=deed,
+            deed_parser=sub_parser,
+            tail_command=None,
+        )
 
 
 # CLI main parser  #############################################################
 
-_cli_parser = ArgumentParser(
+class _CliArgumentParser(ArgumentParser):
+    """top-level parser that splits `deed ... -- COMMAND` at the first `--`"""
+
+    def parse_known_args(self, args=None, namespace=None):
+        args = list(sys.argv[1:] if args is None else args)
+        if args[:1] != ["deed"] or "--" not in args:
+            return super().parse_known_args(args, namespace)
+        idx = args.index("--")
+        head, tail = args[:idx], args[idx + 1 :]
+        if not tail:
+            self.error("expected a command after '--'")
+        namespace, extras = super().parse_known_args(head, namespace)
+        namespace.tail_command = tail
+        return namespace, extras
+
+
+_cli_parser = _CliArgumentParser(
     prog="kamilog[.py]",
     description="kamilog CLI: utilities for formatted output and logging",
 )
@@ -2649,7 +2728,9 @@ def kamilog_cli_main():
     run the kamilog CLI, dispatching to the parsed subcommand's handler.
     """
     parsed_args = _cli_parser.parse_args()
-    parsed_args.func(parsed_args)
+    status = parsed_args.func(parsed_args)
+    if status:  # a wrapped command's exit status goes back to the shell
+        sys.exit(status)
 
 
 if __name__ == "__main__":
