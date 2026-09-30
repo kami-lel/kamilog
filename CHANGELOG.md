@@ -1,8 +1,6 @@
 # kamilog CHANGELOG
 
 <!--
-FIXME different behavior for time re cli or log file
-
 Fixme main script optimization
 Fixme split usage doc
 Fixme use `-` in doc
@@ -51,6 +49,15 @@ bug using different logger to print & diff only can produce confusing result
 - diff-only compression compares a multi-line message line by line, each line against the same line of earlier messages; only line 1 follows the record prefix, later lines start at column 0
 - diff-only compression separates dittos with a space instead of a tab on a line whose rendered width exceeds 100 columns, and drops tab jumps and padding there
 - diff-only dittos stay tab-aligned under badges
+- `getLogger()` timestamps now depend on the destination when `datefmt` is not given: the console prints none, and a log file (`filename=`) uses `DATEFMT_DATETIME_MS`; an explicit `datefmt` or `relative_to` still applies to console and file alike
+- `kamilog logger` and `kamilog deed` print no timestamp by default; `-t/--time-format` defaults to `no-time`, and `-t time` restores `HH:MM:SS`
+- diff-only ditto tab stops shift with the shorter console prefix, so a compressed line may cover one more leading character
+- `logger-timestamps_demo.py` opens with a default section: console w/o timestamp vs file w/ `DATEFMT_DATETIME_MS`
+
+> [!WARNING]
+> Console output of `getLogger()` without `datefmt`, and of the `kamilog logger`
+> and `kamilog deed` commands, no longer starts with `HH:MM:SS`; pass
+> `datefmt=kamilog.DATEFMT_TIME` (or `-t time`) to keep it.
 
 ### Deprecated
 

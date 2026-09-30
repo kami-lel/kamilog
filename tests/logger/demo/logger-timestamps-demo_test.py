@@ -21,9 +21,9 @@ _TIME_RE = re.compile(
 _DATEFMT_CASES = [
     (
         "logger-timestamps-demo-time",
-        {},
-        "HH:MM:SS (default)",
-        "<TIME> INFO  logger-timestamps-demo-time: HH:MM:SS (default)",
+        {"datefmt": kamilog.DATEFMT_TIME},
+        "HH:MM:SS",
+        "<TIME> INFO  logger-timestamps-demo-time: HH:MM:SS",
     ),
     (
         "logger-timestamps-demo-none",

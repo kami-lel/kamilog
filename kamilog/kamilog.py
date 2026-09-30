@@ -393,6 +393,9 @@ DATEFMT_TIME_MS = "%H:%M:%S.{ms}"
 DATEFMT_DATETIME = "%Y-%m-%d %H:%M:%S"
 DATEFMT_DATETIME_MS = "%Y-%m-%d %H:%M:%S.{ms}"
 
+# marks datefmt as unset, so each destination picks its own dft
+_DATEFMT_AUTO = object()
+
 
 # Badges  ======================================================================
 # native badge label → (hue, priority); higher priority prints earlier
@@ -1617,7 +1620,7 @@ def _build_log_formatter(
 def getLogger(
     name=None,
     *,
-    datefmt=DATEFMT_TIME,
+    datefmt=_DATEFMT_AUTO,
     relative_to=None,
     disable_color=False,
     disable_diff_only_compression=False,
@@ -1633,8 +1636,10 @@ def getLogger(
     :param name: logger name
     :type name: str, optional
     :param datefmt: strftime format for timestamps;
-            default=``DATEFMT_TIME`` (``HH:MM:SS``);
-            pass ``None`` to disable timestamps
+            default depends on the destination: console prints no
+            timestamp, the log file uses ``DATEFMT_DATETIME_MS``;
+            an explicit value applies to console and file alike,
+            ``None`` disables timestamps on both;
             ignored when ``relative_to`` is set;
     :type datefmt: str or None, optional
     :param relative_to: Unix timestamp to use as epoch for relative time display;
@@ -1663,6 +1668,11 @@ def getLogger(
             root logger if `name` is `None`
     :rtype: KamiLogger
     """
+    if datefmt is _DATEFMT_AUTO:  # unset: console silent, file full stamp
+        console_datefmt, file_datefmt = None, DATEFMT_DATETIME_MS
+    else:
+        console_datefmt = file_datefmt = datefmt
+
     logger = logging.getLogger(name)
 
     if not isinstance(logger, KamiLogger):
@@ -1675,7 +1685,7 @@ def getLogger(
             _DiffOnlyMsgFilter(
                 _build_log_formatter(
                     sys.stdout,
-                    datefmt=datefmt,
+                    datefmt=console_datefmt,
                     relative_to=relative_to,
                     disable_color=disable_color,
                 ),
@@ -1692,7 +1702,7 @@ def getLogger(
         stdout_handler.setFormatter(
             _build_log_formatter(
                 sys.stdout,
-                datefmt=datefmt,
+                datefmt=console_datefmt,
                 relative_to=relative_to,
                 disable_color=disable_color,
             )
@@ -1703,7 +1713,7 @@ def getLogger(
         stderr_handler.setFormatter(
             _build_log_formatter(
                 sys.stderr,
-                datefmt=datefmt,
+                datefmt=console_datefmt,
                 relative_to=relative_to,
                 disable_color=disable_color,
             )
@@ -1725,7 +1735,7 @@ def getLogger(
             )
             file_handler.setFormatter(
                 _build_log_formatter(
-                    datefmt=datefmt,
+                    datefmt=file_datefmt,
                     relative_to=relative_to,
                     disable_color=True,
                 )
@@ -1834,8 +1844,8 @@ def _register_logger_parser(cli_subparser):
         "-t",
         "--time-format",
         choices=list(_LOGGER_TIME_FORMAT_MAP),
-        default="time",
-        help="timestamp format; default=time",
+        default="no-time",
+        help="timestamp format; default=no-time",
     )
 
     logger_parser.add_argument(

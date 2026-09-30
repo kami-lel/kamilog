@@ -7,7 +7,6 @@ dittos on a long line
 """
 
 import os
-import re
 import subprocess
 import sys
 
@@ -15,41 +14,40 @@ import pytest
 
 _ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 _DEMO = os.path.join(_ROOT, "examples", "logger", "logger-badge_demo.py")
-_TIME_RE = re.compile(r"\d{2}:\d{2}:\d{2}")
 
 _EXPECTED_STDOUT = [
     "##############################  run-wide badges  ###############################",
-    "<TIME> DONE  copy: wrote a.txt",
-    "<TIME> dry yes\tDONE  copy: wrote b.txt",
-    "<TIME> dry yes deploy\tDONE  copy: wrote c.txt",
-    "<TIME> DONE  copy: wrote d.txt",
-    "<TIME> DONE  copy: wrote e.txt",
+    "DONE  copy: wrote a.txt",
+    "dry yes\tDONE  copy: wrote b.txt",
+    "dry yes deploy\tDONE  copy: wrote c.txt",
+    "DONE  copy: wrote d.txt",
+    "DONE  copy: wrote e.txt",
     "",
     "#########################  badges keep dittos aligned  #########################",
-    "<TIME> force dry auto\tINFO  sync: sync /home/alice/docs/q1_report.pdf  ->  remote:backup  ok",
-    "<TIME> force dry auto\tINFO  sync: sync /home/alice/docs/q2_report.pdf  ->  remote:backup  ok",
-    "<TIME> force dry auto\tINFO  sync: sync /home/alice/docs/q3_report.pdf  ->  remote:backup  ok",
-    "<TIME> force dry auto\tINFO  sync: 〃\t〃\t〃\t /q4〃\t〃\t〃\t〃\t〃  ok",
-    "<TIME> force dry auto\tINFO  sync: 〃\t〃\t〃\t /q5〃\t〃\t〃\t〃\t〃  ok",
+    "force dry auto\tINFO  sync: sync /home/alice/docs/q1_report.pdf  ->  remote:backup  ok",
+    "force dry auto\tINFO  sync: sync /home/alice/docs/q2_report.pdf  ->  remote:backup  ok",
+    "force dry auto\tINFO  sync: sync /home/alice/docs/q3_report.pdf  ->  remote:backup  ok",
+    "force dry auto\tINFO  sync: 〃\t〃\t〃\t /q4〃\t〃\t〃\t〃\t〃  ok",
+    "force dry auto\tINFO  sync: 〃\t〃\t〃\t /q5〃\t〃\t〃\t〃\t〃  ok",
     "",
     "#############################  multi-line message  #############################",
-    "<TIME> dry\tINFO  build: compile /src/module_1.c  ok",
+    "dry\tINFO  build: compile /src/module_1.c  ok",
     "link    /out/module_1.o  ok",
-    "<TIME> dry\tINFO  build: compile /src/module_2.c  ok",
+    "dry\tINFO  build: compile /src/module_2.c  ok",
     "link    /out/module_2.o  ok",
-    "<TIME> dry\tINFO  build: compile /src/module_3.c  ok",
+    "dry\tINFO  build: compile /src/module_3.c  ok",
     "link    /out/module_3.o  ok",
-    "<TIME> dry\tINFO  build: \t〃\t /module_4.c  ok",
+    "dry\tINFO  build: \t〃\t /module_4.c  ok",
     "〃\t〃  /module_4.o  ok",
-    "<TIME> dry\tINFO  build: \t〃\t /module_5.c  ok",
+    "dry\tINFO  build: \t〃\t /module_5.c  ok",
     "〃\t〃  /module_5.o  ok",
     "",
     "#################################  long line  ##################################",
-    "<TIME> chk\tINFO  scan: scan /var/data/archive/2026/09/shard_1/records.dat  checksum=ok  size=1048576  owner=backup  mode=0640  path=/mnt/nas/shard_1",
-    "<TIME> chk\tINFO  scan: scan /var/data/archive/2026/09/shard_2/records.dat  checksum=ok  size=1048576  owner=backup  mode=0640  path=/mnt/nas/shard_2",
-    "<TIME> chk\tINFO  scan: scan /var/data/archive/2026/09/shard_3/records.dat  checksum=ok  size=1048576  owner=backup  mode=0640  path=/mnt/nas/shard_3",
-    "<TIME> chk\tINFO  scan: 〃 〃 〃 〃 〃 /shard_4〃 〃 〃 〃 〃 〃 〃 〃 〃 〃 /shard_4",
-    "<TIME> chk\tINFO  scan: 〃 〃 〃 〃 〃 /shard_5〃 〃 〃 〃 〃 〃 〃 〃 〃 〃 /shard_5",
+    "chk\tINFO  scan: scan /var/data/archive/2026/09/shard_1/records.dat  checksum=ok  size=1048576  owner=backup  mode=0640  path=/mnt/nas/shard_1",
+    "chk\tINFO  scan: scan /var/data/archive/2026/09/shard_2/records.dat  checksum=ok  size=1048576  owner=backup  mode=0640  path=/mnt/nas/shard_2",
+    "chk\tINFO  scan: scan /var/data/archive/2026/09/shard_3/records.dat  checksum=ok  size=1048576  owner=backup  mode=0640  path=/mnt/nas/shard_3",
+    "chk\tINFO  scan: 〃 〃 〃 〃 〃 /shard_4〃 〃 〃 〃 〃 〃 〃 〃 〃 〃 /shard_4",
+    "chk\tINFO  scan: 〃 〃 〃 〃 〃 /shard_5〃 〃 〃 〃 〃 〃 〃 〃 〃 〃 /shard_5",
 ]
 
 
@@ -67,7 +65,7 @@ def _run_demo():
 
 class TestBadgeDemoOutput:
     _proc = _run_demo()
-    _out_lines = _TIME_RE.sub("<TIME>", _proc.stdout).split("\n")[:-1]
+    _out_lines = _proc.stdout.split("\n")[:-1]
 
     def test_exits_cleanly_with_no_stderr(_):
         assert TestBadgeDemoOutput._proc.returncode == 0
@@ -84,7 +82,7 @@ class TestBadgeDemoOutput:
         long_lines = [
             line
             for line in TestBadgeDemoOutput._out_lines
-            if line.startswith("<TIME> chk\tINFO  scan: 〃")
+            if line.startswith("chk\tINFO  scan: 〃")
         ]
         assert len(long_lines) == 2
         tails = [line.split("scan: ", 1)[1] for line in long_lines]

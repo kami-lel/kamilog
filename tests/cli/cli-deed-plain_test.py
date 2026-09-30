@@ -11,7 +11,6 @@ import pytest
 
 from kamilog.kamilog import _DEEDS, _cli_parser
 
-TIME = r"\d\d:\d\d:\d\d"
 
 
 @pytest.fixture(autouse=True)
@@ -38,13 +37,13 @@ def _run(argv, capsys):
 class TestDeedPlainOutput:
     def test_create_file(_, capsys):
         out, _err = _run(["create-file", "out/a.txt", "--no-color"], capsys)
-        assert re.fullmatch(TIME + r" INFO : create out/a.txt\n", out)
+        assert re.fullmatch(r"INFO : create out/a.txt\n", out)
 
     def test_cp_file(_, capsys):
         argv = ["cp-file", "a.txt", "backup/a.txt", "--no-color"]
         out, _err = _run(argv, capsys)
         assert re.fullmatch(
-            TIME + r" INFO : copy a.txt -> backup/a.txt\n", out
+            r"INFO : copy a.txt -> backup/a.txt\n", out
         )
 
     def test_omitted_trailing_argument(_, capsys):
@@ -54,7 +53,7 @@ class TestDeedPlainOutput:
     def test_warning_goes_to_stderr(_, capsys):
         out, err = _run(["rm-file", "tmp/a.txt", "--no-color"], capsys)
         assert out == ""
-        assert re.fullmatch(TIME + r" WARN\.: delete tmp/a.txt\n", err)
+        assert re.fullmatch(r"WARN\.: delete tmp/a.txt\n", err)
 
     def test_skip_level(_, capsys):
         out, _err = _run(["skip-file", "a", "--no-color"], capsys)
@@ -74,7 +73,7 @@ class TestDeedPlainLevel:
     def test_level_override(_, capsys):
         argv = ["cp-file", "a", "b", "--level", "note", "--no-color"]
         out, _err = _run(argv, capsys)
-        assert re.fullmatch(TIME + r" NOTE : copy a -> b\n", out)
+        assert re.fullmatch(r"NOTE : copy a -> b\n", out)
 
     def test_level_choice_is_lowercase_only(_, capsys):
         with pytest.raises(SystemExit):

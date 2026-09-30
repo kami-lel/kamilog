@@ -28,8 +28,8 @@ logger.rm_file("tmp/a.txt")
 ```
 
 ```text
-13:04:22 INFO  copy: copy a.txt -> backup/a.txt
-13:04:22 WARN. copy: delete tmp/a.txt
+INFO  copy: copy a.txt -> backup/a.txt
+WARN. copy: delete tmp/a.txt
 ```
 
 Log two deeds with two calls. Every deed method takes these arguments:
@@ -132,8 +132,8 @@ def back_up(src, dst):
 ```
 
 ```text
-13:04:22 INFO  backup: copy a.txt -> backup/a.txt
-13:04:23 ERROR backup: fail to copy a.txt -> /root/a.txt: PermissionError: [Errno 13] Permission denied: '/root/a.txt'
+INFO  backup: copy a.txt -> backup/a.txt
+ERROR backup: fail to copy a.txt -> /root/a.txt: PermissionError: [Errno 13] Permission denied: '/root/a.txt'
 ```
 
 Keep the block around the single deed, not a whole script.

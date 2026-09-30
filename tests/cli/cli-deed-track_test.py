@@ -13,7 +13,6 @@ import pytest
 
 from kamilog.kamilog import _cli_parser
 
-TIME = r"\d\d:\d\d:\d\d"
 OK = [sys.executable, "-c", "pass"]
 EXIT_3 = [sys.executable, "-c", "raise SystemExit(3)"]
 
@@ -48,7 +47,7 @@ class TestDeedTrackSuccess:
         )
         assert status == 0
         assert re.fullmatch(
-            TIME + r" INFO : copy a.txt -> backup/a.txt\n", out
+            r"INFO : copy a.txt -> backup/a.txt\n", out
         )
 
     def test_level_override_on_success(_, capsys):
@@ -56,7 +55,7 @@ class TestDeedTrackSuccess:
             ["rm-file", "a", "--level", "debug", "--no-color", "--", *OK],
             capsys,
         )
-        assert re.fullmatch(TIME + r" DEBUG: delete a\n", out)
+        assert re.fullmatch(r"DEBUG: delete a\n", out)
 
     def test_command_runs_after_parse_only_once(_, capsys, tmp_path):
         marker = tmp_path / "count.txt"
@@ -77,7 +76,7 @@ class TestDeedTrackFailure:
         assert status == 3
         assert out == ""
         assert re.fullmatch(
-            TIME + r" ERROR: fail to copy a -> b: exit 3\n", err
+            r"ERROR: fail to copy a -> b: exit 3\n", err
         )
 
     def test_no_traceback(_, capsys):
@@ -91,7 +90,7 @@ class TestDeedTrackFailure:
             capsys,
         )
         assert re.fullmatch(
-            TIME + r" WARN\.: fail to copy a -> b: exit 3\n", err
+            r"WARN\.: fail to copy a -> b: exit 3\n", err
         )
 
     def test_level_does_not_touch_failure_line(_, capsys):
