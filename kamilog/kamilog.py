@@ -530,6 +530,124 @@ def _render_deed_message(deed, *args, **kwargs):
     return "".join(parts).rstrip()
 
 
+class _DeedScope:  # ***********************************************************
+    """
+    context manager of one tracked deed;
+    logs one line at block exit: success, or failure if the block raised
+    """
+
+    def __init__(self, logger, deed, args, options):
+        self._logger = logger
+        self._deed = deed
+        self._args = args
+        self._options = options
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        # only Exception counts; KeyboardInterrupt & SystemExit pass silently
+        if exc_type is None:
+            self._log_success()
+        elif issubclass(exc_type, Exception):
+            self._log_failure(exc_type, exc_value, traceback)
+        return False
+
+    def _log_success(self):
+        """log the success line at the deed's level"""
+        level = self._options["level"]
+        level = self._deed.level if level is None else level
+        self._emit(level, _render_deed_message(self._deed, *self._args))
+
+    def _log_failure(self, exc_type, exc_value, traceback):
+        """log `fail to <message>: <ExcType>: <detail>` with traceback"""
+        err_level = self._options["err_level"]
+        err_level = self._deed.err_level if err_level is None else err_level
+        detail = str(exc_value)
+        cause = exc_type.__name__
+        if detail:
+            cause = "{}: {}".format(cause, detail)
+        message = "fail to {}: {}".format(
+            _render_deed_message(self._deed, *self._args), cause
+        )
+        self._emit(err_level, message, (exc_type, exc_value, traceback))
+
+    def _emit(self, level, message, exc_info=None):
+        """log `message`, attributed to the code holding the `with`"""
+        if self._logger.isEnabledFor(level):
+            self._logger._log(
+                level,
+                message,
+                (),
+                exc_info=exc_info,
+                stacklevel=4,
+                badges=self._options["badges"],
+                is_inheriting_badges=self._options["is_inheriting_badges"],
+            )
+
+
+class _DeedTrack:  # ***********************************************************
+    """
+    namespace behind ``logger.track``;
+    holds one method per deed, each returning a :class:`_DeedScope`
+    """
+
+    def __init__(self, logger):
+        self._logger = logger
+
+
+def _make_track_method(deed):
+    """build the track-form method of `deed` for :class:`_DeedTrack`"""
+
+    def track_method(
+        self,
+        *args,
+        level=None,
+        err_level=None,
+        badges=None,
+        is_inheriting_badges=True
+    ):
+        # render once so a bad arg raises at the call, not at block exit
+        _render_deed_message(deed, *args)
+        options = {
+            "level": level,
+            "err_level": err_level,
+            "badges": badges,
+            "is_inheriting_badges": is_inheriting_badges,
+        }
+        return _DeedScope(self._logger, deed, args, options)
+
+    track_method.__name__ = deed.name
+    track_method.__qualname__ = "_DeedTrack.{}".format(deed.name)
+    track_method.__doc__ = """
+        track the deed ``{template}``: one line is logged when the block
+        exits, at ``level`` on success or at ``err_level`` on an
+        ``Exception``, which then propagates.
+
+
+        :param args: the deed's own arguments, in order ``{arg_names}``
+        :param level: severity of the success line; default=the deed's level
+        :type level: int, optional
+        :param err_level: severity of the failure line;
+                default=the deed's error level
+        :type err_level: int, optional
+        :param badges: badge labels for this record only; default=None
+        :type badges: str or Iterable(str), optional
+        :param is_inheriting_badges: whether the run-wide badges apply to
+                this record; default=True
+        :type is_inheriting_badges: bool, optional
+        :return: context manager logging the outcome at block exit
+        """.format(
+        template=deed.template, arg_names=", ".join(deed.arg_names)
+    )
+    return track_method
+
+
+for _deed in _DEEDS.values():
+    setattr(_DeedTrack, _deed.name, _make_track_method(_deed))
+del _deed
+
+
 class KamiLogger(logging.Logger):  # ===========================================
     """
     logger subclass extending :class:`logging.Logger` with custom levels.
@@ -643,6 +761,16 @@ class KamiLogger(logging.Logger):  # ===========================================
             self._log(
                 _CustomLogLevel.FAIL, message, args, stacklevel=2, **kwargs
             )
+
+    @property
+    def track(self):
+        """
+        track form of the deed methods, e.g. ``with logger.track.cp_file(a, b)``
+
+        :return: namespace whose methods mirror the plain deed methods
+        :rtype: _DeedTrack
+        """
+        return _DeedTrack(self)
 
     def set_badges(self, badges=None):
         """
