@@ -3,7 +3,6 @@
 <!--
 TODO add common operation log
 
-Todo long line compression w/ ditto
 Fixme different behavior for time re cli or log file
 
 Fixme main script optimization

@@ -707,6 +707,51 @@ class KamiLogger(logging.Logger):  # ===========================================
         )
 
 
+def _make_deed_method(deed):
+    """build the plain-form method of `deed` for :class:`KamiLogger`"""
+
+    def deed_method(
+        self, *args, level=None, badges=None, is_inheriting_badges=True
+    ):
+        level = deed.level if level is None else level
+        if self.isEnabledFor(level):
+            self._log(
+                level,
+                _render_deed_message(deed, *args),
+                (),
+                stacklevel=2,
+                badges=badges,
+                is_inheriting_badges=is_inheriting_badges,
+            )
+
+    deed_method.__name__ = deed.name
+    deed_method.__qualname__ = "KamiLogger.{}".format(deed.name)
+    deed_method.__doc__ = """
+        log the deed ``{template}`` at ``{level}`` level by default.
+
+
+        :param args: the deed's own arguments, in order ``{arg_names}``;
+                trailing ones may be omitted
+        :param level: severity of the line; default=the deed's level
+        :type level: int, optional
+        :param badges: badge labels for this record only; default=None
+        :type badges: str or Iterable(str), optional
+        :param is_inheriting_badges: whether the run-wide badges apply to
+                this record; default=True
+        :type is_inheriting_badges: bool, optional
+        """.format(
+        template=deed.template,
+        level=logging.getLevelName(deed.level),
+        arg_names=", ".join(deed.arg_names),
+    )
+    return deed_method
+
+
+for _deed in _DEEDS.values():
+    setattr(KamiLogger, _deed.name, _make_deed_method(_deed))
+del _deed
+
+
 logging.setLoggerClass(KamiLogger)
 # root logger exists before setLoggerClass — patch its class directly
 logging.root.__class__ = KamiLogger
