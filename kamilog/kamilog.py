@@ -1585,20 +1585,70 @@ class _DiffOnlyMsgFilter(logging.Filter):  # ***********************************
 # Logger Public API  ===========================================================
 
 
-def _build_log_formatter(
-    stream=None, *, datefmt=None, relative_to=None, disable_color=False
-):
+def _attach_diff_only_filter(logger, formatter_kwargs, is_disabled):
     """
-    build a :class:`_LogFormatter` from shared formatting options;
-    auxiliary for :func:`getLogger`, collapsing the repeated formatter
-    construction shared by the filter, console, and file handlers
+    attach a diff-only filter to ``logger`` unless it already has one
     """
-    return _LogFormatter(
-        stream,
-        datefmt=datefmt,
-        relative_to=relative_to,
-        disable_color=disable_color,
+    if any(isinstance(f, _DiffOnlyMsgFilter) for f in logger.filters):
+        return
+    logger.addFilter(
+        _DiffOnlyMsgFilter(
+            _LogFormatter(sys.stdout, **formatter_kwargs),
+            disable_diff_only_compression=is_disabled,
+        )
     )
+
+
+def _build_console_handler(stream, formatter_kwargs, level_filter):
+    """
+    :return: handler on ``stream`` passing only records ``level_filter``
+            accepts, formatted for that stream's TTY
+    :rtype: logging.StreamHandler
+    """
+    handler = StreamHandler(stream)
+    handler.setFormatter(_LogFormatter(stream, **formatter_kwargs))
+    handler.addFilter(level_filter)
+    return handler
+
+
+def _attach_console_handlers(logger, formatter_kwargs):
+    """
+    attach stdout (below ``WARNING``) and stderr handlers to ``logger``
+    unless it already has a console handler
+    """
+    if any(
+        isinstance(h, StreamHandler) and not isinstance(h, FileHandler)
+        for h in logger.handlers
+    ):
+        return
+    logger.addHandler(
+        _build_console_handler(
+            sys.stdout, formatter_kwargs, lambda r: r.levelno < logging.WARNING
+        )
+    )
+    logger.addHandler(
+        _build_console_handler(
+            sys.stderr,
+            formatter_kwargs,
+            lambda r: r.levelno >= logging.WARNING,
+        )
+    )
+
+
+def _attach_file_handler(logger, filename, file_mode, formatter_kwargs):
+    """
+    attach a file handler for ``filename`` to ``logger`` unless one
+    already targets that file
+    """
+    target = os.path.abspath(filename)  # same file under any spelling
+    if any(
+        isinstance(h, FileHandler) and h.baseFilename == target
+        for h in logger.handlers
+    ):
+        return
+    file_handler = FileHandler(filename, mode=file_mode, encoding="utf-8")
+    file_handler.setFormatter(_LogFormatter(**formatter_kwargs))
+    logger.addHandler(file_handler)  # no level split, all levels
 
 
 # pylint: disable-next=invalid-name
@@ -1665,67 +1715,21 @@ def getLogger(
 
     logger.propagate = enable_propagate
 
-    if not any(isinstance(f, _DiffOnlyMsgFilter) for f in logger.filters):
-        logger.addFilter(
-            _DiffOnlyMsgFilter(
-                _build_log_formatter(
-                    sys.stdout,
-                    datefmt=console_datefmt,
-                    relative_to=relative_to,
-                    disable_color=disable_color,
-                ),
-                disable_diff_only_compression=disable_diff_only_compression,
-            )
-        )
-
-    has_console = any(
-        isinstance(h, StreamHandler) and not isinstance(h, FileHandler)
-        for h in logger.handlers
+    console_kwargs = {
+        "datefmt": console_datefmt,
+        "relative_to": relative_to,
+        "disable_color": disable_color,
+    }
+    _attach_diff_only_filter(
+        logger, console_kwargs, disable_diff_only_compression
     )
-    if not disable_console and not has_console:
-        stdout_handler = StreamHandler(sys.stdout)
-        stdout_handler.setFormatter(
-            _build_log_formatter(
-                sys.stdout,
-                datefmt=console_datefmt,
-                relative_to=relative_to,
-                disable_color=disable_color,
-            )
+    if not disable_console:
+        _attach_console_handlers(logger, console_kwargs)
+    if filename is not None:
+        file_kwargs = dict(
+            console_kwargs, datefmt=file_datefmt, disable_color=True
         )
-        stdout_handler.addFilter(lambda r: r.levelno < logging.WARNING)
-
-        stderr_handler = StreamHandler(sys.stderr)
-        stderr_handler.setFormatter(
-            _build_log_formatter(
-                sys.stderr,
-                datefmt=console_datefmt,
-                relative_to=relative_to,
-                disable_color=disable_color,
-            )
-        )
-        stderr_handler.addFilter(lambda r: r.levelno >= logging.WARNING)
-
-        logger.addHandler(stdout_handler)
-        logger.addHandler(stderr_handler)
-
-    if filename is not None:  # attach File handler, color always off
-        target = os.path.abspath(filename)  # normalize for dedup
-        has_file = any(
-            isinstance(h, FileHandler) and h.baseFilename == target
-            for h in logger.handlers
-        )
-        if not has_file:
-            file_handler = FileHandler(
-                filename, mode=file_mode, encoding="utf-8"
-            )
-            file_handler.setFormatter(
-                _build_log_formatter(
-                    datefmt=file_datefmt,
-                    relative_to=relative_to,
-                    disable_color=True,
-                )
-            )
-            logger.addHandler(file_handler)  # no level split, all Levels
+        _attach_file_handler(logger, filename, file_mode, file_kwargs)
 
     return logger
 
