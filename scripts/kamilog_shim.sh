@@ -1,5 +1,3 @@
-# FIXME simplify
-
 ################################################################################
 # kamilog_shim
 # shipped with kamilog v2.10.0
@@ -10,22 +8,8 @@
 _KAMILOG_BIN="$(type -P kamilog 2>/dev/null || true)"
 
 kamilog() {
-    if [ -n "$_KAMILOG_BIN" ]; then
-        "$_KAMILOG_BIN" "$@"
-        return
-    fi
-    input="$(cat; printf x)";
-    input="${input%x}"   # keep trailing \n from being stripped
-    case "$1" in
-        cb|cb0)
-            printf '# %s' "$input"
-            ;;
-        logger)
-            printf '%s:\t%s' "$2" "$input"
-            ;;
-        *)
-            printf '%s' "$input"  # no bin found, pass stdin through as-is
-            ;;
-    esac
+    [ -n "$_KAMILOG_BIN" ] && { "$_KAMILOG_BIN" "$@"; return; }
+    [ "$1" = logger ] && { printf '%s:\t' "$2"; cat; return; }
+    cat  # no bin found, pass stdin through as-is, skip cb formatting
 }
 # END of kamilog_shim  #########################################################
