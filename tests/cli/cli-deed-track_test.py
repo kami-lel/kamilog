@@ -11,7 +11,7 @@ import sys
 
 import pytest
 
-from kamilog.kamilog import _cli_parser
+from kamilog.cli import _cli_parser
 
 OK = [sys.executable, "-c", "pass"]
 EXIT_3 = [sys.executable, "-c", "raise SystemExit(3)"]

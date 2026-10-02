@@ -2,14 +2,14 @@
 dof-embedded-tab_test.py
 
 tests for `_DiffOnlyEngine._compress` when message content already
-contains a literal "\\t" in `kamilog.py`; `_TabAlignedLine.parse`
+contains a literal "\\t" in `kamilog`; `_TabAlignedLine.parse`
 expands such tabs into spaces before splitting into blocks, so
 compression must stay correct instead of drifting off tab stops
 """
 
 import pytest
 
-from kamilog.kamilog import _DiffOnlyEngine
+from kamilog.diff_only import _DiffOnlyEngine
 
 
 class _StubEngine:

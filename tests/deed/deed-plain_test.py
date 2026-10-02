@@ -1,7 +1,7 @@
 """
 deed-plain_test.py
 
-tests for the plain-form deed methods of `KamiLogger` in `kamilog.py`
+tests for the plain-form deed methods of `KamiLogger` in `kamilog`
 """
 
 import logging
@@ -9,7 +9,8 @@ import uuid
 
 import pytest
 
-from kamilog.kamilog import _DEEDS, SKIP, KamiLogger
+from kamilog import SKIP, KamiLogger
+from kamilog.deeds import _DEEDS
 
 
 class _Capture(logging.Handler):

@@ -22,7 +22,7 @@
     "allow_version_uniformity_failure": false,
     "version_occurrences": [
       {
-        "file": "kamilog/kamilog.py",
+        "file": "kamilog/__init__.py",
         "glob": "__version__\\s*=\\s*\"(.+)\""
       },
       {

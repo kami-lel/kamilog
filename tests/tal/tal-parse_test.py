@@ -1,10 +1,10 @@
 """
 tal-parse_test.py
 
-tests for `_TabAlignedLine.parse` in `kamilog.py`
+tests for `_TabAlignedLine.parse` in `kamilog`
 """
 
-from kamilog.kamilog import _TabAlignedLine
+from kamilog.tab_align import _TabAlignedLine
 
 
 class TestParseNoOffset:

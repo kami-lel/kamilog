@@ -1,7 +1,7 @@
 """
 cli-color_test.py
 
-tests for the `color` CLI subcommand (alias `c`) in `kamilog.py`: `STYLE`
+tests for the `color` CLI subcommand (alias `c`) in `kamilog`: `STYLE`
 parsing via `_parse_ansi_style`, and its interaction with the shared
 `-n`/`-N` flags from `_common_parser`; `color` does not inherit `-C`, since
 disabling color makes no sense for a subcommand whose purpose is color
@@ -10,7 +10,8 @@ disabling color makes no sense for a subcommand whose purpose is color
 import io
 
 import pytest
-from kamilog.kamilog import AnsiRenderer, AnsiStyle, _cli_parser
+from kamilog import AnsiRenderer, AnsiStyle
+from kamilog.cli import _cli_parser
 
 
 class _FakeTtyStream(io.StringIO):

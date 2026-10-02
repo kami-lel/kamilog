@@ -1,10 +1,10 @@
 """
 dof-cut-boundary_test.py
 
-tests for `_DiffOnlyEngine._find_cut` and `_is_word_char` in `kamilog.py`
+tests for `_DiffOnlyEngine._find_cut` and `_is_word_char` in `kamilog`
 """
 
-from kamilog.kamilog import _DiffOnlyEngine
+from kamilog.diff_only import _DiffOnlyEngine
 
 _engine = _DiffOnlyEngine.__new__(_DiffOnlyEngine)
 

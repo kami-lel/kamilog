@@ -1,11 +1,11 @@
 """
 v-calc_verbosity_test.py
 
-tests for `calc_verbosity` in `kamilog.py`
+tests for `calc_verbosity` in `kamilog`
 """
 
 from argparse import ArgumentParser, Namespace
-from kamilog.kamilog import add_verbose_arguments, calc_verbosity
+from kamilog import add_verbose_arguments, calc_verbosity
 
 
 class TestCalcVerbosity:

@@ -1,18 +1,16 @@
 """
 dof-long-line_test.py
 
-tests for the long-line rule in `_DiffOnlyEngine` in `kamilog.py`
+tests for the long-line rule in `_DiffOnlyEngine` in `kamilog`
 """
 
 import logging
 
 import pytest
 
-from kamilog.kamilog import (
-    DATEFMT_TIME,
-    _DiffOnlyEngine,
-    _LogFormatEngine,
-)
+from kamilog import DATEFMT_TIME
+from kamilog.diff_only import _DiffOnlyEngine
+from kamilog.formatter import _LogFormatEngine
 
 
 class _StubPalette:

@@ -2,18 +2,16 @@
 lf-badge-color_test.py
 
 tests for badge coloring in `AnsiRenderer.color_badge` and
-`_LogFormatEngine.build_line` in `kamilog.py`
+`_LogFormatEngine.build_line` in `kamilog`
 """
 
 import logging
 
 import pytest
 
-from kamilog.kamilog import (
-    _NATIVE_BADGES,
-    AnsiRenderer,
-    _LogFormatEngine,
-)
+from kamilog import AnsiRenderer
+from kamilog.badges import _NATIVE_BADGES
+from kamilog.formatter import _LogFormatEngine
 
 
 class _FakeStream:

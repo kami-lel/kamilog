@@ -1,10 +1,10 @@
 """
 dof-marker-render_test.py
 
-tests for `_DiffOnlyEngine._compress` marker rendering in `kamilog.py`
+tests for `_DiffOnlyEngine._compress` marker rendering in `kamilog`
 """
 
-from kamilog.kamilog import _DiffOnlyEngine
+from kamilog.diff_only import _DiffOnlyEngine
 
 
 class _StubEngine:

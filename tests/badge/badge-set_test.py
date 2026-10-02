@@ -1,12 +1,12 @@
 """
 badge-set_test.py
 
-tests for `KamiLogger.set_persistent_badges` and `clear_persistent_badges` in `kamilog.py`
+tests for `KamiLogger.set_persistent_badges` and `clear_persistent_badges` in `kamilog`
 """
 
 import pytest
 
-from kamilog.kamilog import KamiLogger
+from kamilog import KamiLogger
 
 
 @pytest.fixture

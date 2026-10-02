@@ -1,12 +1,13 @@
 """
 ansi-color-level_test.py
 
-tests for `AnsiRenderer.color_level` and `color_grey` in `kamilog.py`
+tests for `AnsiRenderer.color_level` and `color_grey` in `kamilog`
 """
 
 import logging
 
-from kamilog.kamilog import AnsiRenderer, _CustomLogLevel
+from kamilog import AnsiRenderer
+from kamilog.levels import _CustomLogLevel
 
 
 class _FakeStream:

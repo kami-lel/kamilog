@@ -2,13 +2,13 @@
 ansi-style-demo_test.py
 
 golden-output test for `examples/ansi/ansi-style-demo.py`, covering
-`AnsiStyle` flags and `AnsiRenderer.color` combinations in `kamilog.py`
+`AnsiStyle` flags and `AnsiRenderer.color` combinations in `kamilog`
 """
 
 import contextlib
 import io
 
-from kamilog.kamilog import AnsiRenderer, AnsiStyle, gen_comment_banner_centered
+from kamilog import AnsiRenderer, AnsiStyle, gen_comment_banner_centered
 
 
 class _FakeStream:

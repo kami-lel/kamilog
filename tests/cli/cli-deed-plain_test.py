@@ -1,7 +1,7 @@
 """
 cli-deed-plain_test.py
 
-tests for the plain form of the `deed` CLI subcommand in `kamilog.py`
+tests for the plain form of the `deed` CLI subcommand in `kamilog`
 """
 
 import logging
@@ -9,7 +9,8 @@ import re
 
 import pytest
 
-from kamilog.kamilog import _DEEDS, _cli_parser
+from kamilog.cli import _cli_parser
+from kamilog.deeds import _DEEDS
 
 
 

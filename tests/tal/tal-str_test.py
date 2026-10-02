@@ -1,10 +1,10 @@
 """
 tal-str_test.py
 
-tests for `_TabAlignedLine.__str__` in `kamilog.py`
+tests for `_TabAlignedLine.__str__` in `kamilog`
 """
 
-from kamilog.kamilog import _TabAlignedLine
+from kamilog.tab_align import _TabAlignedLine
 
 
 class TestStr:

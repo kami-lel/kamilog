@@ -2,7 +2,7 @@
 dof-badge-interaction_test.py
 
 end-to-end tests of badges with diff-only ditto alignment, through
-`getLogger` and a file handler, in `kamilog.py`
+`getLogger` and a file handler, in `kamilog`
 """
 
 import logging
@@ -10,7 +10,7 @@ import uuid
 
 import pytest
 
-from kamilog.kamilog import DATEFMT_TIME, getLogger
+from kamilog import DATEFMT_TIME, getLogger
 
 _TAB = 8
 _TAIL = "/bbb"

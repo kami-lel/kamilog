@@ -2,12 +2,12 @@
 cb-number-demo_test.py
 
 tests for `gen_comment_banner_centered`'s numeric padding shortcuts
-(1-5) in `kamilog.py`
+(1-5) in `kamilog`
 """
 
 import pytest
 
-from kamilog.kamilog import gen_comment_banner_centered
+from kamilog import gen_comment_banner_centered
 
 _PADDING_CASES = [
     (

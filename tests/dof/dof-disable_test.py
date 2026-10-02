@@ -2,12 +2,12 @@
 dof-disable_test.py
 
 tests for `_DiffOnlyMsgFilter` bypass via `disable_diff_only_compression`
-in `kamilog.py`
+in `kamilog`
 """
 
 import logging
 
-from kamilog.kamilog import _DiffOnlyMsgFilter
+from kamilog.diff_only import _DiffOnlyMsgFilter
 
 
 class _StubEngine:

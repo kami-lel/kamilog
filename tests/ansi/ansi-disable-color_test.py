@@ -1,10 +1,10 @@
 """
 ansi-disable-color_test.py
 
-tests for `AnsiRenderer`'s explicit `is_disabled` override in `kamilog.py`
+tests for `AnsiRenderer`'s explicit `is_disabled` override in `kamilog`
 """
 
-from kamilog.kamilog import AnsiStyle, AnsiRenderer
+from kamilog import AnsiStyle, AnsiRenderer
 
 
 class _FakeStream:

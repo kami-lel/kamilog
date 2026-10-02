@@ -1,18 +1,18 @@
 """
 logger-datefmt_test.py
 
-tests for `_LogFormatEngine.format_time` datetime formats in `kamilog.py`
+tests for `_LogFormatEngine.format_time` datetime formats in `kamilog`
 """
 
 import re
 
-from kamilog.kamilog import (
+from kamilog import (
     DATEFMT_DATETIME,
     DATEFMT_DATETIME_MS,
     DATEFMT_TIME,
     DATEFMT_TIME_MS,
-    _LogFormatEngine,
 )
+from kamilog.formatter import _LogFormatEngine
 
 
 class _StubPalette:

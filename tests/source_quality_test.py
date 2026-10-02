@@ -5,6 +5,8 @@ Tests for source code quality markers in kamilog source files.
 import re
 from pathlib import Path
 
+import pytest
+
 _KAMILOG_DIR = Path(__file__).parent.parent / "kamilog"
 _BANNED = re.compile(r"\b(todo|bug|fixme|hack)\b", re.IGNORECASE)
 _STRING_LITERAL = re.compile(r"\"[^\"]*\"|'[^']*'")
@@ -26,11 +28,9 @@ def _fmt(violations):
     )
 
 
-def test_kamilog_py_no_banned_markers():
-    v = _violations(_KAMILOG_DIR / "kamilog.py")
-    assert not v, _fmt(v)
-
-
-def test_init_py_no_banned_markers():
-    v = _violations(_KAMILOG_DIR / "__init__.py")
+@pytest.mark.parametrize(
+    "path", sorted(_KAMILOG_DIR.glob("*.py")), ids=lambda p: p.name
+)
+def test_source_no_banned_markers(path):
+    v = _violations(path)
     assert not v, _fmt(v)

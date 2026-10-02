@@ -9,7 +9,7 @@ stays visible
 import sys
 
 import kamilog
-from kamilog.kamilog import AnsiRenderer, gen_comment_banner_centered
+from kamilog import AnsiRenderer, gen_comment_banner_centered
 
 # repeated calls share one renderer instead of re-detecting TTY state
 renderer = AnsiRenderer(sys.stdout)

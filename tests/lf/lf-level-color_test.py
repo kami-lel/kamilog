@@ -7,7 +7,8 @@ tests for `_LogFormatEngine._fmt_level` padding and colorization in
 
 import logging
 
-from kamilog.kamilog import _CustomLogLevel, _LogFormatEngine
+from kamilog.formatter import _LogFormatEngine
+from kamilog.levels import _CustomLogLevel
 
 
 class _RecordingPalette:

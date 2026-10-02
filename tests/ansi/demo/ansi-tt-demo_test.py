@@ -9,7 +9,7 @@ golden-output test for `examples/ansi/ansi-tt-demo.py`, covering
 import contextlib
 import io
 
-from kamilog.kamilog import AnsiRenderer, gen_comment_banner_centered
+from kamilog import AnsiRenderer, gen_comment_banner_centered
 
 
 class _FakeStream:

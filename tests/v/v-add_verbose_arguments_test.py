@@ -1,11 +1,11 @@
 """
 v-add_verbose_arguments_test.py
 
-tests for `add_verbose_arguments` in `kamilog.py`
+tests for `add_verbose_arguments` in `kamilog`
 """
 
 from argparse import ArgumentParser
-from kamilog.kamilog import add_verbose_arguments
+from kamilog import add_verbose_arguments
 
 
 class TestAddVerboseArguments:

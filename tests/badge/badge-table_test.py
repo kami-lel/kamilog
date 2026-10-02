@@ -1,12 +1,13 @@
 """
 badge-table_test.py
 
-tests for `_NATIVE_BADGES` in `kamilog.py`
+tests for `_NATIVE_BADGES` in `kamilog`
 """
 
 import pytest
 
-from kamilog.kamilog import _NATIVE_BADGES, AnsiStyle
+from kamilog import AnsiStyle
+from kamilog.badges import _NATIVE_BADGES
 
 _EXPECTED = {
     "dry": (AnsiStyle.BRIGHT_YELLOW, 45),

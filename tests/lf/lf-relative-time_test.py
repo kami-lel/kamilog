@@ -2,12 +2,13 @@
 lf-relative-time_test.py
 
 tests for `_LogFormatEngine` relative-time prefix width and precedence
-over `datefmt` in `kamilog.py`
+over `datefmt` in `kamilog`
 """
 
 import logging
 
-from kamilog.kamilog import DATEFMT_DATETIME, _LogFormatEngine
+from kamilog import DATEFMT_DATETIME
+from kamilog.formatter import _LogFormatEngine
 
 
 class _StubPalette:

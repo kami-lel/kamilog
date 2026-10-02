@@ -7,7 +7,7 @@ demonstrate all sixteen log levels with a brief description of each
 import sys
 
 import kamilog
-from kamilog.kamilog import AnsiRenderer, gen_comment_banner_centered
+from kamilog import AnsiRenderer, gen_comment_banner_centered
 
 log = kamilog.getLogger(datefmt=None)
 log.setLevel(kamilog.DEBUG)

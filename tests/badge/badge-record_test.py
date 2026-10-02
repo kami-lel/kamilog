@@ -1,14 +1,14 @@
 """
 badge-record_test.py
 
-tests for the `KamiLogger._log` badge kwargs in `kamilog.py`
+tests for the `KamiLogger._log` badge kwargs in `kamilog`
 """
 
 import logging
 
 import pytest
 
-from kamilog.kamilog import KamiLogger
+from kamilog import KamiLogger
 
 _LEVEL_METHODS = (
     "debug",

@@ -2,12 +2,12 @@
 lf-named-vs-root_test.py
 
 tests for `_LogFormatEngine` source-label rendering (named vs. root
-logger) in `kamilog.py`
+logger) in `kamilog`
 """
 
 import logging
 
-from kamilog.kamilog import _LogFormatEngine
+from kamilog.formatter import _LogFormatEngine
 
 
 class _StubPalette:

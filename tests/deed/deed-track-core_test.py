@@ -1,7 +1,7 @@
 """
 deed-track-core_test.py
 
-tests for the track form of the deed methods of `KamiLogger` in `kamilog.py`
+tests for the track form of the deed methods of `KamiLogger` in `kamilog`
 """
 
 import logging
@@ -9,7 +9,8 @@ import uuid
 
 import pytest
 
-from kamilog.kamilog import _DEEDS, KamiLogger
+from kamilog import KamiLogger
+from kamilog.deeds import _DEEDS
 
 
 class _Capture(logging.Handler):

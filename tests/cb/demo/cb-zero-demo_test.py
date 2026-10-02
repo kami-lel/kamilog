@@ -7,7 +7,7 @@ tests for `gen_comment_banner_zero` (CB0 multi-line boxed banner) in
 
 import pytest
 
-from kamilog.kamilog import gen_comment_banner_zero
+from kamilog import gen_comment_banner_zero
 
 
 class TestSimpleBanner:

@@ -1,14 +1,15 @@
 """
 lf-prefix-width_test.py
 
-tests for `_LogFormatEngine.count_prefix_chars` in `kamilog.py`
+tests for `_LogFormatEngine.count_prefix_chars` in `kamilog`
 """
 
 import logging
 
 import pytest
 
-from kamilog.kamilog import DATEFMT_TIME, _LogFormatEngine
+from kamilog import DATEFMT_TIME
+from kamilog.formatter import _LogFormatEngine
 
 
 class _StubPalette:

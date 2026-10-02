@@ -2,10 +2,10 @@
 tal-expand-tabs_test.py
 
 tests for the literal "\\t" expansion built into `_TabAlignedLine.parse`
-in `kamilog.py`
+in `kamilog`
 """
 
-from kamilog.kamilog import _TabAlignedLine
+from kamilog.tab_align import _TabAlignedLine
 
 
 class TestExpandTabsNoOffset:

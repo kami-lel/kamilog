@@ -1,10 +1,10 @@
 """
 badge-normalize_test.py
 
-tests for `_normalize_badges` in `kamilog.py`
+tests for `_normalize_badges` in `kamilog`
 """
 
-from kamilog.kamilog import _normalize_badges
+from kamilog.badges import _normalize_badges
 
 
 class TestNormalizeBadges:

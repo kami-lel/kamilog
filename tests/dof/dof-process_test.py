@@ -1,12 +1,12 @@
 """
 dof-process_test.py
 
-end-to-end tests for `_DiffOnlyMsgFilter.filter` in `kamilog.py`
+end-to-end tests for `_DiffOnlyMsgFilter.filter` in `kamilog`
 """
 
 import logging
 
-from kamilog.kamilog import _DiffOnlyEngine, _DiffOnlyMsgFilter
+from kamilog.diff_only import _DiffOnlyEngine, _DiffOnlyMsgFilter
 
 
 class _StubEngine:

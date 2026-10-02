@@ -5,13 +5,13 @@ tests for the shared `-n/--newline`/`-N/--no-newline` and `-C/--no-color`
 flags inherited by the `cb`, `cb0`, and `logger` CLI subcommands via
 `_common_parser`, and
 for the `-w/--line-width` flag still inherited by `cb`/`cb0` via
-`_line_width_parser`, in `kamilog.py`
+`_line_width_parser`, in `kamilog`
 """
 
 import io
 
 import pytest
-from kamilog.kamilog import _cli_parser
+from kamilog.cli import _cli_parser
 
 
 _SUBCOMMAND_ARGS = [

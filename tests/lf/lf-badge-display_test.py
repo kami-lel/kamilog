@@ -1,12 +1,13 @@
 """
 lf-badge-display_test.py
 
-tests for the badge segment of `_LogFormatEngine.build_line` in `kamilog.py`
+tests for the badge segment of `_LogFormatEngine.build_line` in `kamilog`
 """
 
 import logging
 
-from kamilog.kamilog import DATEFMT_TIME, _LogFormatEngine
+from kamilog import DATEFMT_TIME
+from kamilog.formatter import _LogFormatEngine
 
 
 class _StubPalette:

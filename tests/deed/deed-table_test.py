@@ -1,7 +1,7 @@
 """
 deed-table_test.py
 
-tests for `_DEEDS` and `_render_deed_message` in `kamilog.py`
+tests for `_DEEDS` and `_render_deed_message` in `kamilog`
 """
 
 import re
@@ -9,14 +9,8 @@ from pathlib import Path
 
 import pytest
 
-from kamilog.kamilog import (
-    _DEEDS,
-    _render_deed_message,
-    ERROR,
-    INFO,
-    SKIP,
-    WARNING,
-)
+from kamilog import ERROR, INFO, SKIP, WARNING
+from kamilog.deeds import _DEEDS, _render_deed_message
 
 DOC_PATH = Path(__file__).parents[2] / "docs" / "deed-doc.md"
 
