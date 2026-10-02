@@ -2,7 +2,6 @@
 
 <!--
 todo cli color-triage-tag
-todo smart time print
 todo cli logger: implement relative time
 todo cli logger: allow to use already set up logger
 bug using different logger to print & diff only can produce confusing result
