@@ -82,8 +82,6 @@ the [shell shim](docs/shim-doc.md), which keeps them working either way.
 
 ## Install
 
-#### Package Install
-
 Install via `pip`. This also registers the `kamilog` shell command (`console_scripts` entry point) automatically.
 
 Clone and install:
@@ -98,31 +96,6 @@ Or install directly from GitHub:
 
 ```bash
 pip install git+https://github.com/kami-lel/kamilog.git
-```
-
-#### Copy Install
-
-Embed kamilog directly into your project, no `pip` required.
-
-Copy the single file into your project root:
-
-```
-your_project/
-├── kamilog.py
-└── main.py
-```
-
-Or copy the entire folder into your project's source directory:
-
-```
-your_project/
-├── project_abc/
-│   ├── kamilog/
-│   │   ├── __init__.py
-│   │   └── kamilog.py
-│   ├── module_a/
-│   └── module_b/
-└── pyproject.toml
 ```
 
 

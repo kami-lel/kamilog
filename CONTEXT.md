@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-kamilog is a lightweight Python logging utility wrapping the stdlib `logging` module. It adds custom log levels, combinable ANSI color, badges, deed log methods, flexible timestamps, and a diff-only filter that compresses repeated lines. The one logging entry point, `kamilog.getLogger()`, returns a drop-in replacement for `logging.getLogger()`. The library ships as copyable source: no build step, no runtime dependency beyond the stdlib.
+kamilog is a lightweight Python logging utility wrapping the stdlib `logging` module. It adds custom log levels, combinable ANSI color, badges, deed log methods, flexible timestamps, and a diff-only filter that compresses repeated lines. The one logging entry point, `kamilog.getLogger()`, returns a drop-in replacement for `logging.getLogger()`. It installs as a package: no build step, no runtime dependency beyond the stdlib.
 
 Repository: <https://github.com/kami-lel/kamilog>
 
@@ -10,8 +10,18 @@ Repository: <https://github.com/kami-lel/kamilog>
 
 | path | holds |
 | --- | --- |
-| `kamilog/kamilog.py` | entire implementation |
-| `kamilog/__init__.py` | re-exports `kamilog.py`'s `__all__` |
+| `kamilog/__init__.py` | `__version__`, the explicit `__all__`, and every public name imported from its module |
+| `kamilog/levels.py` | `_CustomLogLevel`, level constants |
+| `kamilog/ansi.py` | `AnsiStyle`, `AnsiRenderer` |
+| `kamilog/badges.py` | `_NATIVE_BADGES`, `_normalize_badges` |
+| `kamilog/tab_align.py` | tab-stop helpers, `_TabAlignedLine` |
+| `kamilog/formatter.py` | `DATEFMT_*`, `_LogFormatEngine`, `_LogFormatter` |
+| `kamilog/diff_only.py` | `_DiffOnlyEngine`, `_DiffOnlyMsgFilter` |
+| `kamilog/deeds.py` | `_DEEDS`, deed scopes, method factories |
+| `kamilog/logger.py` | `KamiLogger`, `getLogger` |
+| `kamilog/verbosity.py` | verbosity helpers and level mapping |
+| `kamilog/banner.py` | comment banner generators |
+| `kamilog/cli.py`, `kamilog/__main__.py` | CLI parsers and entry point, `python -m kamilog` |
 | `tests/<area>/` | one suite per area (`v`, `cb`, `ansi`, `lf`, `badge`, `deed`, `logger`, `dof`, `tal`, `cli`); `demo/` subfolders hold golden-output tests for `examples/` |
 | `examples/` | runnable demos per feature |
 | `docs/` | user guides, one per topic; the README and `AGENTS.md` link them |
@@ -90,7 +100,7 @@ Labels for the mode of the whole run (`dry`, `force`, `auto`, ~~); kamilog only 
 The `kamilog` console script (`[project.scripts]`) has subcommands `comment_banner`/`cb`, `comment_banner_zero`/`cb0`, `color`/`c`, `color-grey`, `logger`/`l`, and `deed`. Content comes from stdin (Unix pipe pattern), so positionals are formatting-only. Run `kamilog <subcommand> -h` for arguments.
 
 - shared flags come from layered `add_help=False` parents: `_common_parser` (`-n`/`-N`) → `_no_color_parser` (`-C`) → `_line_width_parser` (`-w`). `color` and `color-grey` inherit only `_common_parser`, since disabling color contradicts their purpose
-- every subcommand attaches through a `_register_*_parser` call at the bottom of the module; only `_cli_parser` and `_cli_subparser` are module-level
+- every subcommand attaches through a `_register_*_parser` call at the bottom of `cli.py`; only `_cli_parser` and `_cli_subparser` are module-level
 - `_calc_line_end` decides the trailing newline: the kept stdin newline plus an appended one for `-n`; none appended for `-N`; exactly one for auto. `logger` sets it as the handlers' `terminator` just before the last record, so earlier records keep their breaks
 - `logger` resolves `LEVEL` and `--time-format` through `_LOGGER_LEVEL_MAP` / `_LOGGER_TIME_FORMAT_MAP`; `notset` is excluded since a record at that level never emits. `--time-format` defaults to `no-time`; `--verbosity` sets the base the `-v`/`-q` counts offset from (default 3)
 
