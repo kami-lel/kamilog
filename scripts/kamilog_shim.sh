@@ -1,9 +1,9 @@
 ################################################################################
-# kamilog_shim
-# shipped with kamilog v2.10.0
+# kamilog_shim.sh 
+# part of kamilog v2.10.0, q.v. https://github.com/kami-lel/kamilog
 #
-# lets scripts call `kamilog` safely even when it is not installed
-# Q.v. https://github.com/kami-lel/kamilog
+# source, or include as part of, a script
+# to call kamilog safely from it whether or not kamilog is installed
 ################################################################################
 _KAMILOG_BIN="$(type -P kamilog 2>/dev/null || true)"
 
