@@ -63,7 +63,7 @@ Labels for the mode of the whole run (`dry`, `force`, `auto`, ~~); kamilog only 
 
 ### Formatting
 
-- `_LogFormatEngine` holds the formatting logic, independent of `logging.Formatter`; all color routes through the `AnsiRenderer`. `count_prefix_chars` gives the printable width before the message. With badges it is a display column: badges follow the timestamp and the level starts on the first tab stop strictly after them
+- `_LogFormatEngine` holds the formatting logic, independent of `logging.Formatter`; all color routes through the `AnsiRenderer`. `count_prefix_chars` gives the printable width before the message. With badges it is a display column: badges follow the level and the source starts on the first tab stop strictly after them
 - a line without badges is byte-identical to the pre-badge format; `record.badges` is read with a default so plain `logging` records still work
 - `_LogFormatter` is the thin `logging.Formatter` adapter exposing `palette` and `engine`; it appends `exc_info`/`stack_info` itself
 

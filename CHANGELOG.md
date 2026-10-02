@@ -2,7 +2,6 @@
 
 <!--
 FIXME reorganize badge & deed
-FIXME update badge location
 FIXME badge format: combine w/ tag to save one tab?
 HACK split kamilog.py, no longer copy install
 todo cli color-triage-tag

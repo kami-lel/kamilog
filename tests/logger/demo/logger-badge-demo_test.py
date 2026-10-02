@@ -18,36 +18,36 @@ _DEMO = os.path.join(_ROOT, "examples", "logger", "logger-badge_demo.py")
 _EXPECTED_STDOUT = [
     "#############################  persistent badges  ##############################",
     "DONE  copy: wrote a.txt",
-    "dry yes\tDONE  copy: wrote b.txt",
-    "dry yes deploy\tDONE  copy: wrote c.txt",
+    "DONE  dry yes\tcopy: wrote b.txt",
+    "DONE  dry yes deploy\tcopy: wrote c.txt",
     "DONE  copy: wrote d.txt",
     "DONE  copy: wrote e.txt",
     "",
     "#########################  badges keep dittos aligned  #########################",
-    "force dry auto\tINFO  sync: sync /home/alice/docs/q1_report.pdf  ->  remote:backup  ok",
-    "force dry auto\tINFO  sync: sync /home/alice/docs/q2_report.pdf  ->  remote:backup  ok",
-    "force dry auto\tINFO  sync: sync /home/alice/docs/q3_report.pdf  ->  remote:backup  ok",
-    "force dry auto\tINFO  sync: 〃\t〃\t〃\t /q4〃\t〃\t〃\t〃\t〃  ok",
-    "force dry auto\tINFO  sync: 〃\t〃\t〃\t /q5〃\t〃\t〃\t〃\t〃  ok",
+    "INFO  force dry auto\tsync: sync /home/alice/docs/q1_report.pdf  ->  remote:backup  ok",
+    "INFO  force dry auto\tsync: sync /home/alice/docs/q2_report.pdf  ->  remote:backup  ok",
+    "INFO  force dry auto\tsync: sync /home/alice/docs/q3_report.pdf  ->  remote:backup  ok",
+    "INFO  force dry auto\tsync: \t〃\t〃\t〃 /q4\t〃\t〃\t〃\t〃    ok",
+    "INFO  force dry auto\tsync: \t〃\t〃\t〃 /q5\t〃\t〃\t〃\t〃    ok",
     "",
     "#############################  multi-line message  #############################",
-    "dry\tINFO  build: compile /src/module_1.c  ok",
+    "INFO  dry\tbuild: compile /src/module_1.c  ok",
     "link    /out/module_1.o  ok",
-    "dry\tINFO  build: compile /src/module_2.c  ok",
+    "INFO  dry\tbuild: compile /src/module_2.c  ok",
     "link    /out/module_2.o  ok",
-    "dry\tINFO  build: compile /src/module_3.c  ok",
+    "INFO  dry\tbuild: compile /src/module_3.c  ok",
     "link    /out/module_3.o  ok",
-    "dry\tINFO  build: \t〃\t /module_4.c  ok",
+    "INFO  dry\tbuild: \t〃\t〃 /module_4.c  ok",
     "〃\t〃  /module_4.o  ok",
-    "dry\tINFO  build: \t〃\t /module_5.c  ok",
+    "INFO  dry\tbuild: \t〃\t〃 /module_5.c  ok",
     "〃\t〃  /module_5.o  ok",
     "",
     "#################################  long line  ##################################",
-    "chk\tINFO  scan: scan /var/data/archive/2026/09/shard_1/records.dat  checksum=ok  size=1048576  owner=backup  mode=0640  path=/mnt/nas/shard_1",
-    "chk\tINFO  scan: scan /var/data/archive/2026/09/shard_2/records.dat  checksum=ok  size=1048576  owner=backup  mode=0640  path=/mnt/nas/shard_2",
-    "chk\tINFO  scan: scan /var/data/archive/2026/09/shard_3/records.dat  checksum=ok  size=1048576  owner=backup  mode=0640  path=/mnt/nas/shard_3",
-    "chk\tINFO  scan: 〃 〃 〃 〃 〃 /shard_4〃 〃 〃 〃 〃 〃 〃 〃 〃 〃 /shard_4",
-    "chk\tINFO  scan: 〃 〃 〃 〃 〃 /shard_5〃 〃 〃 〃 〃 〃 〃 〃 〃 〃 /shard_5",
+    "INFO  chk\tscan: scan /var/data/archive/2026/09/shard_1/records.dat  checksum=ok  size=1048576  owner=backup  mode=0640  path=/mnt/nas/shard_1",
+    "INFO  chk\tscan: scan /var/data/archive/2026/09/shard_2/records.dat  checksum=ok  size=1048576  owner=backup  mode=0640  path=/mnt/nas/shard_2",
+    "INFO  chk\tscan: scan /var/data/archive/2026/09/shard_3/records.dat  checksum=ok  size=1048576  owner=backup  mode=0640  path=/mnt/nas/shard_3",
+    "INFO  chk\tscan: 〃 〃 〃 〃 /shard_4〃 〃 〃 〃 〃 〃 〃 〃 〃 〃 〃 /shard_4",
+    "INFO  chk\tscan: 〃 〃 〃 〃 /shard_5〃 〃 〃 〃 〃 〃 〃 〃 〃 〃 〃 /shard_5",
 ]
 
 
@@ -82,7 +82,7 @@ class TestBadgeDemoOutput:
         long_lines = [
             line
             for line in TestBadgeDemoOutput._out_lines
-            if line.startswith("chk\tINFO  scan: 〃")
+            if line.startswith("INFO  chk\tscan: 〃")
         ]
         assert len(long_lines) == 2
         tails = [line.split("scan: ", 1)[1] for line in long_lines]

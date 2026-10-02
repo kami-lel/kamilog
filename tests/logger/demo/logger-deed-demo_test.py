@@ -25,7 +25,7 @@ _EXPECTED_STDOUT = [
     "INFO  deed: download https://example.com/a.zip",
     "INFO  deed: delete tmp/b.txt",
     "SKIP  deed: skip keep/a.txt",
-    "dry\tINFO  deed: copy a.txt -> backup/a.txt",
+    "INFO  dry\tdeed: copy a.txt -> backup/a.txt",
     "",
     "############################  track form: success  #############################",
     "INFO  deed: copy a.txt -> backup/a.txt",
