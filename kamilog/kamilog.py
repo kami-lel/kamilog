@@ -1129,12 +1129,15 @@ class _LogFormatEngine:  # *****************************************************
         source_len = len(name) + 1 if has_name else 1  # "name:" or ":"
 
         col = ts_len + 1 if ts_len else 0
+        col += level_len
         badges = getattr(record, "badges", ())
         if badges:
-            # level starts on the first tab stop after the badges
-            col += len(" ".join(badges))
+            # source starts on the first tab stop after the badges
+            col += 1 + len(" ".join(badges))
             col += _calc_tab_advance(col)
-        return col + level_len + space_len + source_len + 1
+        else:
+            col += space_len
+        return col + source_len + 1
 
     def format_time(self, record, datefmt=None):
         """
@@ -1159,14 +1162,13 @@ class _LogFormatEngine:  # *****************************************************
         source = self._fmt_source(record.name)
         space = " " if self._has_source_name(record.name) else ""
         badges = getattr(record, "badges", ())
-        # badges sit b/t timestamp & level, level on the next tab stop
-        badge_seg = "{}\t".format(self._fmt_badges(badges)) if badges else ""
+        # badges sit b/t level & source, source on the next tab stop
+        badge_seg = " {}\t".format(self._fmt_badges(badges)) if badges else space
         head = "{} ".format(asctime) if asctime else ""
-        return "{}{}{}{}{} {}".format(
+        return "{}{}{}{} {}".format(
             head,
-            badge_seg,
             self._fmt_level(record.levelno),
-            space,
+            badge_seg,
             source,
             record.getMessage(),
         )
