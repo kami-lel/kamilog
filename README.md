@@ -42,7 +42,7 @@ rolling the same `argparse` glue in every project. The
 #### 🏷️ Badges for the Mode of a Run
 
 Tag a whole run as `dry`, `force`, `auto`, or any custom label with
-`set_persistent_badges()`, and every line shows it before the level, colored by
+`set_persistent_badges()`, and every line shows it after the level, colored by
 severity. Repeated lines still compress cleanly, multi-line messages
 included. Q.v. the [badges documentation](docs/badge-doc.md) for every
 native badge and how to set them.

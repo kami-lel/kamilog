@@ -36,8 +36,8 @@ log.done("wrote d.txt")
 ```
 
 ```text
-dry yes	DONE  copy: wrote a.txt
-dry yes deploy	DONE  copy: wrote b.txt
+DONE  dry yes	copy: wrote a.txt
+DONE  dry yes deploy	copy: wrote b.txt
 DONE  copy: wrote c.txt
 DONE  copy: wrote d.txt
 ```
@@ -133,7 +133,7 @@ log.done("synced 120 files")
 ```
 
 ```
-auto keep eu-west	DONE  sync: synced 120 files
+DONE  auto keep eu-west	sync: synced 120 files
 ```
 
 `auto` and `keep` are native and lead, colored by severity, while `eu-west` is custom and follows in magenta.
