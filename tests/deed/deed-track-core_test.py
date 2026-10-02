@@ -70,14 +70,14 @@ class TestTrackSuccess:
 
     def test_badges(_):
         logger, cap = _make_logger()
-        logger.set_badges("force")
+        logger.set_persistent_badges("force")
         with logger.track.cp_file("a", "b", badges="dry"):
             pass
         assert cap.records[0].badges == ("force", "dry")
 
     def test_not_inheriting_badges(_):
         logger, cap = _make_logger()
-        logger.set_badges("force")
+        logger.set_persistent_badges("force")
         with logger.track.cp_file("a", "b", is_inheriting_badges=False):
             pass
         assert cap.records[0].badges == ()

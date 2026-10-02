@@ -93,15 +93,15 @@ class TestPlainKeywords:
         logger.cp_file("a", "b", badges="dry")
         assert cap.records[0].badges == ("dry",)
 
-    def test_run_badges_inherited(_):
+    def test_persistent_badges_inherited(_):
         logger, cap = _make_logger()
-        logger.set_badges("force")
+        logger.set_persistent_badges("force")
         logger.cp_file("a", "b", badges="dry")
         assert cap.records[0].badges == ("force", "dry")
 
     def test_not_inheriting_badges(_):
         logger, cap = _make_logger()
-        logger.set_badges("force")
+        logger.set_persistent_badges("force")
         logger.cp_file("a", "b", is_inheriting_badges=False)
         assert cap.records[0].badges == ()
 

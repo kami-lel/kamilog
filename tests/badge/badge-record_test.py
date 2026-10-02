@@ -59,7 +59,7 @@ class TestRecordBadges:
         assert cap.records[0].badges == ()
 
     def test_run_wide_lands_on_record(_, log, cap):
-        log.set_badges(["dry"])
+        log.set_persistent_badges(["dry"])
         log.info("m")
         assert cap.records[0].badges == ("dry",)
 
@@ -68,24 +68,24 @@ class TestRecordBadges:
         assert cap.records[0].badges == ("deploy",)
 
     def test_per_call_adds_to_run_wide_sorted(_, log, cap):
-        log.set_badges(["auto"])
+        log.set_persistent_badges(["auto"])
         log.done("m", badges=["force", "x"])
         assert cap.records[0].badges == ("force", "auto", "x")
 
     def test_per_call_duplicate_of_run_wide_kept_once(_, log, cap):
-        log.set_badges(["dry"])
+        log.set_persistent_badges(["dry"])
         log.info("m", badges=["dry"])
         assert cap.records[0].badges == ("dry",)
 
     def test_inherit_false_hides_run_wide_for_one_record(_, log, cap):
-        log.set_badges(["dry"])
+        log.set_persistent_badges(["dry"])
         log.info("m", is_inheriting_badges=False)
         log.info("m")
         assert cap.records[0].badges == ()
         assert cap.records[1].badges == ("dry",)
 
     def test_inherit_false_keeps_per_call(_, log, cap):
-        log.set_badges(["dry"])
+        log.set_persistent_badges(["dry"])
         log.info("m", badges="yes", is_inheriting_badges=False)
         assert cap.records[0].badges == ("yes",)
 

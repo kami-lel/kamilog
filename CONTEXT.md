@@ -48,8 +48,8 @@ Labels for the mode of the whole run (`dry`, `force`, `auto`, ~~); kamilog only 
 
 - `_NATIVE_BADGES` maps each native label to `(AnsiStyle hue, priority)`, higher priority printing first; any other label is custom: magenta, priority 0
 - `_normalize_badges` dedupes and orders by descending priority, customs keeping given order
-- `set_badges()` / `clear_badges()` replace or unset the run-wide set, stored per logger; there is no add or remove of one label
-- `_log` override merges per-call `badges` with the run-wide set (`is_inheriting_badges=False` hides it for one record), stamps `record.badges`, and forwards with `stacklevel + 1` so `funcName` and `lineno` point at the caller
+- `set_persistent_badges()` / `clear_persistent_badges()` replace or unset the persistent set, stored per logger; there is no add or remove of one label
+- `_log` override merges per-call `badges` with the persistent set (`is_inheriting_badges=False` hides it for one record), stamps `record.badges`, and forwards with `stacklevel + 1` so `funcName` and `lineno` point at the caller
 
 ### Deeds
 

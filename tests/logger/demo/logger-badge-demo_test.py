@@ -16,7 +16,7 @@ _ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."
 _DEMO = os.path.join(_ROOT, "examples", "logger", "logger-badge_demo.py")
 
 _EXPECTED_STDOUT = [
-    "##############################  run-wide badges  ###############################",
+    "#############################  persistent badges  ##############################",
     "DONE  copy: wrote a.txt",
     "dry yes\tDONE  copy: wrote b.txt",
     "dry yes deploy\tDONE  copy: wrote c.txt",

@@ -51,7 +51,7 @@ def _log_lines(tmp_path, messages, *, badges=(), name_len=32, **kwargs):
         **kwargs,
     )
     logger.setLevel(logging.DEBUG)
-    logger.set_badges(badges)
+    logger.set_persistent_badges(badges)
     for message in messages:
         logger.info(message)
     for handler in logger.handlers:

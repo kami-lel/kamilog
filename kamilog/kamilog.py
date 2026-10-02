@@ -760,7 +760,7 @@ def _make_track_method(deed):
         :type suppress: bool, optional
         :param badges: badge labels for this record only; default=None
         :type badges: str or Iterable(str), optional
-        :param is_inheriting_badges: whether the run-wide badges apply to
+        :param is_inheriting_badges: whether the persistent badges apply to
                 this record; default=True
         :type is_inheriting_badges: bool, optional
         :return: context manager logging the outcome at block exit
@@ -781,8 +781,8 @@ class KamiLogger(logging.Logger):  # ===========================================
     obtain instances via :func:`getlogger`
     """
 
-    # run-wide badges; instances shadow this on first set_badges call
-    _run_badges = ()
+    # persistent badges; instances shadow this on first set_persistent_badges call
+    _persistent_badges = ()
 
     def enter(self, message, *args, **kwargs):
         """
@@ -960,25 +960,25 @@ class KamiLogger(logging.Logger):  # ===========================================
         """
         return _DeedTrack(self)
 
-    def set_badges(self, badges=None):
+    def set_persistent_badges(self, badges=None):
         """
-        replace the run-wide badges
+        replace the persistent badges
 
-        an omitted, ``None`` or empty ``badges`` unsets every run-wide
-        badge; there is no add or remove of a single badge
+        an omitted, ``None`` or empty ``badges`` unsets every
+        persistent badge; there is no add or remove of a single badge
 
 
         :param badges: badge labels for every later record;
                 default=None
         :type badges: str or Iterable(str), optional
         """
-        self._run_badges = _normalize_badges(badges)
+        self._persistent_badges = _normalize_badges(badges)
 
-    def clear_badges(self):
+    def clear_persistent_badges(self):
         """
-        unset every run-wide badge
+        unset every persistent badge
         """
-        self._run_badges = ()
+        self._persistent_badges = ()
 
     def _log_if_enabled(self, level, msg, args, stacklevel, **kwargs):
         """
@@ -1002,14 +1002,14 @@ class KamiLogger(logging.Logger):  # ===========================================
     ):
         """
         stamp the record with its effective badges, then log as usual;
-        per-call ``badges`` add to the run-wide set unless
+        per-call ``badges`` add to the persistent set unless
         ``is_inheriting_badges`` is false, and the result lands on
         ``record.badges`` as a priority-sorted tuple
         """
-        run_badges = self._run_badges if is_inheriting_badges else ()
+        persistent_badges = self._persistent_badges if is_inheriting_badges else ()
         extra = dict(extra) if extra else {}
         extra["badges"] = _normalize_badges(
-            (*run_badges, *_normalize_badges(badges))
+            (*persistent_badges, *_normalize_badges(badges))
         )
         # +1 skips this frame so caller info stays correct
         super()._log(
@@ -1053,7 +1053,7 @@ def _make_deed_method(deed):
         :type level: int, optional
         :param badges: badge labels for this record only; default=None
         :type badges: str or Iterable(str), optional
-        :param is_inheriting_badges: whether the run-wide badges apply to
+        :param is_inheriting_badges: whether the persistent badges apply to
                 this record; default=True
         :type is_inheriting_badges: bool, optional
         """.format(

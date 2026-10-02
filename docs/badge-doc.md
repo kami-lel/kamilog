@@ -24,14 +24,14 @@ import kamilog
 log = kamilog.getLogger("copy")
 log.setLevel(kamilog.DEBUG)
 
-log.set_badges(["dry", "yes"])  # every later line, replaces any earlier set
+log.set_persistent_badges(["dry", "yes"])  # every later line, replaces any earlier set
 log.done("wrote a.txt")
 log.done("wrote b.txt", badges="deploy")  # this line only, on top of the set
 log.done("wrote c.txt", is_inheriting_badges=False)  # this line only, without the set
 
-log.clear_badges()    # or equivalently
-log.set_badges(None)  # or equivalently
-log.set_badges([])
+log.clear_persistent_badges()    # or equivalently
+log.set_persistent_badges(None)  # or equivalently
+log.set_persistent_badges([])
 log.done("wrote d.txt")
 ```
 
@@ -128,7 +128,7 @@ import kamilog
 log = kamilog.getLogger("sync")
 log.setLevel(kamilog.DEBUG)
 
-log.set_badges(["eu-west", "auto", "keep"])
+log.set_persistent_badges(["eu-west", "auto", "keep"])
 log.done("synced 120 files")
 ```
 

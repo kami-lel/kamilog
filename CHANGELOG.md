@@ -1,6 +1,8 @@
 # kamilog CHANGELOG
 
 <!--
+FIXME reorganize badge & deed
+FIXME update badge location
 todo cli color-triage-tag
 todo cli logger: implement relative time
 todo cli logger: allow to use already set up logger
@@ -25,6 +27,8 @@ bug using different logger to print & diff only can produce confusing result
 ### Added
 
 ### Changed
+
+- badges: rename `KamiLogger.set_badges()` / `clear_badges()` to `set_persistent_badges()` / `clear_persistent_badges()`, matching the "persistent badges" term used elsewhere
 
 ### Deprecated
 
