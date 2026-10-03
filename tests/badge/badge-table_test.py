@@ -21,6 +21,7 @@ _EXPECTED = {
     "legacy": AnsiStyle.YELLOW,
     "unstable": AnsiStyle.YELLOW,
     "new": AnsiStyle.BRIGHT_GREEN,
+    "edit": AnsiStyle.BRIGHT_GREEN,
     "owr": AnsiStyle.RED,
     "del": AnsiStyle.RED,
     "mv": AnsiStyle.BRIGHT_GREEN,

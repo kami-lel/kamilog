@@ -85,6 +85,7 @@ Data:
 | Badge | Color | Remark |
 | --- | --- | --- |
 | `new` | bright green | creates file or directory |
+| `edit` | bright green | modifies existing value or file in place |
 | `owr` | red | *overwrites* existing value or file |
 | `del` | red | *deletes* something |
 | `mv` | bright green | *moves* or renames file or record |

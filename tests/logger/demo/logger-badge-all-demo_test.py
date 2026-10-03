@@ -31,6 +31,7 @@ _EXPECTED_STDOUT = [
     "",
     "####################################  data  ####################################",
     "INFO  new\t: creating output/report.csv",
+    "INFO  edit\t: editing output/report.csv",
     "INFO  owr\t: overwriting output/report.csv",
     "INFO  del\t: deleting output/report.csv",
     "INFO  mv\t: renaming draft.csv to report.csv",
