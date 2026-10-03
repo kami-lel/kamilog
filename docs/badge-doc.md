@@ -24,7 +24,7 @@ import kamilog
 log = kamilog.getLogger("copy")
 log.setLevel(kamilog.DEBUG)
 
-log.set_persistent_badges(["dry", "yes"])  # every later line, replaces any earlier set
+log.set_persistent_badges(["dry"])  # every later line, replaces any earlier set
 log.done("wrote a.txt")
 log.done("wrote b.txt", badges="deploy")  # this line only, on top of the set
 log.done("wrote c.txt", is_inheriting_badges=False)  # this line only, without the set
@@ -36,8 +36,8 @@ log.done("wrote d.txt")
 ```
 
 ```text
-DONE  dry yes	copy: wrote a.txt
-DONE  dry yes deploy	copy: wrote b.txt
+DONE  dry	copy: wrote a.txt
+DONE  dry deploy	copy: wrote b.txt
 DONE  copy: wrote c.txt
 DONE  copy: wrote d.txt
 ```
