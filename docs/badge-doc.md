@@ -44,7 +44,7 @@ DONE  copy: wrote d.txt
 
 `badges` takes a string or a list, and every level method and `log()` accept it along with `is_inheriting_badges`. On a terminal each native badge is colored by how serious it is; files and `-C` output stay plain.
 
-Badges print most serious first, whatever order you give them: `force` and `undo` lead, and `watch` and `bg` come last.
+Badges print in the order given: persistent badges first, in the order set, followed by per-call badges, in the order passed.
 
 
 

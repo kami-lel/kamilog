@@ -13,7 +13,7 @@ Repository: <https://github.com/kami-lel/kamilog>
 | `kamilog/__init__.py` | `__version__`, the explicit `__all__`, and every public name imported from its module |
 | `kamilog/levels.py` | `_CustomLogLevel`, level constants |
 | `kamilog/ansi.py` | `AnsiStyle`, `AnsiRenderer` |
-| `kamilog/badges.py` | `_NATIVE_BADGES`, `_normalize_badges` |
+| `kamilog/badges.py` | `NATIVE_BADGES`, `normalize_badges` |
 | `kamilog/tab_align.py` | tab-stop helpers, `_TabAlignedLine` |
 | `kamilog/formatter.py` | `DATEFMT_*`, `_LogFormatEngine`, `_LogFormatter` |
 | `kamilog/diff_only.py` | `_DiffOnlyEngine`, `_DiffOnlyMsgFilter` |
@@ -55,10 +55,10 @@ Each call:
 
 Labels for the mode of the whole run (`dry`, `force`, `auto`, ~~); kamilog only records and displays them.
 
-- `_NATIVE_BADGES` maps each native label to `(AnsiStyle hue, priority)`, higher priority printing first; any other label is custom: magenta, priority 0
-- `_normalize_badges` dedupes and orders by descending priority, customs keeping given order
+- `NATIVE_BADGES` maps each native label to an `AnsiStyle` hue; any other label is custom: magenta
+- `normalize_badges` dedupes, keeping the order given
 - `set_persistent_badges()` / `clear_persistent_badges()` replace or unset the persistent set, stored per logger; there is no add or remove of one label
-- `_log` override merges per-call `badges` with the persistent set (`is_inheriting_badges=False` hides it for one record), stamps `record.badges`, and forwards with `stacklevel + 1` so `funcName` and `lineno` point at the caller
+- `_log` override prepends the persistent set to per-call `badges` (`is_inheriting_badges=False` hides it for one record), so persistent badges always print before call badges, each group in the order given; it stamps `record.badges` and forwards with `stacklevel + 1` so `funcName` and `lineno` point at the caller
 
 ### Formatting
 
