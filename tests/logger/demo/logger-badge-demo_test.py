@@ -18,8 +18,8 @@ _DEMO = os.path.join(_ROOT, "examples", "logger", "logger-badge_demo.py")
 _EXPECTED_STDOUT = [
     "#############################  persistent badges  ##############################",
     "DONE  copy: wrote a.txt",
-    "DONE  dry yes\tcopy: wrote b.txt",
-    "DONE  dry yes deploy\tcopy: wrote c.txt",
+    "DONE  dry owr\tcopy: wrote b.txt",
+    "DONE  dry owr deploy\tcopy: wrote c.txt",
     "DONE  copy: wrote d.txt",
     "DONE  copy: wrote e.txt",
     "",
@@ -48,6 +48,10 @@ _EXPECTED_STDOUT = [
     "INFO  chk\tscan: scan /var/data/archive/2026/09/shard_3/records.dat  checksum=ok  size=1048576  owner=backup  mode=0640  path=/mnt/nas/shard_3",
     "INFO  chk\tscan: 〃 〃 〃 〃 /shard_4〃 〃 〃 〃 〃 〃 〃 〃 〃 〃 〃 /shard_4",
     "INFO  chk\tscan: 〃 〃 〃 〃 /shard_5〃 〃 〃 〃 〃 〃 〃 〃 〃 〃 〃 /shard_5",
+    "",
+    "#################  severity sorts badges from every category  ##################",
+    "INFO  elevated del skip retry\tteardown: removing stale shard",
+    "INFO  abort timeout\tteardown: teardown aborted after timeout",
 ]
 
 
