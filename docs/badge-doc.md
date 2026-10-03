@@ -1,8 +1,8 @@
 # Badges Documentation
 
-A **badge** is a short label that says what mode the whole run is in: a dry run, an unattended run, a forced run. Set it once, and every log line carries it, so nobody reading the output has to wonder whether anything was really changed.
+A **badge** is a decorative tag flagging a log entry as worth attention.
 
-kamilog only shows badges. It never makes anything dry or forced; your code does that. Badges are a feature of the [logger](log-doc.md), and [deeds](deed-doc.md) accept them per line.
+A badge may mark one entry, or be set once to carry across every later line. kamilog only shows badges; your code decides what's dry or forced. Badges are a feature of the [logger](log-doc.md), and [deeds](deed-doc.md) accept them per line.
 
 
 
@@ -44,7 +44,7 @@ DONE  copy: wrote d.txt
 
 `badges` takes a string or a list, and every level method and `log()` accept it along with `is_inheriting_badges`. On a terminal each native badge is colored by how serious it is; files and `-C` output stay plain.
 
-Badges print most serious first, whatever order you give them: `unsafe`, `force`, and `undo` lead, and `watch` and `bg` come last.
+Badges print most serious first, whatever order you give them: `force` and `undo` lead, and `watch` and `bg` come last.
 
 
 
@@ -60,49 +60,63 @@ Badges print most serious first, whatever order you give them: `unsafe`, `force`
 
 ## Native Badges
 
-Effect:
+Mode:
 
-| Badge | CLI Analogue | Color | Remark |
-| --- | --- | --- | --- |
-| `dry` | `--dry-run`, `rsync -n` | `BRIGHT_YELLOW` | nothing is changed, only reported |
-| `chk` | `ansible --check`, `black --check` | `YELLOW` | short for *check*; state verified, not modified |
-| `mock` | stubbed or fake backend | `YELLOW` | the action hit a stand-in, not the real system |
-| `sbx` | `docker run --rm`, throwaway environment | `GREEN` | short for *sandbox*; the run is isolated, so nothing outlives it |
+| Badge | Color | Remark |
+| --- | --- | --- |
+| `dry` | | runs in dry mode, only report |
+| `chk` | | runs *check* and validation, nothing modified |
+| `mock` | | hits stand-in, not real system |
+| `sandbox` | | runs isolated, nothing outlives it |
 
-Safety:
+Guard:
 
-| Badge | CLI Analogue | Color | Remark |
-| --- | --- | --- | --- |
-| `unsafe` | `git --no-verify`, `curl -k` | `BRIGHT_RED` | verification was skipped |
-| `force` | `-f`, `git push --force` | `RED` | guards were bypassed |
-| `undo` | `--rollback` | `RED` | a prior run is being reversed |
+| Badge | Color | Remark |
+| --- | --- | --- |
+| `force` | | bypasses guard or verification |
+| `undo` | | reverses prior run |
+| `grant` | | grants or widens access right |
+| `elevated` | | runs w/ superuser or admin rights |
+| `legacy` | | uses deprecated or outdated feature/API |
+| `unstable` | | uses unstable or experimental feature/interface |
 
-Prompting:
+Data:
 
-| Badge | CLI Analogue | Color | Remark |
-| --- | --- | --- | --- |
-| `yes` | `-y`, `apt -y` | `YELLOW` | prompts were auto-answered |
-| `auto` | `--non-interactive`, CI, cron | `BLUE` | short for *automatic*; no human is present |
+| Badge | Color | Remark |
+| --- | --- | --- |
+| `new` | | creates file or directory |
+| `owr` | | *overwrites* existing value or file |
+| `del` | | *deletes* something |
+| `mv` | | *moves* or renames file or record |
+| `cp` | | *duplicates* file or record |
+| `cached` | | result from cache, not recomputed |
+| `stale` | | uses data or state older than expected |
 
-Error Policy:
+Automation:
 
-| Badge | CLI Analogue | Color | Remark |
-| --- | --- | --- | --- |
-| `strict` | `--strict`, `-Werror` | `GREEN` | warnings count as failures |
-| `keep` | `make -k`, `--continue-on-error` | `YELLOW` | failures logged, run continues |
-| `fast` | `pytest -x`, `set -e` | `GREEN` | the first failure stops the run |
-| `retries` | `curl --retry`, `--retries N` | `CYAN` | failed steps are attempted again |
+| Badge | Color | Remark |
+| --- | --- | --- |
+| `auto` | | unattended, auto-answers prompts |
+| `fresh` | | ignores previous state, starts over |
+| `resume` | | continues interrupted run |
+| `offline` | | runs w/o network, cached data only |
 
-Execution:
+Process:
 
-| Badge | CLI Analogue | Color | Remark |
-| --- | --- | --- | --- |
-| `resm` | `wget -c`, `rsync --partial` | `CYAN` | short for *resume*; continuing an interrupted run |
-| `new` | `--no-cache`, `--fresh` | `CYAN` | previous state ignored, starting over |
-| `offl` | `pip --no-index`, `npm --offline` | `CYAN` | short for *offline*; no network, cached data only |
-| `incr` | `rsync`, only changed items | `CYAN` | short for *incremental*; only what changed is processed |
-| `watch` | `--watch` | `BLUE` | re-runs on change |
-| `bg` | `docker -d`, `&` | `BLUE` | short for *background*; the run is detached from the terminal |
+| Badge | Color | Remark |
+| --- | --- | --- |
+| `watch` | | re-runs on change |
+| `bg` | | runs detached from terminal, *background* |
+
+Recovery:
+
+| Badge | Color | Remark |
+| --- | --- | --- |
+| `retry` | | repeat attempt |
+| `fallback` | | takes secondary path after primary fails |
+| `skip` | | skips step, or tolerates failure |
+| `timeout` | | hits time limit |
+| `abort` | | cuts short on purpose |
 
 
 
