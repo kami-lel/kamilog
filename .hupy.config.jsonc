@@ -7,7 +7,7 @@
 // #############################################################################
 {
   // HUPy version, do not edit
-  "hupy_version": "3.1.0",
+  "hupy_version": "3.2.2",
   "vg": { // VerGrep  ##########################################################
     // grep repo's version string
     //
@@ -28,7 +28,7 @@
       {
         "remark": "kamilog_shim version",
         "file": "scripts/kamilog_shim.sh",
-        "glob": "# shipped with kamilog v(\\S+)"
+        "glob": "part of kamilog v(\\S+),.+"
       }
     ]
   },
