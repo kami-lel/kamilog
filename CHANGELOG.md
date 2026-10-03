@@ -1,7 +1,7 @@
 # kamilog CHANGELOG
 
 <!--
-FIXME reorganize badge & deed
+FIXME reorganize deed
 FIXME badge format: combine w/ tag to save one tab?
 todo cli color-triage-tag
 todo cli logger: implement relative time
@@ -25,6 +25,8 @@ bug using different logger to print & diff only can produce confusing result
 ## [Unreleased]
 
 ### Added
+
+- `examples/logger/logger-badge-all_demo.py`: every native badge plus a custom (non-native) badge, one per log entry, grouped by category
 
 ### Changed
 
