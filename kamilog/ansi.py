@@ -250,9 +250,9 @@ class AnsiRenderer:  # =========================================================
         :rtype: str
         """
         # local import: badges.py imports AnsiStyle from this module
-        from .badges import _NATIVE_BADGES
+        from .badges import NATIVE_BADGES
 
-        hue = _NATIVE_BADGES.get(badge, (AnsiStyle.MAGENTA, 0))[0]
+        hue = NATIVE_BADGES.get(badge, AnsiStyle.MAGENTA)
         return self.color(text, hue)
 
     def color_triage_tag(self, triage_tag):

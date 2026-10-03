@@ -7,7 +7,7 @@ import os
 import sys
 from logging import FileHandler, StreamHandler
 
-from .badges import _normalize_badges
+from .badges import normalize_badges
 from .diff_only import _DiffOnlyMsgFilter
 from .formatter import DATEFMT_DATETIME_MS, _DATEFMT_AUTO, _LogFormatter
 from .levels import (
@@ -203,7 +203,7 @@ class KamiLogger(logging.Logger):  # ===========================================
                 default=None
         :type badges: str or Iterable(str), optional
         """
-        self._persistent_badges = _normalize_badges(badges)
+        self._persistent_badges = normalize_badges(badges)
 
     def clear_persistent_badges(self):
         """
@@ -235,12 +235,13 @@ class KamiLogger(logging.Logger):  # ===========================================
         stamp the record with its effective badges, then log as usual;
         per-call ``badges`` add to the persistent set unless
         ``is_inheriting_badges`` is false, and the result lands on
-        ``record.badges`` as a priority-sorted tuple
+        ``record.badges`` with persistent badges first, each in the
+        order given, followed by call badges in the order given
         """
         persistent_badges = self._persistent_badges if is_inheriting_badges else ()
         extra = dict(extra) if extra else {}
-        extra["badges"] = _normalize_badges(
-            (*persistent_badges, *_normalize_badges(badges))
+        extra["badges"] = normalize_badges(
+            (*persistent_badges, *normalize_badges(badges))
         )
         # +1 skips this frame so caller info stays correct
         super()._log(
