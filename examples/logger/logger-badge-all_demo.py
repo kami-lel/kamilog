@@ -58,7 +58,6 @@ print()
 print(gen_comment_banner_centered("recovery", "#", renderer=renderer))
 log.info("repeating the failed upload", badges="retry")
 log.info("taking the secondary path after primary failed", badges="fallback")
-log.info("skipping the broken validation step", badges="skip")
 log.info("hitting the 30 second time limit", badges="timeout")
 log.info("cutting the run short on purpose", badges="abort")
 

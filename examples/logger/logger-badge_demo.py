@@ -89,5 +89,5 @@ log5 = kamilog.getLogger("teardown")
 log5.setLevel(kamilog.DEBUG)
 log5.propagate = False
 
-log5.info("removing stale shard", badges=["skip", "del", "elevated", "retry"])
+log5.info("removing stale shard", badges=["del", "elevated", "retry"])
 log5.info("teardown aborted after timeout", badges=["timeout", "abort"])

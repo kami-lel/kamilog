@@ -51,7 +51,6 @@ _EXPECTED_STDOUT = [
     "##################################  recovery  ##################################",
     "INFO  retry\t: repeating the failed upload",
     "INFO  fallback\t: taking the secondary path after primary failed",
-    "INFO  skip\t: skipping the broken validation step",
     "INFO  timeout\t: hitting the 30 second time limit",
     "INFO  abort\t: cutting the run short on purpose",
     "",
