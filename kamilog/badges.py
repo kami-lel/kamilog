@@ -1,25 +1,24 @@
 """
-badge-table_test.py
-
-tests for `NATIVE_BADGES` in `kamilog`
+badges: native badge table and badge normalization
 """
 
-import pytest
+from .ansi import AnsiStyle
 
-from kamilog import AnsiStyle
-from kamilog.badges import NATIVE_BADGES
-
-_EXPECTED = {
+# native badge label → hue
+NATIVE_BADGES = {
+    # mode
     "dry": AnsiStyle.BRIGHT_MAGENTA,
     "chk": AnsiStyle.BRIGHT_BLUE,
     "mock": AnsiStyle.CYAN,
     "sandbox": AnsiStyle.BRIGHT_CYAN,
+    # guard
     "force": AnsiStyle.BRIGHT_YELLOW,
     "undo": AnsiStyle.RED,
     "grant": AnsiStyle.BRIGHT_YELLOW,
     "elevated": AnsiStyle.BRIGHT_YELLOW,
     "legacy": AnsiStyle.YELLOW,
     "unstable": AnsiStyle.YELLOW,
+    # data
     "new": AnsiStyle.BRIGHT_GREEN,
     "edit": AnsiStyle.BRIGHT_GREEN,
     "owr": AnsiStyle.RED,
@@ -28,12 +27,15 @@ _EXPECTED = {
     "cp": AnsiStyle.BRIGHT_GREEN,
     "cached": AnsiStyle.MAGENTA,
     "stale": AnsiStyle.YELLOW,
+    # automation
     "auto": AnsiStyle.BLUE,
     "fresh": AnsiStyle.GREEN,
     "resume": AnsiStyle.GREEN,
     "offline": AnsiStyle.YELLOW,
+    # process
     "watch": AnsiStyle.BRIGHT_BLUE,
     "bg": AnsiStyle.BLUE,
+    # recovery
     "retry": AnsiStyle.BRIGHT_MAGENTA,
     "fallback": AnsiStyle.BRIGHT_YELLOW,
     "timeout": AnsiStyle.BRIGHT_RED,
@@ -41,10 +43,12 @@ _EXPECTED = {
 }
 
 
-class TestNativeBadgeTable:
-    def test_has_exactly_the_documented_badges(_):
-        assert set(NATIVE_BADGES) == set(_EXPECTED)
-
-    @pytest.mark.parametrize("label", sorted(_EXPECTED))
-    def test_hue(_, label):
-        assert NATIVE_BADGES[label] == _EXPECTED[label]
+def normalize_badges(badges):
+    """
+    drop duplicate badges, keeping the order given
+    """
+    if badges is None:
+        return ()
+    if isinstance(badges, str):
+        badges = (badges,)
+    return tuple(dict.fromkeys(badges))

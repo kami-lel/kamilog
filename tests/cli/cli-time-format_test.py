@@ -2,7 +2,7 @@
 cli-time-format_test.py
 
 tests for the `logger` CLI subcommand's `-t/--time-format` default & choices
-in `kamilog.py`
+in `kamilog`
 """
 
 import io
@@ -12,7 +12,7 @@ import uuid
 
 import pytest
 
-from kamilog.kamilog import _cli_parser
+from kamilog.cli import _cli_parser
 
 
 @pytest.fixture(autouse=True)

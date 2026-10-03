@@ -1,10 +1,10 @@
 """
 tal-render_test.py
 
-tests for `_TabAlignedLine.render` in `kamilog.py`
+tests for `_TabAlignedLine.render` in `kamilog`
 """
 
-from kamilog.kamilog import _TabAlignedLine
+from kamilog.tab_align import _TabAlignedLine
 
 
 class TestRenderWithoutPrefix:

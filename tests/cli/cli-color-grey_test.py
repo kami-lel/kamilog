@@ -1,7 +1,7 @@
 """
 cli-color-grey_test.py
 
-tests for the `color-grey` CLI subcommand (alias `cg`) in `kamilog.py`:
+tests for the `color-grey` CLI subcommand (alias `cg`) in `kamilog`:
 equivalence to `color GREY`, and its interaction with the shared `-n`/`-N`
 flags from `_common_parser`; `color-grey` does not inherit `-C`, same as
 `color`
@@ -10,7 +10,7 @@ flags from `_common_parser`; `color-grey` does not inherit `-C`, same as
 import io
 
 import pytest
-from kamilog.kamilog import _cli_parser
+from kamilog.cli import _cli_parser
 
 
 class _FakeTtyStream(io.StringIO):

@@ -1,12 +1,17 @@
 """
 v-set_logging_level_by_namespace_test.py
 
-tests for `set_logging_level_by_namespace` in `kamilog.py`
+tests for `set_logging_level_by_namespace` in `kamilog`
 """
 
 import logging
 from argparse import ArgumentParser
-from kamilog.kamilog import add_verbose_arguments, set_logging_level_by_namespace, ENTER, DONE
+from kamilog import (
+    add_verbose_arguments,
+    set_logging_level_by_namespace,
+    ENTER,
+    DONE,
+)
 
 LOGGER_NAME = "TestSetLoggingLevelByNamespace"
 

@@ -1,14 +1,14 @@
 """
 logger-handler-routing_test.py
 
-tests for `getLogger` stdout/stderr handler routing in `kamilog.py`
+tests for `getLogger` stdout/stderr handler routing in `kamilog`
 """
 
 import logging
 import sys
 import uuid
 
-from kamilog.kamilog import getLogger
+from kamilog import getLogger
 
 
 def _make_record(levelno):

@@ -2,12 +2,12 @@
 cb-demo_test.py
 
 tests for `gen_comment_banner_centered`, `gen_comment_banner_left_just`,
-and `gen_comment_banner_right_just` in `kamilog.py`
+and `gen_comment_banner_right_just` in `kamilog`
 """
 
 import pytest
 
-from kamilog.kamilog import (
+from kamilog import (
     gen_comment_banner_centered,
     gen_comment_banner_left_just,
     gen_comment_banner_right_just,

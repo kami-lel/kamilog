@@ -1,17 +1,12 @@
 """
 v-calc_logging_level_namespace_test.py
 
-tests for `calc_logging_level`'s `namespace` param in `kamilog.py`
+tests for `calc_logging_level`'s `namespace` param in `kamilog`
 """
 
 import logging
 from argparse import ArgumentParser
-from kamilog.kamilog import (
-    add_verbose_arguments,
-    calc_logging_level,
-    ENTER,
-    DONE,
-)
+from kamilog import add_verbose_arguments, calc_logging_level, ENTER, DONE
 
 
 class TestCalcLoggingLevelNamespace:

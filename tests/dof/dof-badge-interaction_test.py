@@ -2,7 +2,7 @@
 dof-badge-interaction_test.py
 
 end-to-end tests of badges with diff-only ditto alignment, through
-`getLogger` and a file handler, in `kamilog.py`
+`getLogger` and a file handler, in `kamilog`
 """
 
 import logging
@@ -10,7 +10,7 @@ import uuid
 
 import pytest
 
-from kamilog.kamilog import DATEFMT_TIME, getLogger
+from kamilog import DATEFMT_TIME, getLogger
 
 _TAB = 8
 _TAIL = "/bbb"
@@ -18,8 +18,8 @@ _BADGE_SETS = [
     (),
     ("dry",),
     ("dry", "yes"),
-    ("force", "dry", "retries", "auto"),  # priority order
-    ("unsafe", "deploy-staging-env"),
+    ("force", "dry", "retry", "auto"),  # given order
+    ("elevated", "deploy-staging-env"),
 ]
 
 
@@ -51,7 +51,7 @@ def _log_lines(tmp_path, messages, *, badges=(), name_len=32, **kwargs):
         **kwargs,
     )
     logger.setLevel(logging.DEBUG)
-    logger.set_badges(badges)
+    logger.set_persistent_badges(badges)
     for message in messages:
         logger.info(message)
     for handler in logger.handlers:
@@ -226,7 +226,7 @@ class TestBadgedLongMultiLineMessage:
     def test_badges_can_push_only_line_one_over_the_limit(_, tmp_path):
         # 70 columns of message: short at col 0, long behind 40+ prefix
         body = "d" * 66 + _TAIL
-        badges = ("unsafe", "deploy-staging-env")
+        badges = ("elevated", "deploy-staging-env")
         messages = ["{}X\n{}P".format(body, body)] * 3
         messages.append("{}Y\n{}Q".format(body, body))
         lines = _log_lines(tmp_path, messages, badges=badges)

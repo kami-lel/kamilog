@@ -1,12 +1,12 @@
 """
 dof-common-prefix_test.py
 
-tests for `_DiffOnlyEngine._update_common` in `kamilog.py`
+tests for `_DiffOnlyEngine._update_common` in `kamilog`
 """
 
 from collections import deque
 
-from kamilog.kamilog import _DiffOnlyEngine
+from kamilog.diff_only import _DiffOnlyEngine
 
 
 def _make_engine(history):

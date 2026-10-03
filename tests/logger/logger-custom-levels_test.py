@@ -1,7 +1,7 @@
 """
 logger-custom-levels_test.py
 
-tests for `KamiLogger` custom level methods in `kamilog.py`
+tests for `KamiLogger` custom level methods in `kamilog`
 """
 
 import inspect
@@ -10,7 +10,7 @@ import uuid
 
 import pytest
 
-from kamilog.kamilog import _CustomLogLevel
+from kamilog.levels import _CustomLogLevel
 
 
 def _fresh_logger():

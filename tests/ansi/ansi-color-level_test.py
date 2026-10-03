@@ -1,12 +1,13 @@
 """
 ansi-color-level_test.py
 
-tests for `AnsiRenderer.color_level` and `color_grey` in `kamilog.py`
+tests for `AnsiRenderer.color_level` and `color_grey` in `kamilog`
 """
 
 import logging
 
-from kamilog.kamilog import AnsiRenderer, _CustomLogLevel
+from kamilog import AnsiRenderer
+from kamilog.levels import _CustomLogLevel
 
 
 class _FakeStream:
@@ -36,18 +37,18 @@ class TestColorLevelAppliesBoldAndMappedColor:
             == "\033[1;33mWARN.\033[0m"
         )
 
-    def test_error_uses_red(_):
+    def test_error_uses_bright_yellow(_):
         renderer = _enabled_renderer()
         assert (
             renderer.color_level("ERROR", logging.ERROR)
-            == "\033[1;31mERROR\033[0m"
+            == "\033[1;93mERROR\033[0m"
         )
 
-    def test_critical_uses_bright_magenta(_):
+    def test_critical_uses_bright_red(_):
         renderer = _enabled_renderer()
         assert (
             renderer.color_level("CRIT.", logging.CRITICAL)
-            == "\033[1;95mCRIT.\033[0m"
+            == "\033[1;91mCRIT.\033[0m"
         )
 
 
@@ -59,39 +60,39 @@ class TestColorLevelAppliesCustomLevelColors:
             == "\033[1;96mENTER\033[0m"
         )
 
-    def test_skip_uses_blue(_):
+    def test_skip_uses_bright_cyan(_):
         renderer = _enabled_renderer()
         assert (
             renderer.color_level("SKIP ", _CustomLogLevel.SKIP)
-            == "\033[1;34mSKIP \033[0m"
+            == "\033[1;96mSKIP \033[0m"
         )
 
-    def test_succ_uses_green(_):
+    def test_succ_uses_bright_green(_):
         renderer = _enabled_renderer()
         assert (
             renderer.color_level("SUCC.", _CustomLogLevel.SUCC)
-            == "\033[1;32mSUCC.\033[0m"
+            == "\033[1;92mSUCC.\033[0m"
         )
 
-    def test_pass_uses_bright_green(_):
+    def test_pass_uses_green(_):
         renderer = _enabled_renderer()
         assert (
             renderer.color_level("PASS ", _CustomLogLevel.PASS)
-            == "\033[1;92mPASS \033[0m"
+            == "\033[1;32mPASS \033[0m"
         )
 
-    def test_done_uses_bright_yellow(_):
+    def test_done_uses_bright_green(_):
         renderer = _enabled_renderer()
         assert (
             renderer.color_level("DONE ", _CustomLogLevel.DONE)
-            == "\033[1;93mDONE \033[0m"
+            == "\033[1;92mDONE \033[0m"
         )
 
-    def test_fail_uses_bright_red(_):
+    def test_fail_uses_red(_):
         renderer = _enabled_renderer()
         assert (
             renderer.color_level("FAIL ", _CustomLogLevel.FAIL)
-            == "\033[1;91mFAIL \033[0m"
+            == "\033[1;31mFAIL \033[0m"
         )
 
 

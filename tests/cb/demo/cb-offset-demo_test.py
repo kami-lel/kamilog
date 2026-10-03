@@ -2,12 +2,12 @@
 cb-offset-demo_test.py
 
 tests for `gen_comment_banner_centered`'s `horizontal_offset` parameter
-in `kamilog.py`
+in `kamilog`
 """
 
 import pytest
 
-from kamilog.kamilog import gen_comment_banner_centered
+from kamilog import gen_comment_banner_centered
 
 _OFFSET_CASES = [
     (

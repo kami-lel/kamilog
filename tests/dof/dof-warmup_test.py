@@ -1,10 +1,10 @@
 """
 dof-warmup_test.py
 
-tests for `_DiffOnlyEngine.process` warmup behavior in `kamilog.py`
+tests for `_DiffOnlyEngine.process` warmup behavior in `kamilog`
 """
 
-from kamilog.kamilog import _DiffOnlyEngine
+from kamilog.diff_only import _DiffOnlyEngine
 
 
 class _StubEngine:

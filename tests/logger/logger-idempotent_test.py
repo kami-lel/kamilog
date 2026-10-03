@@ -1,12 +1,13 @@
 """
 logger-idempotent_test.py
 
-tests for `getLogger` idempotent re-configuration in `kamilog.py`
+tests for `getLogger` idempotent re-configuration in `kamilog`
 """
 
 import uuid
 
-from kamilog.kamilog import _DiffOnlyMsgFilter, getLogger
+from kamilog import getLogger
+from kamilog.diff_only import _DiffOnlyMsgFilter
 
 
 def _count_diff_only_filters(logger):

@@ -17,7 +17,7 @@ No virtual-environment tooling is pinned; use whichever you prefer (`venv`, `uv`
 
 ## Build and Test Commands
 
-There is no build step — the library is distributed by copying source files.
+There is no build step; kamilog is installed as a package (`pip install .`).
 
 Run the full suite (scope to the changed area otherwise):
 
@@ -39,7 +39,7 @@ pytest tests/v/v-calc_logging_level_test.py::TestCalcLoggingLevel::test_v2
 - **String formatting**: `"".format()` only — not f-strings or `%`
 - **Naming**: `snake_case` functions, `_PrefixedPrivate` classes, `UPPER_CASE` constants; 4-space indentation, PEP 8 throughout
 - **Dependencies**: stdlib only (no new runtime dependency without explicit approval)
-- **`__all__`**: `kamilog/kamilog.py` maintains an explicit `__all__` tuple; `kamilog/__init__.py` re-exports it dynamically via `from .kamilog import *` and `from .kamilog import __all__ as __all__` — update only `kamilog.py` when adding public symbols
+- **`__all__`**: `kamilog/__init__.py` holds the explicit `__all__` tuple and imports every public name from its module — when adding a public symbol, import it there and add it to `__all__`
 
 ## Testing Instructions
 
@@ -48,21 +48,21 @@ Tests live in `tests/` and use `pytest` class-based style (`class TestFoo`).
 Before merging:
 
 1. `pytest tests/` — all tests must pass.
-2. `tests/source_quality_test.py` scans `kamilog/kamilog.py` and `kamilog/__init__.py` for `todo`, `bug`, `fixme`, `hack` (case-insensitive) — leave none behind.
+2. `tests/source_quality_test.py` scans every `kamilog/*.py` module for `todo`, `bug`, `fixme`, `hack` (case-insensitive) — leave none behind.
 
-When adding new public functions, add corresponding tests under the relevant subdirectory — `tests/v/` for verbosity helpers (named `v-<feature>_test.py`), `tests/cb/` for comment-banner functions (named `cb-<feature>_test.py`), `tests/ansi/` for `AnsiRenderer`/TTY detection, `tests/lf/` for `_LogFormatter`/`_LogFormatEngine`, `tests/badge/` for badges (named `badge-<feature>_test.py`), `tests/logger/` for `KamiLogger` behavior, `tests/deed/` for deed methods (named `deed-<feature>_test.py`), `tests/dof/` for diff-only compression, `tests/tal/` for `_TabAlignedLine`, `tests/cli/` for CLI subcommand flags (named `cli-<feature>_test.py`). Every `examples/` demo script has a matching golden-output test under `tests/<area>/demo/` — add or update one when a demo script's output changes.
+When adding new public functions, add corresponding tests under the relevant subdirectory — `tests/v/` for verbosity helpers (named `v-<feature>_test.py`), `tests/cb/` for comment-banner functions (named `cb-<feature>_test.py`), `tests/ansi/` for `AnsiRenderer`/TTY detection, `tests/lf/` for `_LogFormatter`/`_LogFormatEngine`, `tests/badge/` for badges (named `badge-<feature>_test.py`), `tests/logger/` for `KamiLogger` behavior, `tests/dof/` for diff-only compression, `tests/tal/` for `_TabAlignedLine`, `tests/cli/` for CLI subcommand flags (named `cli-<feature>_test.py`). Every `examples/` demo script has a matching golden-output test under `tests/<area>/demo/` — add or update one when a demo script's output changes.
 
 ## PR & Commit Instructions
 
 - **Branch**: feature branches off `dev`; merge into `dev`. `main` tracks releases only.
 - **Commit messages**: imperative mood, lowercase, no period — e.g. `add diff-only message filter`.
 - **CHANGELOG**: update `CHANGELOG.md` under `## [Unreleased]` for every user-visible change before merging.
-- **Version bump**: set `__version__` in `kamilog/kamilog.py` and move `[Unreleased]` to a dated version block when cutting a release.
+- **Version bump**: set `__version__` in `kamilog/__init__.py` and move `[Unreleased]` to a dated version block when cutting a release.
 
 Pre-merge checklist:
 
 - [ ] `pytest tests/` passes
-- [ ] `__all__` in `kamilog.py` is up to date
+- [ ] `__all__` in `kamilog/__init__.py` is up to date
 - [ ] CHANGELOG updated
 - [ ] the matching topic guide under `docs/` reflects any API changes
 - [ ] `CONTEXT.md` updated if architecture or module layout changed
@@ -83,7 +83,6 @@ Keep these files in sync with code changes:
 | [`docs/verbosity-doc.md`](docs/verbosity-doc.md) | verbosity helpers, `-v`/`-q` flags, or level mapping change |
 | [`docs/shim-doc.md`](docs/shim-doc.md) | `scripts/kamilog_shim.sh` or its fallbacks change |
 | [`docs/badge-doc.md`](docs/badge-doc.md) | badge API, native badges, or badge display change |
-| [`docs/deed-doc.md`](docs/deed-doc.md) | deed methods, wording, levels, track form, or `deed` CLI change |
 
 ## Security Considerations
 

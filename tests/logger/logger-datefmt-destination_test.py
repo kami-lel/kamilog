@@ -1,7 +1,7 @@
 """
 logger-datefmt-destination_test.py
 
-tests for `getLogger` per-destination `datefmt` default in `kamilog.py`
+tests for `getLogger` per-destination `datefmt` default in `kamilog`
 """
 
 import logging
@@ -9,7 +9,7 @@ import re
 import time
 import uuid
 
-from kamilog.kamilog import DATEFMT_TIME, getLogger
+from kamilog import DATEFMT_TIME, getLogger
 
 FILE_STAMP = r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3} INFO"
 CONSOLE_STAMP = r"\d{2}:\d{2}:\d{2}"

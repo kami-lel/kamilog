@@ -42,17 +42,10 @@ rolling the same `argparse` glue in every project. The
 #### 🏷️ Badges for the Mode of a Run
 
 Tag a whole run as `dry`, `force`, `auto`, or any custom label with
-`set_badges()`, and every line shows it before the level, colored by
+`set_persistent_badges()`, and every line shows it after the level, colored by
 severity. Repeated lines still compress cleanly, multi-line messages
 included. Q.v. the [badges documentation](docs/badge-doc.md) for every
 native badge and how to set them.
-
-#### 📝 Deeds: One Line per Thing Done
-
-Log creating, copying, deleting, downloading, and running as fixed, readable
-lines, and let a failure log itself with its error. Q.v. the
-[deeds documentation](docs/deed-doc.md) for every deed and the failure
-handling.
 
 #### 📐 Terminal Banners, Done Right
 
@@ -64,8 +57,7 @@ files scannable instead of a wall of text. Q.v. the
 #### 💻 A CLI, Not Just a Library
 
 `kamilog` installs as its own shell command, ready to use without writing
-a line of Python, including `kamilog deed` for logging a deed from a shell
-script. Scripts that may run where `kamilog` is missing can carry
+a line of Python. Scripts that may run where `kamilog` is missing can carry
 the [shell shim](docs/shim-doc.md), which keeps them working either way.
 
 
@@ -82,8 +74,6 @@ the [shell shim](docs/shim-doc.md), which keeps them working either way.
 
 ## Install
 
-#### Package Install
-
 Install via `pip`. This also registers the `kamilog` shell command (`console_scripts` entry point) automatically.
 
 Clone and install:
@@ -98,31 +88,6 @@ Or install directly from GitHub:
 
 ```bash
 pip install git+https://github.com/kami-lel/kamilog.git
-```
-
-#### Copy Install
-
-Embed kamilog directly into your project, no `pip` required.
-
-Copy the single file into your project root:
-
-```
-your_project/
-├── kamilog.py
-└── main.py
-```
-
-Or copy the entire folder into your project's source directory:
-
-```
-your_project/
-├── project_abc/
-│   ├── kamilog/
-│   │   ├── __init__.py
-│   │   └── kamilog.py
-│   ├── module_a/
-│   └── module_b/
-└── pyproject.toml
 ```
 
 
@@ -144,7 +109,6 @@ you need:
 
 - Levels, Timestamps & Files: [logging](docs/log-doc.md)
 - Run Modes: [badges](docs/badge-doc.md), shown on every line
-- Common Actions: [deeds](docs/deed-doc.md), logged in fixed wording
 - `-v`/`-q` Flags: [verbosity](docs/verbosity-doc.md)
 - Colors Without Logging: [ANSI output](docs/ansi-doc.md)
 - Section Banners: [comment banners](docs/banner-doc.md)

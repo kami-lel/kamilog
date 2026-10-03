@@ -2,7 +2,6 @@
 
 <!--
 todo cli color-triage-tag
-todo smart time print
 todo cli logger: implement relative time
 todo cli logger: allow to use already set up logger
 bug using different logger to print & diff only can produce confusing result
@@ -35,7 +34,47 @@ bug using different logger to print & diff only can produce confusing result
 
 ### Security
 
-[unreleased]: https://github.com/kami-lel/kamilog/compare/v2.10.0...dev
+[unreleased]: https://github.com/kami-lel/kamilog/compare/v3.0.0...dev
+
+
+
+
+
+
+
+
+
+
+
+
+## [3.0.0] - 2026-10-03
+
+### Added
+
+- `examples/logger/logger-badge-all_demo.py`: demo of every native badge plus a custom one, grouped by category
+
+### Changed
+
+- package split into function-group modules (`levels`, `ansi`, `badges`, `formatter`, `diff_only`, `logger`, `verbosity`, `banner`, `cli`); every `__all__` name still imports from `kamilog`
+- added `python -m kamilog` entry point
+- native badges restructured into mode/guard/data/automation/process/recovery categories, with several renames and additions
+- log levels and native badges recolored against one shared 12-color scheme, grouped by purpose instead of category; ※ [`docs/log-doc.md`](docs/log-doc.md) and [`docs/badge-doc.md`](docs/badge-doc.md)
+- badges print in the exact order given, persistent then per-call; priority-based ordering dropped
+
+> [!WARNING]
+> `KamiLogger.set_badges()` / `clear_badges()` are renamed to `set_persistent_badges()` / `clear_persistent_badges()`. The badge segment moves to after the level tag, not before it. Native badge renames: `sbx`→`sandbox`, `unsafe`→`elevated`, `retries`→`retry`, `resm`→`resume`, `offl`→`offline`, `incr`→`stale`.
+
+### Removed
+
+- the deed feature: `KamiLogger`'s plain and track deed methods, the `kamilog deed` CLI subcommand, and its module, docs, and example
+- native badges `yes`, `strict`, `keep`, `fast`
+- copy install; kamilog installs as a package only
+- the `kamilog.kamilog` module path
+
+> [!WARNING]
+> Breaking changes: deed logging methods and the `kamilog deed` CLI subcommand are gone with no replacement; import from `kamilog`, not `kamilog.kamilog`; install via package only, not single-file or folder copy.
+
+[3.0.0]: https://github.com/kami-lel/kamilog/compare/v2.10.0...v3.0.0
 
 
 

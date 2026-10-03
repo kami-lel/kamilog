@@ -15,9 +15,6 @@ the subcommand is not run, and piped stdin is printed with a simple fallback:
 
 | Command | Fallback output |
 |---|---|
-| `kamilog cb ...` / `kamilog cb0 ...` | stdin, prefixed with `# ` |
+| `kamilog cb ...` / `kamilog cb0 ...` | stdin, wrapped with `# ` and ` #` |
 | `kamilog logger <tag>` | stdin, prefixed with `<tag>:` and a tab |
 | anything else | stdin, unchanged |
-
-> [!NOTE]
-> The prefix is added once, at the start of the piped text, not on every line.

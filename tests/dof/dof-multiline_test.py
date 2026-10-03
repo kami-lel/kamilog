@@ -2,10 +2,10 @@
 dof-multiline_test.py
 
 tests for per-line compression of multi-line messages in
-`_DiffOnlyEngine._compress` in `kamilog.py`
+`_DiffOnlyEngine._compress` in `kamilog`
 """
 
-from kamilog.kamilog import _DiffOnlyEngine
+from kamilog.diff_only import _DiffOnlyEngine
 
 
 class _StubEngine:

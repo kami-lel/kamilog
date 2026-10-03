@@ -2,13 +2,13 @@
 cli-newline_test.py
 
 tests for the shared `-n/--newline`/`-N/--no-newline` flag's effect on the
-`cb`, `cb0`, and `logger` CLI subcommands' printed output in `kamilog.py`
+`cb`, `cb0`, and `logger` CLI subcommands' printed output in `kamilog`
 """
 
 import io
 import uuid
 
-from kamilog.kamilog import _cli_parser
+from kamilog.cli import _cli_parser
 
 
 def _run(argv, stdin_text):

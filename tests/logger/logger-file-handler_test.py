@@ -1,13 +1,13 @@
 """
 logger-file-handler_test.py
 
-tests for `getLogger` file-handler support in `kamilog.py`
+tests for `getLogger` file-handler support in `kamilog`
 """
 
 import logging
 import uuid
 
-from kamilog.kamilog import getLogger
+from kamilog import getLogger
 
 
 def _flush(logger):

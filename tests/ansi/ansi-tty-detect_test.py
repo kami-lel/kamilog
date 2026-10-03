@@ -1,10 +1,10 @@
 """
 ansi-tty-detect_test.py
 
-tests for `AnsiRenderer` TTY auto-detection in `kamilog.py`
+tests for `AnsiRenderer` TTY auto-detection in `kamilog`
 """
 
-from kamilog.kamilog import AnsiStyle, AnsiRenderer
+from kamilog import AnsiStyle, AnsiRenderer
 
 
 class _FakeStream:

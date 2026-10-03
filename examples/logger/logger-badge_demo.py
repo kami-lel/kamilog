@@ -9,23 +9,23 @@ multi-line message, and space-separated dittos on a long line
 import sys
 
 import kamilog
-from kamilog.kamilog import AnsiRenderer, gen_comment_banner_centered
+from kamilog import AnsiRenderer, gen_comment_banner_centered
 
 # repeated calls share one renderer instead of re-detecting TTY state
 renderer = AnsiRenderer(sys.stdout)
 
-print(gen_comment_banner_centered("run-wide badges", "#", renderer=renderer))
+print(gen_comment_banner_centered("persistent badges", "#", renderer=renderer))
 
 log = kamilog.getLogger("copy")
 log.setLevel(kamilog.DEBUG)
 log.propagate = False
 
 log.done("wrote a.txt")
-log.set_badges(["yes", "dry"])
+log.set_persistent_badges(["dry", "owr"])
 log.done("wrote b.txt")
 log.done("wrote c.txt", badges="deploy")
 log.done("wrote d.txt", is_inheriting_badges=False)
-log.clear_badges()
+log.clear_persistent_badges()
 log.done("wrote e.txt")
 
 
@@ -39,7 +39,7 @@ print(
 log2 = kamilog.getLogger("sync")
 log2.setLevel(kamilog.DEBUG)
 log2.propagate = False
-log2.set_badges(["force", "dry", "auto"])
+log2.set_persistent_badges(["force", "dry", "auto"])
 
 log2.info("sync /home/alice/docs/q1_report.pdf  ->  remote:backup  ok")
 log2.info("sync /home/alice/docs/q2_report.pdf  ->  remote:backup  ok")
@@ -54,7 +54,7 @@ print(gen_comment_banner_centered("multi-line message", "#", renderer=renderer))
 log3 = kamilog.getLogger("build")
 log3.setLevel(kamilog.DEBUG)
 log3.propagate = False
-log3.set_badges(["dry"])
+log3.set_persistent_badges(["dry"])
 
 for n in range(1, 6):
     log3.info(
@@ -68,7 +68,7 @@ print(gen_comment_banner_centered("long line", "#", renderer=renderer))
 log4 = kamilog.getLogger("scan")
 log4.setLevel(kamilog.DEBUG)
 log4.propagate = False
-log4.set_badges(["chk"])
+log4.set_persistent_badges(["chk"])
 
 for n in range(1, 6):
     log4.info(
@@ -76,3 +76,18 @@ for n in range(1, 6):
         "checksum=ok  size=1048576  owner=backup  mode=0640  "
         "path=/mnt/nas/shard_{0}".format(n)
     )
+
+
+print()
+print(
+    gen_comment_banner_centered(
+        "badges print in the order given", "#", renderer=renderer
+    )
+)
+
+log5 = kamilog.getLogger("teardown")
+log5.setLevel(kamilog.DEBUG)
+log5.propagate = False
+
+log5.info("removing stale shard", badges=["del", "elevated", "retry"])
+log5.info("teardown aborted after timeout", badges=["timeout", "abort"])

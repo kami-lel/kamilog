@@ -1,29 +1,17 @@
 ################################################################################
-# kamilog_shim
-# shipped with kamilog v2.10.0
+# kamilog_shim.sh
+# part of kamilog v3.0.0, q.v. https://github.com/kami-lel/kamilog
 #
-# lets scripts call `kamilog` safely even when it is not installed
-# Q.v. https://github.com/kami-lel/kamilog
+# source, or include as part of, a script
+# to call kamilog safely from it whether or not kamilog is installed
 ################################################################################
 _KAMILOG_BIN="$(type -P kamilog 2>/dev/null || true)"
 
 kamilog() {
-    if [ -n "$_KAMILOG_BIN" ]; then
-        "$_KAMILOG_BIN" "$@"
-        return
-    fi
-    input="$(cat; printf x)";
-    input="${input%x}"   # keep trailing \n from being stripped
-    case "$1" in
-        cb|cb0)
-            printf '# %s' "$input"
-            ;;
-        logger)
-            printf '%s:\t%s' "$2" "$input"
-            ;;
-        *)
-            printf '%s' "$input"  # no bin found, pass stdin through as-is
-            ;;
-    esac
+    [ -n "$_KAMILOG_BIN" ] && { "$_KAMILOG_BIN" "$@"; return; }
+    [ "$1" = logger ] && { printf '%s:\t' "$2"; cat; return; }
+    { [ "$1" = cb ] || [ "$1" = cb0 ]; } \
+        && { printf '# '; cat; printf ' #'; return; }
+    cat  # no bin found, pass stdin through as-is, skip cb formatting
 }
 # END of kamilog_shim  #########################################################

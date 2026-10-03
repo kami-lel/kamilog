@@ -1,11 +1,11 @@
 """
 v-calc_logging_level_test.py
 
-tests for `calc_logging_level` in `kamilog.py`
+tests for `calc_logging_level` in `kamilog`
 """
 
 import logging
-from kamilog.kamilog import calc_logging_level, ENTER, DONE
+from kamilog import calc_logging_level, ENTER, DONE
 
 
 class TestCalcLoggingLevel:

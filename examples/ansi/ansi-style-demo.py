@@ -50,6 +50,45 @@ print(
     + renderer.color("BRIGHT_WHITE", S.BRIGHT_WHITE)
 )
 
+# bold colors  ####################################################
+print(kamilog.gen_comment_banner_centered("bold colors", 1, renderer=renderer))
+print(
+    renderer.color("RED", S.BOLD | S.RED)
+    + "\t\t"
+    + renderer.color("BRIGHT_RED", S.BOLD | S.BRIGHT_RED)
+    + "\t\t"
+    + renderer.color("YELLOW", S.BOLD | S.YELLOW)
+    + "\t\t"
+    + renderer.color("BRIGHT_YELLOW", S.BOLD | S.BRIGHT_YELLOW)
+)
+print(
+    renderer.color("GREEN", S.BOLD | S.GREEN)
+    + "\t\t"
+    + renderer.color("BRIGHT_GREEN", S.BOLD | S.BRIGHT_GREEN)
+    + "\t\t"
+    + renderer.color("CYAN", S.BOLD | S.CYAN)
+    + "\t\t"
+    + renderer.color("BRIGHT_CYAN", S.BOLD | S.BRIGHT_CYAN)
+)
+print(
+    renderer.color("BLUE", S.BOLD | S.BLUE)
+    + "\t\t"
+    + renderer.color("BRIGHT_BLUE", S.BOLD | S.BRIGHT_BLUE)
+    + "\t\t"
+    + renderer.color("MAGENTA", S.BOLD | S.MAGENTA)
+    + "\t\t"
+    + renderer.color("BRIGHT_MAGENTA", S.BOLD | S.BRIGHT_MAGENTA)
+)
+print(
+    renderer.color("BLACK", S.BOLD | S.BLACK)
+    + "\t\t"
+    + renderer.color("GREY", S.BOLD | S.GREY)
+    + "\t\t\t"
+    + renderer.color("WHITE", S.BOLD | S.WHITE)
+    + "\t\t"
+    + renderer.color("BRIGHT_WHITE", S.BOLD | S.BRIGHT_WHITE)
+)
+
 # backgrounds  ###################################################
 print(kamilog.gen_comment_banner_centered("backgrounds", 1, renderer=renderer))
 print(
