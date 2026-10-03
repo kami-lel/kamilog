@@ -87,12 +87,12 @@ class TestBadgeAllDemoOutput:
         assert TestBadgeAllDemoOutput._out_lines[i] == _EXPECTED_STDOUT[i]
 
     def test_covers_every_native_badge_exactly_once(_):
-        from kamilog.badges import _NATIVE_BADGES
+        from kamilog.badges import NATIVE_BADGES
 
         seen = [
             line.split("\t", 1)[0].split("  ", 1)[1]
             for line in TestBadgeAllDemoOutput._out_lines
             if line.startswith("INFO  ") and "eu-west" not in line
         ]
-        assert sorted(seen) == sorted(_NATIVE_BADGES)
+        assert sorted(seen) == sorted(NATIVE_BADGES)
         assert len(seen) == len(set(seen))

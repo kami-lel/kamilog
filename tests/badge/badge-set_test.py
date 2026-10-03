@@ -18,9 +18,9 @@ class TestSetBadges:
     def test_dft_is_empty(_, log):
         assert log._persistent_badges == ()
 
-    def test_set_list_sorted_by_priority(_, log):
+    def test_set_list_keeps_given_order(_, log):
         log.set_persistent_badges(["auto", "dry"])
-        assert log._persistent_badges == ("dry", "auto")
+        assert log._persistent_badges == ("auto", "dry")
 
     def test_set_single_str(_, log):
         log.set_persistent_badges("deploy")

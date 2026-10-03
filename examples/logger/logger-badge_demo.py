@@ -81,7 +81,7 @@ for n in range(1, 6):
 print()
 print(
     gen_comment_banner_centered(
-        "severity sorts badges from every category", "#", renderer=renderer
+        "badges print in the order given", "#", renderer=renderer
     )
 )
 

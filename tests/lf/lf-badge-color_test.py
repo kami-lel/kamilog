@@ -10,7 +10,7 @@ import logging
 import pytest
 
 from kamilog import AnsiRenderer
-from kamilog.badges import _NATIVE_BADGES
+from kamilog.badges import NATIVE_BADGES
 from kamilog.formatter import _LogFormatEngine
 
 
@@ -33,10 +33,10 @@ def _record(badges):
 
 
 class TestColorBadge:
-    @pytest.mark.parametrize("label", sorted(_NATIVE_BADGES))
+    @pytest.mark.parametrize("label", sorted(NATIVE_BADGES))
     def test_native_badge_uses_its_hue(_, label):
         renderer = _renderer()
-        hue = _NATIVE_BADGES[label][0]
+        hue = NATIVE_BADGES[label]
         assert renderer.color_badge(label, label) == renderer.color(
             label, hue
         )

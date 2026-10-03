@@ -49,9 +49,9 @@ _EXPECTED_STDOUT = [
     "INFO  chk\tscan: 〃 〃 〃 〃 /shard_4〃 〃 〃 〃 〃 〃 〃 〃 〃 〃 〃 /shard_4",
     "INFO  chk\tscan: 〃 〃 〃 〃 /shard_5〃 〃 〃 〃 〃 〃 〃 〃 〃 〃 〃 /shard_5",
     "",
-    "#################  severity sorts badges from every category  ##################",
-    "INFO  elevated del retry\tteardown: removing stale shard",
-    "INFO  abort timeout\tteardown: teardown aborted after timeout",
+    "######################  badges print in the order given  #######################",
+    "INFO  del elevated retry\tteardown: removing stale shard",
+    "INFO  timeout abort\tteardown: teardown aborted after timeout",
 ]
 
 

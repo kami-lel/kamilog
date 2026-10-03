@@ -18,7 +18,7 @@ _BADGE_SETS = [
     (),
     ("dry",),
     ("dry", "yes"),
-    ("force", "dry", "retry", "auto"),  # priority order
+    ("force", "dry", "retry", "auto"),  # given order
     ("elevated", "deploy-staging-env"),
 ]
 
