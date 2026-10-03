@@ -41,8 +41,8 @@ class TestColorBadge:
             label, hue
         )
 
-    def test_dry_is_bright_yellow(_):
-        assert _renderer().color_badge("dry", "dry") == "\033[93mdry\033[0m"
+    def test_dry_is_bright_magenta(_):
+        assert _renderer().color_badge("dry", "dry") == "\033[95mdry\033[0m"
 
     def test_custom_badge_is_magenta(_):
         assert _renderer().color_badge("deploy", "deploy") == (
@@ -61,7 +61,7 @@ def _build_line(badges, is_tty=True):
 class TestBuildLineBadgeColor:
     def test_each_badge_colored_separators_plain(_):
         line = _build_line(("dry", "x"))
-        colored = "\033[93mdry\033[0m \033[35mx\033[0m"
+        colored = "\033[95mdry\033[0m \033[35mx\033[0m"
         badge_seg = "{}\t".format(colored)
         assert badge_seg in line
         assert line.index("DONE") < line.index(badge_seg)
