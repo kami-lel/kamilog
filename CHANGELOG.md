@@ -1,7 +1,6 @@
 # kamilog CHANGELOG
 
 <!--
-FIXME badge format: combine w/ tag to save one tab?
 todo cli color-triage-tag
 todo cli logger: implement relative time
 todo cli logger: allow to use already set up logger
@@ -27,13 +26,9 @@ bug using different logger to print & diff only can produce confusing result
 
 - `examples/logger/logger-badge-all_demo.py`: every native badge plus a custom (non-native) badge, one per log entry, grouped by category
 
-### Removed
-
-- the deed feature entirely: `KamiLogger`'s plain and track (`logger.track.<deed>`) deed methods, the `kamilog deed <method>` CLI subcommand, `kamilog/deeds.py`, `docs/deed-doc.md`, and `examples/logger/logger-deed_demo.py`
-
 ### Changed
 
-- package: split the single `kamilog.py` into function-group modules (`levels`, `ansi`, `badges`, `formatter`, `diff_only`, `deeds`, `logger`, `verbosity`, `banner`, `cli`); everything in `__all__` stays importable from `kamilog`
+- package: split the single `kamilog.py` into function-group modules (`levels`, `ansi`, `badges`, `formatter`, `diff_only`, `logger`, `verbosity`, `banner`, `cli`); everything in `__all__` stays importable from `kamilog`
 - package: add `python -m kamilog`
 - badges: rename `KamiLogger.set_badges()` / `clear_badges()` to `set_persistent_badges()` / `clear_persistent_badges()`, matching the "persistent badges" term used elsewhere
 - badges: move the badge segment to after the level tag, before the source, instead of before the level
@@ -45,8 +40,8 @@ bug using different logger to print & diff only can produce confusing result
 
 ### Removed
 
+- the deed feature entirely: `KamiLogger`'s plain and track (`logger.track.<deed>`) deed methods, the `kamilog deed <method>` CLI subcommand, `kamilog/deeds.py`, `docs/deed-doc.md`, and `examples/logger/logger-deed_demo.py`
 - badges: `yes`, `strict`, `keep`, `fast` are no longer native badges
-
 - copy install: kamilog is installed as a package only; the single-file and folder copy options are gone
 - the `kamilog.kamilog` module path; import from `kamilog`
 

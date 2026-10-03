@@ -1,5 +1,5 @@
 ################################################################################
-# kamilog_shim.sh 
+# kamilog_shim.sh
 # part of kamilog v2.10.0, q.v. https://github.com/kami-lel/kamilog
 #
 # source, or include as part of, a script
