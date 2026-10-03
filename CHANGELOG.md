@@ -34,7 +34,7 @@ bug using different logger to print & diff only can produce confusing result
 - package: add `python -m kamilog`
 - badges: rename `KamiLogger.set_badges()` / `clear_badges()` to `set_persistent_badges()` / `clear_persistent_badges()`, matching the "persistent badges" term used elsewhere
 - badges: move the badge segment to after the level tag, before the source, instead of before the level
-- badges: restructure the native badge table into mode/guard/data/automation/process/recovery categories; rename `sbx` to `sandbox`, `unsafe` to `elevated`, `retries` to `retry`, `resm` to `resume`, `offl` to `offline`, `incr` to `stale`; add `grant`, `legacy`, `unstable`, `owr`, `del`, `mv`, `cp`, `cached`, `fresh`, `fallback`, `skip`, `timeout`, `abort`
+- badges: restructure the native badge table into mode/guard/data/automation/process/recovery categories; rename `sbx` to `sandbox`, `unsafe` to `elevated`, `retries` to `retry`, `resm` to `resume`, `offl` to `offline`, `incr` to `stale`; add `grant`, `legacy`, `unstable`, `owr`, `del`, `mv`, `cp`, `cached`, `fresh`, `fallback`, `timeout`, `abort`
 
 ### Deprecated
 

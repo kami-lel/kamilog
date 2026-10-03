@@ -114,7 +114,6 @@ Recovery:
 | --- | --- | --- |
 | `retry` | `CYAN` | repeat attempt |
 | `fallback` | `YELLOW` | takes secondary path after primary fails |
-| `skip` | `YELLOW` | skips step, or tolerates failure |
 | `timeout` | `RED` | hits time limit |
 | `abort` | `BRIGHT_RED` | cuts short on purpose |
 

@@ -37,7 +37,6 @@ _NATIVE_BADGES = {
     # recovery
     "retry": (AnsiStyle.CYAN, 41),
     "fallback": (AnsiStyle.YELLOW, 62),
-    "skip": (AnsiStyle.YELLOW, 61),
     "timeout": (AnsiStyle.RED, 81),
     "abort": (AnsiStyle.BRIGHT_RED, 92),
 }
