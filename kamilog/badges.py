@@ -6,25 +6,40 @@ from .ansi import AnsiStyle
 
 # native badge label → (hue, priority); higher priority prints earlier
 _NATIVE_BADGES = {
-    "dry": (AnsiStyle.BRIGHT_YELLOW, 45),
-    "chk": (AnsiStyle.YELLOW, 44),
-    "mock": (AnsiStyle.YELLOW, 43),
-    "sbx": (AnsiStyle.GREEN, 33),
-    "force": (AnsiStyle.RED, 52),
-    "undo": (AnsiStyle.RED, 51),
-    "unsafe": (AnsiStyle.BRIGHT_RED, 53),
-    "yes": (AnsiStyle.YELLOW, 42),
-    "auto": (AnsiStyle.BLUE, 13),
-    "strict": (AnsiStyle.GREEN, 32),
-    "keep": (AnsiStyle.YELLOW, 41),
-    "fast": (AnsiStyle.GREEN, 31),
-    "retries": (AnsiStyle.CYAN, 25),
-    "resm": (AnsiStyle.CYAN, 24),
-    "new": (AnsiStyle.CYAN, 23),
-    "offl": (AnsiStyle.CYAN, 22),
-    "incr": (AnsiStyle.CYAN, 21),
-    "watch": (AnsiStyle.BLUE, 12),
-    "bg": (AnsiStyle.BLUE, 11),
+    # mode
+    "dry": (AnsiStyle.BRIGHT_YELLOW, 73),
+    "chk": (AnsiStyle.YELLOW, 68),
+    "mock": (AnsiStyle.YELLOW, 67),
+    "sandbox": (AnsiStyle.GREEN, 53),
+    # guard
+    "force": (AnsiStyle.RED, 84),
+    "undo": (AnsiStyle.RED, 83),
+    "grant": (AnsiStyle.YELLOW, 66),
+    "elevated": (AnsiStyle.BRIGHT_RED, 93),
+    "legacy": (AnsiStyle.YELLOW, 65),
+    "unstable": (AnsiStyle.BRIGHT_YELLOW, 72),
+    # data
+    "new": (AnsiStyle.GREEN, 52),
+    "owr": (AnsiStyle.YELLOW, 64),
+    "del": (AnsiStyle.RED, 82),
+    "mv": (AnsiStyle.CYAN, 47),
+    "cp": (AnsiStyle.CYAN, 46),
+    "cached": (AnsiStyle.CYAN, 45),
+    "stale": (AnsiStyle.YELLOW, 63),
+    # automation
+    "auto": (AnsiStyle.BLUE, 33),
+    "fresh": (AnsiStyle.CYAN, 44),
+    "resume": (AnsiStyle.CYAN, 43),
+    "offline": (AnsiStyle.CYAN, 42),
+    # process
+    "watch": (AnsiStyle.BLUE, 32),
+    "bg": (AnsiStyle.BLUE, 31),
+    # recovery
+    "retry": (AnsiStyle.CYAN, 41),
+    "fallback": (AnsiStyle.YELLOW, 62),
+    "skip": (AnsiStyle.YELLOW, 61),
+    "timeout": (AnsiStyle.RED, 81),
+    "abort": (AnsiStyle.BRIGHT_RED, 92),
 }
 
 

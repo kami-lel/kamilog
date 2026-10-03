@@ -35,7 +35,7 @@ class TestNormalizeBadges:
 
     def test_mixed_native_and_custom(_):
         got = _normalize_badges(("deploy", "yes", "dry", "deploy", "bg"))
-        assert got == ("dry", "yes", "bg", "deploy")
+        assert got == ("dry", "bg", "deploy", "yes")
 
     def test_accepts_generator(_):
         assert _normalize_badges(b for b in ("bg", "dry")) == ("dry", "bg")

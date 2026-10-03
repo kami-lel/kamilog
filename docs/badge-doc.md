@@ -142,12 +142,12 @@ import kamilog
 log = kamilog.getLogger("sync")
 log.setLevel(kamilog.DEBUG)
 
-log.set_persistent_badges(["eu-west", "auto", "keep"])
+log.set_persistent_badges(["eu-west", "auto", "retry"])
 log.done("synced 120 files")
 ```
 
 ```
-DONE  auto keep eu-west	sync: synced 120 files
+DONE  retry auto eu-west	sync: synced 120 files
 ```
 
-`auto` and `keep` are native and lead, colored by severity, while `eu-west` is custom and follows in magenta.
+`retry` and `auto` are native and lead, colored by severity, while `eu-west` is custom and follows in magenta.
