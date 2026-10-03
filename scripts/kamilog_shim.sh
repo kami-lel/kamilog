@@ -1,6 +1,6 @@
 ################################################################################
 # kamilog_shim.sh
-# part of kamilog v2.10.0, q.v. https://github.com/kami-lel/kamilog
+# part of kamilog v3.0.0, q.v. https://github.com/kami-lel/kamilog
 #
 # source, or include as part of, a script
 # to call kamilog safely from it whether or not kamilog is installed
