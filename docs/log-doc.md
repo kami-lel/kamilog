@@ -69,20 +69,20 @@ tests. Every level has a method of the same name on the logger.
 |---|---|---|---|---|
 | DEBUG | 10 | `.debug()` | cyan | internal state and control flow |
 | ENTER | 15 | `.enter()` | bright cyan | entering a subroutine or test section |
-| SKIP  | 16 | `.skip()` | blue | a branch or test case that was skipped on purpose |
-| SUCC. | 17 | `.succ()` | green | a subroutine finished successfully |
-| INFO  | 20 | `.info()` | bright blue | a general event during normal execution |
-| PASS  | 21 | `.pass_()` | bright green | a test assertion or case passed |
-| NOTE  | 23 | `.note()` | blue | an aside worth recording |
-| TIP   | 24 | `.tip()` | bright cyan | an actionable suggestion |
-| DONE  | 25 | `.done()` | bright yellow | the whole program or a major phase finished |
-| HINT  | 26 | `.hint()` | cyan | a subtle cue on what to do |
-| IMPT. | 27 | `.important()` | bright blue | information that must stand out |
+| SKIP  | 16 | `.skip()` | bright cyan | a branch or test case that was skipped on purpose |
+| SUCC. | 17 | `.succ()` | bright green | a subroutine finished successfully |
+| INFO  | 20 | `.info()` | blue | a general event during normal execution |
+| PASS  | 21 | `.pass_()` | green | a test assertion or case passed |
+| NOTE  | 23 | `.note()` | bright blue | an aside worth recording |
+| TIP   | 24 | `.tip()` | bright blue | an actionable suggestion |
+| DONE  | 25 | `.done()` | bright green | the whole program or a major phase finished |
+| HINT  | 26 | `.hint()` | magenta | a subtle cue on what to do |
+| IMPT. | 27 | `.important()` | bright magenta | information that must stand out |
 | WARN. | 30 | `.warning()` | yellow | something unexpected, but recoverable |
-| CAUT. | 31 | `.caution()` | magenta | something needing prompt attention |
-| ERROR | 40 | `.error()` | red | an operation failed |
-| FAIL  | 45 | `.fail()` | bright red | a test assertion or case failed |
-| CRIT. | 50 | `.critical()` | bright magenta | the program cannot continue |
+| CAUT. | 31 | `.caution()` | yellow | something needing prompt attention |
+| ERROR | 40 | `.error()` | bright yellow | an operation failed |
+| FAIL  | 45 | `.fail()` | red | a test assertion or case failed |
+| CRIT. | 50 | `.critical()` | bright red | the program cannot continue |
 
 > [!IMPORTANT]
 > `.pass_()` uses a trailing underscore because `pass` is a Python keyword.
