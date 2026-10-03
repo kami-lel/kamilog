@@ -8,7 +8,6 @@ import sys
 from logging import FileHandler, StreamHandler
 
 from .badges import _normalize_badges
-from .deeds import _DeedTrack, _bind_deed_methods, _make_deed_method
 from .diff_only import _DiffOnlyMsgFilter
 from .formatter import DATEFMT_DATETIME_MS, _DATEFMT_AUTO, _LogFormatter
 from .levels import (
@@ -192,17 +191,6 @@ class KamiLogger(logging.Logger):  # ===========================================
         """
         self._log_if_enabled(FAIL, message, args, 2, **kwargs)
 
-    @property
-    def track(self):
-        """
-        track form of the deed methods, e.g. ``with logger.track.cp_file(a, b)``
-
-
-        :return: namespace whose methods mirror the plain deed methods
-        :rtype: _DeedTrack
-        """
-        return _DeedTrack(self)
-
     def set_persistent_badges(self, badges=None):
         """
         replace the persistent badges
@@ -264,9 +252,6 @@ class KamiLogger(logging.Logger):  # ===========================================
             stack_info=stack_info,
             stacklevel=stacklevel + 1,
         )
-
-
-_bind_deed_methods(KamiLogger, _make_deed_method, "KamiLogger")
 
 
 logging.setLoggerClass(KamiLogger)
