@@ -50,7 +50,7 @@ Before merging:
 1. `pytest tests/` — all tests must pass.
 2. `tests/source_quality_test.py` scans every `kamilog/*.py` module for `todo`, `bug`, `fixme`, `hack` (case-insensitive) — leave none behind.
 
-When adding new public functions, add corresponding tests under the relevant subdirectory — `tests/v/` for verbosity helpers (named `v-<feature>_test.py`), `tests/cb/` for comment-banner functions (named `cb-<feature>_test.py`), `tests/ansi/` for `AnsiRenderer`/TTY detection, `tests/lf/` for `_LogFormatter`/`_LogFormatEngine`, `tests/badge/` for badges (named `badge-<feature>_test.py`), `tests/logger/` for `KamiLogger` behavior, `tests/deed/` for deed methods (named `deed-<feature>_test.py`), `tests/dof/` for diff-only compression, `tests/tal/` for `_TabAlignedLine`, `tests/cli/` for CLI subcommand flags (named `cli-<feature>_test.py`). Every `examples/` demo script has a matching golden-output test under `tests/<area>/demo/` — add or update one when a demo script's output changes.
+When adding new public functions, add corresponding tests under the relevant subdirectory — `tests/v/` for verbosity helpers (named `v-<feature>_test.py`), `tests/cb/` for comment-banner functions (named `cb-<feature>_test.py`), `tests/ansi/` for `AnsiRenderer`/TTY detection, `tests/lf/` for `_LogFormatter`/`_LogFormatEngine`, `tests/badge/` for badges (named `badge-<feature>_test.py`), `tests/logger/` for `KamiLogger` behavior, `tests/dof/` for diff-only compression, `tests/tal/` for `_TabAlignedLine`, `tests/cli/` for CLI subcommand flags (named `cli-<feature>_test.py`). Every `examples/` demo script has a matching golden-output test under `tests/<area>/demo/` — add or update one when a demo script's output changes.
 
 ## PR & Commit Instructions
 
@@ -83,7 +83,6 @@ Keep these files in sync with code changes:
 | [`docs/verbosity-doc.md`](docs/verbosity-doc.md) | verbosity helpers, `-v`/`-q` flags, or level mapping change |
 | [`docs/shim-doc.md`](docs/shim-doc.md) | `scripts/kamilog_shim.sh` or its fallbacks change |
 | [`docs/badge-doc.md`](docs/badge-doc.md) | badge API, native badges, or badge display change |
-| [`docs/deed-doc.md`](docs/deed-doc.md) | deed methods, wording, levels, track form, or `deed` CLI change |
 
 ## Security Considerations
 

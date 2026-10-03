@@ -7,8 +7,7 @@ import os
 import sys
 from logging import FileHandler, StreamHandler
 
-from .badges import _normalize_badges
-from .deeds import _DeedTrack, _bind_deed_methods, _make_deed_method
+from .badges import normalize_badges
 from .diff_only import _DiffOnlyMsgFilter
 from .formatter import DATEFMT_DATETIME_MS, _DATEFMT_AUTO, _LogFormatter
 from .levels import (
@@ -192,17 +191,6 @@ class KamiLogger(logging.Logger):  # ===========================================
         """
         self._log_if_enabled(FAIL, message, args, 2, **kwargs)
 
-    @property
-    def track(self):
-        """
-        track form of the deed methods, e.g. ``with logger.track.cp_file(a, b)``
-
-
-        :return: namespace whose methods mirror the plain deed methods
-        :rtype: _DeedTrack
-        """
-        return _DeedTrack(self)
-
     def set_persistent_badges(self, badges=None):
         """
         replace the persistent badges
@@ -215,7 +203,7 @@ class KamiLogger(logging.Logger):  # ===========================================
                 default=None
         :type badges: str or Iterable(str), optional
         """
-        self._persistent_badges = _normalize_badges(badges)
+        self._persistent_badges = normalize_badges(badges)
 
     def clear_persistent_badges(self):
         """
@@ -247,12 +235,13 @@ class KamiLogger(logging.Logger):  # ===========================================
         stamp the record with its effective badges, then log as usual;
         per-call ``badges`` add to the persistent set unless
         ``is_inheriting_badges`` is false, and the result lands on
-        ``record.badges`` as a priority-sorted tuple
+        ``record.badges`` with persistent badges first, each in the
+        order given, followed by call badges in the order given
         """
         persistent_badges = self._persistent_badges if is_inheriting_badges else ()
         extra = dict(extra) if extra else {}
-        extra["badges"] = _normalize_badges(
-            (*persistent_badges, *_normalize_badges(badges))
+        extra["badges"] = normalize_badges(
+            (*persistent_badges, *normalize_badges(badges))
         )
         # +1 skips this frame so caller info stays correct
         super()._log(
@@ -264,9 +253,6 @@ class KamiLogger(logging.Logger):  # ===========================================
             stack_info=stack_info,
             stacklevel=stacklevel + 1,
         )
-
-
-_bind_deed_methods(KamiLogger, _make_deed_method, "KamiLogger")
 
 
 logging.setLoggerClass(KamiLogger)

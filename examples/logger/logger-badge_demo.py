@@ -21,7 +21,7 @@ log.setLevel(kamilog.DEBUG)
 log.propagate = False
 
 log.done("wrote a.txt")
-log.set_persistent_badges(["yes", "dry"])
+log.set_persistent_badges(["dry", "owr"])
 log.done("wrote b.txt")
 log.done("wrote c.txt", badges="deploy")
 log.done("wrote d.txt", is_inheriting_badges=False)
@@ -76,3 +76,18 @@ for n in range(1, 6):
         "checksum=ok  size=1048576  owner=backup  mode=0640  "
         "path=/mnt/nas/shard_{0}".format(n)
     )
+
+
+print()
+print(
+    gen_comment_banner_centered(
+        "badges print in the order given", "#", renderer=renderer
+    )
+)
+
+log5 = kamilog.getLogger("teardown")
+log5.setLevel(kamilog.DEBUG)
+log5.propagate = False
+
+log5.info("removing stale shard", badges=["del", "elevated", "retry"])
+log5.info("teardown aborted after timeout", badges=["timeout", "abort"])

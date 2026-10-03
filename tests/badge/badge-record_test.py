@@ -67,10 +67,10 @@ class TestRecordBadges:
         log.done("m", badges="deploy")
         assert cap.records[0].badges == ("deploy",)
 
-    def test_per_call_adds_to_run_wide_sorted(_, log, cap):
+    def test_per_call_appends_after_run_wide_in_given_order(_, log, cap):
         log.set_persistent_badges(["auto"])
         log.done("m", badges=["force", "x"])
-        assert cap.records[0].badges == ("force", "auto", "x")
+        assert cap.records[0].badges == ("auto", "force", "x")
 
     def test_per_call_duplicate_of_run_wide_kept_once(_, log, cap):
         log.set_persistent_badges(["dry"])

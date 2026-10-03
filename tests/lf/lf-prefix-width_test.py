@@ -94,7 +94,7 @@ class TestPrefixWidthWithBadges:
             ("dry",),
             ("dry", "yes"),
             ("force", "dry", "auto"),
-            ("unsafe", "force", "retries", "deploy-staging"),
+            ("elevated", "force", "retry", "deploy-staging"),
         ],
     )
     def test_message_starts_at_prefix_column(_, badges, name, datefmt):

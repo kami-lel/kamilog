@@ -18,8 +18,8 @@ _BADGE_SETS = [
     (),
     ("dry",),
     ("dry", "yes"),
-    ("force", "dry", "retries", "auto"),  # priority order
-    ("unsafe", "deploy-staging-env"),
+    ("force", "dry", "retry", "auto"),  # given order
+    ("elevated", "deploy-staging-env"),
 ]
 
 
@@ -226,7 +226,7 @@ class TestBadgedLongMultiLineMessage:
     def test_badges_can_push_only_line_one_over_the_limit(_, tmp_path):
         # 70 columns of message: short at col 0, long behind 40+ prefix
         body = "d" * 66 + _TAIL
-        badges = ("unsafe", "deploy-staging-env")
+        badges = ("elevated", "deploy-staging-env")
         messages = ["{}X\n{}P".format(body, body)] * 3
         messages.append("{}Y\n{}Q".format(body, body))
         lines = _log_lines(tmp_path, messages, badges=badges)

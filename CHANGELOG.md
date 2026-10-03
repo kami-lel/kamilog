@@ -1,8 +1,6 @@
 # kamilog CHANGELOG
 
 <!--
-FIXME reorganize badge & deed
-FIXME badge format: combine w/ tag to save one tab?
 todo cli color-triage-tag
 todo cli logger: implement relative time
 todo cli logger: allow to use already set up logger
@@ -26,17 +24,24 @@ bug using different logger to print & diff only can produce confusing result
 
 ### Added
 
+- `examples/logger/logger-badge-all_demo.py`: every native badge plus a custom (non-native) badge, one per log entry, grouped by category
+
 ### Changed
 
-- package: split the single `kamilog.py` into function-group modules (`levels`, `ansi`, `badges`, `formatter`, `diff_only`, `deeds`, `logger`, `verbosity`, `banner`, `cli`); everything in `__all__` stays importable from `kamilog`
+- package: split the single `kamilog.py` into function-group modules (`levels`, `ansi`, `badges`, `formatter`, `diff_only`, `logger`, `verbosity`, `banner`, `cli`); everything in `__all__` stays importable from `kamilog`
 - package: add `python -m kamilog`
 - badges: rename `KamiLogger.set_badges()` / `clear_badges()` to `set_persistent_badges()` / `clear_persistent_badges()`, matching the "persistent badges" term used elsewhere
 - badges: move the badge segment to after the level tag, before the source, instead of before the level
+- badges: restructure the native badge table into mode/guard/data/automation/process/recovery categories; rename `sbx` to `sandbox`, `unsafe` to `elevated`, `retries` to `retry`, `resm` to `resume`, `offl` to `offline`, `incr` to `stale`; add `grant`, `legacy`, `unstable`, `owr`, `del`, `mv`, `cp`, `cached`, `fresh`, `fallback`, `timeout`, `abort`
+- log levels & badges: recolor every custom log level and native badge against one shared 12-color ANSI scheme, grouped by debug/feature-mode/success/warning-bad rather than by category; see [`docs/log-doc.md`](docs/log-doc.md) and [`docs/badge-doc.md`](docs/badge-doc.md) for the full table
+- badges: drop priority-based ordering; badges now print exactly as given, persistent badges first (in the order set) then per-call badges (in the order passed)
 
 ### Deprecated
 
 ### Removed
 
+- the deed feature entirely: `KamiLogger`'s plain and track (`logger.track.<deed>`) deed methods, the `kamilog deed <method>` CLI subcommand, `kamilog/deeds.py`, `docs/deed-doc.md`, and `examples/logger/logger-deed_demo.py`
+- badges: `yes`, `strict`, `keep`, `fast` are no longer native badges
 - copy install: kamilog is installed as a package only; the single-file and folder copy options are gone
 - the `kamilog.kamilog` module path; import from `kamilog`
 

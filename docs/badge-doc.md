@@ -1,8 +1,8 @@
 # Badges Documentation
 
-A **badge** is a short label that says what mode the whole run is in: a dry run, an unattended run, a forced run. Set it once, and every log line carries it, so nobody reading the output has to wonder whether anything was really changed.
+A **badge** is a decorative tag flagging a log entry as worth attention.
 
-kamilog only shows badges. It never makes anything dry or forced; your code does that. Badges are a feature of the [logger](log-doc.md), and [deeds](deed-doc.md) accept them per line.
+A badge may mark one entry, or be set once to carry across every later line. kamilog only shows badges; your code decides what's dry or forced. Badges are a feature of the [logger](log-doc.md).
 
 
 
@@ -24,7 +24,7 @@ import kamilog
 log = kamilog.getLogger("copy")
 log.setLevel(kamilog.DEBUG)
 
-log.set_persistent_badges(["dry", "yes"])  # every later line, replaces any earlier set
+log.set_persistent_badges(["dry"])  # every later line, replaces any earlier set
 log.done("wrote a.txt")
 log.done("wrote b.txt", badges="deploy")  # this line only, on top of the set
 log.done("wrote c.txt", is_inheriting_badges=False)  # this line only, without the set
@@ -36,15 +36,15 @@ log.done("wrote d.txt")
 ```
 
 ```text
-DONE  dry yes	copy: wrote a.txt
-DONE  dry yes deploy	copy: wrote b.txt
+DONE  dry	copy: wrote a.txt
+DONE  dry deploy	copy: wrote b.txt
 DONE  copy: wrote c.txt
 DONE  copy: wrote d.txt
 ```
 
 `badges` takes a string or a list, and every level method and `log()` accept it along with `is_inheriting_badges`. On a terminal each native badge is colored by how serious it is; files and `-C` output stay plain.
 
-Badges print most serious first, whatever order you give them: `unsafe`, `force`, and `undo` lead, and `watch` and `bg` come last.
+Badges print in the order given: persistent badges first, in the order set, followed by per-call badges, in the order passed.
 
 
 
@@ -60,49 +60,62 @@ Badges print most serious first, whatever order you give them: `unsafe`, `force`
 
 ## Native Badges
 
-Effect:
+Mode:
 
-| Badge | CLI Analogue | Color | Remark |
-| --- | --- | --- | --- |
-| `dry` | `--dry-run`, `rsync -n` | `BRIGHT_YELLOW` | nothing is changed, only reported |
-| `chk` | `ansible --check`, `black --check` | `YELLOW` | short for *check*; state verified, not modified |
-| `mock` | stubbed or fake backend | `YELLOW` | the action hit a stand-in, not the real system |
-| `sbx` | `docker run --rm`, throwaway environment | `GREEN` | short for *sandbox*; the run is isolated, so nothing outlives it |
+| Badge | Color | Remark |
+| --- | --- | --- |
+| `dry` | bright magenta | runs in dry mode, only report |
+| `chk` | bright blue | runs *check* and validation, nothing modified |
+| `mock` | cyan | hits stand-in, not real system |
+| `sandbox` | bright cyan | runs isolated, nothing outlives it |
 
-Safety:
+Guard:
 
-| Badge | CLI Analogue | Color | Remark |
-| --- | --- | --- | --- |
-| `unsafe` | `git --no-verify`, `curl -k` | `BRIGHT_RED` | verification was skipped |
-| `force` | `-f`, `git push --force` | `RED` | guards were bypassed |
-| `undo` | `--rollback` | `RED` | a prior run is being reversed |
+| Badge | Color | Remark |
+| --- | --- | --- |
+| `force` | bright yellow | bypasses guard or verification |
+| `undo` | red | reverses prior run |
+| `grant` | bright yellow | grants or widens access right |
+| `elevated` | bright yellow | runs w/ superuser or admin rights |
+| `legacy` | yellow | uses deprecated or outdated feature/API |
+| `unstable` | yellow | uses unstable or experimental feature/interface |
 
-Prompting:
+Data:
 
-| Badge | CLI Analogue | Color | Remark |
-| --- | --- | --- | --- |
-| `yes` | `-y`, `apt -y` | `YELLOW` | prompts were auto-answered |
-| `auto` | `--non-interactive`, CI, cron | `BLUE` | short for *automatic*; no human is present |
+| Badge | Color | Remark |
+| --- | --- | --- |
+| `new` | bright green | creates file or directory |
+| `owr` | red | *overwrites* existing value or file |
+| `del` | red | *deletes* something |
+| `mv` | bright green | *moves* or renames file or record |
+| `cp` | bright green | *duplicates* file or record |
+| `cached` | magenta | result from cache, not recomputed |
+| `stale` | yellow | uses data or state older than expected |
 
-Error Policy:
+Automation:
 
-| Badge | CLI Analogue | Color | Remark |
-| --- | --- | --- | --- |
-| `strict` | `--strict`, `-Werror` | `GREEN` | warnings count as failures |
-| `keep` | `make -k`, `--continue-on-error` | `YELLOW` | failures logged, run continues |
-| `fast` | `pytest -x`, `set -e` | `GREEN` | the first failure stops the run |
-| `retries` | `curl --retry`, `--retries N` | `CYAN` | failed steps are attempted again |
+| Badge | Color | Remark |
+| --- | --- | --- |
+| `auto` | blue | unattended, auto-answers prompts |
+| `fresh` | green | ignores previous state, starts over |
+| `resume` | green | continues interrupted run |
+| `offline` | yellow | runs w/o network, cached data only |
 
-Execution:
+Process:
 
-| Badge | CLI Analogue | Color | Remark |
-| --- | --- | --- | --- |
-| `resm` | `wget -c`, `rsync --partial` | `CYAN` | short for *resume*; continuing an interrupted run |
-| `new` | `--no-cache`, `--fresh` | `CYAN` | previous state ignored, starting over |
-| `offl` | `pip --no-index`, `npm --offline` | `CYAN` | short for *offline*; no network, cached data only |
-| `incr` | `rsync`, only changed items | `CYAN` | short for *incremental*; only what changed is processed |
-| `watch` | `--watch` | `BLUE` | re-runs on change |
-| `bg` | `docker -d`, `&` | `BLUE` | short for *background*; the run is detached from the terminal |
+| Badge | Color | Remark |
+| --- | --- | --- |
+| `watch` | bright blue | re-runs on change |
+| `bg` | blue | runs detached from terminal, *background* |
+
+Recovery:
+
+| Badge | Color | Remark |
+| --- | --- | --- |
+| `retry` | bright magenta | repeat attempt |
+| `fallback` | bright yellow | takes secondary path after primary fails |
+| `timeout` | bright red | hits time limit |
+| `abort` | bright red | cuts short on purpose |
 
 
 
@@ -128,12 +141,12 @@ import kamilog
 log = kamilog.getLogger("sync")
 log.setLevel(kamilog.DEBUG)
 
-log.set_persistent_badges(["eu-west", "auto", "keep"])
+log.set_persistent_badges(["eu-west", "auto", "retry"])
 log.done("synced 120 files")
 ```
 
 ```
-DONE  auto keep eu-west	sync: synced 120 files
+DONE  retry auto eu-west	sync: synced 120 files
 ```
 
-`auto` and `keep` are native and lead, colored by severity, while `eu-west` is custom and follows in magenta.
+`retry` and `auto` are native and lead, colored by severity, while `eu-west` is custom and follows in magenta.

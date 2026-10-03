@@ -1,46 +1,49 @@
 """
 badge-table_test.py
 
-tests for `_NATIVE_BADGES` in `kamilog`
+tests for `NATIVE_BADGES` in `kamilog`
 """
 
 import pytest
 
 from kamilog import AnsiStyle
-from kamilog.badges import _NATIVE_BADGES
+from kamilog.badges import NATIVE_BADGES
 
 _EXPECTED = {
-    "dry": (AnsiStyle.BRIGHT_YELLOW, 45),
-    "chk": (AnsiStyle.YELLOW, 44),
-    "mock": (AnsiStyle.YELLOW, 43),
-    "sbx": (AnsiStyle.GREEN, 33),
-    "force": (AnsiStyle.RED, 52),
-    "undo": (AnsiStyle.RED, 51),
-    "unsafe": (AnsiStyle.BRIGHT_RED, 53),
-    "yes": (AnsiStyle.YELLOW, 42),
-    "auto": (AnsiStyle.BLUE, 13),
-    "strict": (AnsiStyle.GREEN, 32),
-    "keep": (AnsiStyle.YELLOW, 41),
-    "fast": (AnsiStyle.GREEN, 31),
-    "retries": (AnsiStyle.CYAN, 25),
-    "resm": (AnsiStyle.CYAN, 24),
-    "new": (AnsiStyle.CYAN, 23),
-    "offl": (AnsiStyle.CYAN, 22),
-    "incr": (AnsiStyle.CYAN, 21),
-    "watch": (AnsiStyle.BLUE, 12),
-    "bg": (AnsiStyle.BLUE, 11),
+    "dry": AnsiStyle.BRIGHT_MAGENTA,
+    "chk": AnsiStyle.BRIGHT_BLUE,
+    "mock": AnsiStyle.CYAN,
+    "sandbox": AnsiStyle.BRIGHT_CYAN,
+    "force": AnsiStyle.BRIGHT_YELLOW,
+    "undo": AnsiStyle.RED,
+    "grant": AnsiStyle.BRIGHT_YELLOW,
+    "elevated": AnsiStyle.BRIGHT_YELLOW,
+    "legacy": AnsiStyle.YELLOW,
+    "unstable": AnsiStyle.YELLOW,
+    "new": AnsiStyle.BRIGHT_GREEN,
+    "owr": AnsiStyle.RED,
+    "del": AnsiStyle.RED,
+    "mv": AnsiStyle.BRIGHT_GREEN,
+    "cp": AnsiStyle.BRIGHT_GREEN,
+    "cached": AnsiStyle.MAGENTA,
+    "stale": AnsiStyle.YELLOW,
+    "auto": AnsiStyle.BLUE,
+    "fresh": AnsiStyle.GREEN,
+    "resume": AnsiStyle.GREEN,
+    "offline": AnsiStyle.YELLOW,
+    "watch": AnsiStyle.BRIGHT_BLUE,
+    "bg": AnsiStyle.BLUE,
+    "retry": AnsiStyle.BRIGHT_MAGENTA,
+    "fallback": AnsiStyle.BRIGHT_YELLOW,
+    "timeout": AnsiStyle.BRIGHT_RED,
+    "abort": AnsiStyle.BRIGHT_RED,
 }
 
 
 class TestNativeBadgeTable:
     def test_has_exactly_the_documented_badges(_):
-        assert set(_NATIVE_BADGES) == set(_EXPECTED)
+        assert set(NATIVE_BADGES) == set(_EXPECTED)
 
     @pytest.mark.parametrize("label", sorted(_EXPECTED))
-    def test_hue_and_priority(_, label):
-        assert _NATIVE_BADGES[label] == _EXPECTED[label]
-
-    def test_priorities_are_unique_positive_ints(_):
-        priorities = [prio for _hue, prio in _NATIVE_BADGES.values()]
-        assert len(set(priorities)) == len(priorities)
-        assert all(isinstance(p, int) and p > 0 for p in priorities)
+    def test_hue(_, label):
+        assert NATIVE_BADGES[label] == _EXPECTED[label]
