@@ -2,7 +2,7 @@
 
 A **badge** is a decorative tag flagging a log entry as worth attention.
 
-A badge may mark one entry, or be set once to carry across every later line. kamilog only shows badges; your code decides what's dry or forced. Badges are a feature of the [logger](log-doc.md), and [deeds](deed-doc.md) accept them per line.
+A badge may mark one entry, or be set once to carry across every later line. kamilog only shows badges; your code decides what's dry or forced. Badges are a feature of the [logger](log-doc.md).
 
 
 

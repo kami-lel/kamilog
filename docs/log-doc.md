@@ -44,8 +44,7 @@ WARN. myapp: Warning message
 Records below `WARNING` go to stdout, `WARNING` and above go to stderr.
 
 Related guides: [verbosity](verbosity-doc.md) for `-v`/`-q` flags that set the
-level, [deeds](deed-doc.md) for common actions logged in fixed wording, and
-the [README](../README.md) for installation.
+level, and the [README](../README.md) for installation.
 
 
 
