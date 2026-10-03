@@ -44,7 +44,7 @@ from .verbosity import (
     set_logging_level_by_verbosity,
 )
 
-__all__ = (
+__all__ = (  # noqa: RUF022
     "kamilog_cli_main",
     "getLogger",
     "KamiLogger",
