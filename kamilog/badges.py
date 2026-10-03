@@ -7,37 +7,37 @@ from .ansi import AnsiStyle
 # native badge label → (hue, priority); higher priority prints earlier
 _NATIVE_BADGES = {
     # mode
-    "dry": (AnsiStyle.BRIGHT_YELLOW, 73),
-    "chk": (AnsiStyle.YELLOW, 68),
-    "mock": (AnsiStyle.YELLOW, 67),
-    "sandbox": (AnsiStyle.GREEN, 53),
+    "dry": (AnsiStyle.BRIGHT_MAGENTA, 73),
+    "chk": (AnsiStyle.BRIGHT_BLUE, 68),
+    "mock": (AnsiStyle.CYAN, 67),
+    "sandbox": (AnsiStyle.BRIGHT_CYAN, 53),
     # guard
-    "force": (AnsiStyle.RED, 84),
+    "force": (AnsiStyle.BRIGHT_YELLOW, 84),
     "undo": (AnsiStyle.RED, 83),
-    "grant": (AnsiStyle.YELLOW, 66),
-    "elevated": (AnsiStyle.BRIGHT_RED, 93),
+    "grant": (AnsiStyle.BRIGHT_YELLOW, 66),
+    "elevated": (AnsiStyle.BRIGHT_YELLOW, 93),
     "legacy": (AnsiStyle.YELLOW, 65),
-    "unstable": (AnsiStyle.BRIGHT_YELLOW, 72),
+    "unstable": (AnsiStyle.YELLOW, 72),
     # data
-    "new": (AnsiStyle.GREEN, 52),
-    "owr": (AnsiStyle.YELLOW, 64),
+    "new": (AnsiStyle.BRIGHT_GREEN, 52),
+    "owr": (AnsiStyle.RED, 64),
     "del": (AnsiStyle.RED, 82),
-    "mv": (AnsiStyle.CYAN, 47),
-    "cp": (AnsiStyle.CYAN, 46),
-    "cached": (AnsiStyle.CYAN, 45),
+    "mv": (AnsiStyle.BRIGHT_GREEN, 47),
+    "cp": (AnsiStyle.BRIGHT_GREEN, 46),
+    "cached": (AnsiStyle.MAGENTA, 45),
     "stale": (AnsiStyle.YELLOW, 63),
     # automation
     "auto": (AnsiStyle.BLUE, 33),
-    "fresh": (AnsiStyle.CYAN, 44),
-    "resume": (AnsiStyle.CYAN, 43),
-    "offline": (AnsiStyle.CYAN, 42),
+    "fresh": (AnsiStyle.GREEN, 44),
+    "resume": (AnsiStyle.GREEN, 43),
+    "offline": (AnsiStyle.YELLOW, 42),
     # process
-    "watch": (AnsiStyle.BLUE, 32),
+    "watch": (AnsiStyle.BRIGHT_BLUE, 32),
     "bg": (AnsiStyle.BLUE, 31),
     # recovery
-    "retry": (AnsiStyle.CYAN, 41),
-    "fallback": (AnsiStyle.YELLOW, 62),
-    "timeout": (AnsiStyle.RED, 81),
+    "retry": (AnsiStyle.BRIGHT_MAGENTA, 41),
+    "fallback": (AnsiStyle.BRIGHT_YELLOW, 62),
+    "timeout": (AnsiStyle.BRIGHT_RED, 81),
     "abort": (AnsiStyle.BRIGHT_RED, 92),
 }
 

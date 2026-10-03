@@ -35,6 +35,7 @@ bug using different logger to print & diff only can produce confusing result
 - badges: rename `KamiLogger.set_badges()` / `clear_badges()` to `set_persistent_badges()` / `clear_persistent_badges()`, matching the "persistent badges" term used elsewhere
 - badges: move the badge segment to after the level tag, before the source, instead of before the level
 - badges: restructure the native badge table into mode/guard/data/automation/process/recovery categories; rename `sbx` to `sandbox`, `unsafe` to `elevated`, `retries` to `retry`, `resm` to `resume`, `offl` to `offline`, `incr` to `stale`; add `grant`, `legacy`, `unstable`, `owr`, `del`, `mv`, `cp`, `cached`, `fresh`, `fallback`, `timeout`, `abort`
+- log levels & badges: recolor every custom log level and native badge against one shared 12-color ANSI scheme, grouped by debug/feature-mode/success/warning-bad rather than by category; see [`docs/log-doc.md`](docs/log-doc.md) and [`docs/badge-doc.md`](docs/badge-doc.md) for the full table
 
 ### Deprecated
 
