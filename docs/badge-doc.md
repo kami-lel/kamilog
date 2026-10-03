@@ -64,59 +64,59 @@ Mode:
 
 | Badge | Color | Remark |
 | --- | --- | --- |
-| `dry` | | runs in dry mode, only report |
-| `chk` | | runs *check* and validation, nothing modified |
-| `mock` | | hits stand-in, not real system |
-| `sandbox` | | runs isolated, nothing outlives it |
+| `dry` | `BRIGHT_YELLOW` | runs in dry mode, only report |
+| `chk` | `YELLOW` | runs *check* and validation, nothing modified |
+| `mock` | `YELLOW` | hits stand-in, not real system |
+| `sandbox` | `GREEN` | runs isolated, nothing outlives it |
 
 Guard:
 
 | Badge | Color | Remark |
 | --- | --- | --- |
-| `force` | | bypasses guard or verification |
-| `undo` | | reverses prior run |
-| `grant` | | grants or widens access right |
-| `elevated` | | runs w/ superuser or admin rights |
-| `legacy` | | uses deprecated or outdated feature/API |
-| `unstable` | | uses unstable or experimental feature/interface |
+| `force` | `RED` | bypasses guard or verification |
+| `undo` | `RED` | reverses prior run |
+| `grant` | `YELLOW` | grants or widens access right |
+| `elevated` | `BRIGHT_RED` | runs w/ superuser or admin rights |
+| `legacy` | `YELLOW` | uses deprecated or outdated feature/API |
+| `unstable` | `BRIGHT_YELLOW` | uses unstable or experimental feature/interface |
 
 Data:
 
 | Badge | Color | Remark |
 | --- | --- | --- |
-| `new` | | creates file or directory |
-| `owr` | | *overwrites* existing value or file |
-| `del` | | *deletes* something |
-| `mv` | | *moves* or renames file or record |
-| `cp` | | *duplicates* file or record |
-| `cached` | | result from cache, not recomputed |
-| `stale` | | uses data or state older than expected |
+| `new` | `GREEN` | creates file or directory |
+| `owr` | `YELLOW` | *overwrites* existing value or file |
+| `del` | `RED` | *deletes* something |
+| `mv` | `CYAN` | *moves* or renames file or record |
+| `cp` | `CYAN` | *duplicates* file or record |
+| `cached` | `CYAN` | result from cache, not recomputed |
+| `stale` | `YELLOW` | uses data or state older than expected |
 
 Automation:
 
 | Badge | Color | Remark |
 | --- | --- | --- |
-| `auto` | | unattended, auto-answers prompts |
-| `fresh` | | ignores previous state, starts over |
-| `resume` | | continues interrupted run |
-| `offline` | | runs w/o network, cached data only |
+| `auto` | `BLUE` | unattended, auto-answers prompts |
+| `fresh` | `CYAN` | ignores previous state, starts over |
+| `resume` | `CYAN` | continues interrupted run |
+| `offline` | `CYAN` | runs w/o network, cached data only |
 
 Process:
 
 | Badge | Color | Remark |
 | --- | --- | --- |
-| `watch` | | re-runs on change |
-| `bg` | | runs detached from terminal, *background* |
+| `watch` | `BLUE` | re-runs on change |
+| `bg` | `BLUE` | runs detached from terminal, *background* |
 
 Recovery:
 
 | Badge | Color | Remark |
 | --- | --- | --- |
-| `retry` | | repeat attempt |
-| `fallback` | | takes secondary path after primary fails |
-| `skip` | | skips step, or tolerates failure |
-| `timeout` | | hits time limit |
-| `abort` | | cuts short on purpose |
+| `retry` | `CYAN` | repeat attempt |
+| `fallback` | `YELLOW` | takes secondary path after primary fails |
+| `skip` | `YELLOW` | skips step, or tolerates failure |
+| `timeout` | `RED` | hits time limit |
+| `abort` | `BRIGHT_RED` | cuts short on purpose |
 
 
 
