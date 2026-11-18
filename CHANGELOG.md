@@ -24,8 +24,6 @@ bug using different logger to print & diff only can produce confusing result
 
 ### Added
 
-- badges: native `tmp` (bright cyan, data group) for lines that write scratch data discarded when the run or block ends, e.g. a build in a temp folder before it is copied over
-
 ### Changed
 
 ### Deprecated
@@ -36,7 +34,26 @@ bug using different logger to print & diff only can produce confusing result
 
 ### Security
 
-[unreleased]: https://github.com/kami-lel/kamilog/compare/v3.0.0...dev
+[unreleased]: https://github.com/kami-lel/kamilog/compare/v3.0.1...dev
+
+
+
+
+
+
+
+
+
+
+
+
+## [3.0.1] - 2026-11-18
+
+### Added
+
+- badges: native `tmp` (bright cyan, data group) for lines that write scratch data discarded when the run or block ends, e.g. a build in a temp folder before it is copied over
+
+[3.0.1]: https://github.com/kami-lel/kamilog/compare/v3.0.0...v3.0.1
 
 
 
