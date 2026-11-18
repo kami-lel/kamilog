@@ -40,6 +40,7 @@ log.info("overwriting output/report.csv", badges="owr")
 log.info("deleting output/report.csv", badges="del")
 log.info("renaming draft.csv to report.csv", badges="mv")
 log.info("duplicating report.csv to report.bak", badges="cp")
+log.info("building report.csv in a scratch folder", badges="tmp")
 log.info("serving report.csv from cache", badges="cached")
 log.info("serving report.csv older than expected", badges="stale")
 

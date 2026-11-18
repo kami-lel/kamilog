@@ -36,6 +36,7 @@ _EXPECTED_STDOUT = [
     "INFO  del\t: deleting output/report.csv",
     "INFO  mv\t: renaming draft.csv to report.csv",
     "INFO  cp\t: duplicating report.csv to report.bak",
+    "INFO  tmp\t: building report.csv in a scratch folder",
     "INFO  cached\t: serving report.csv from cache",
     "INFO  stale\t: serving report.csv older than expected",
     "",

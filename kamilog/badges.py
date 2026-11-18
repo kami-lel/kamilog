@@ -25,6 +25,7 @@ NATIVE_BADGES = {
     "del": AnsiStyle.RED,
     "mv": AnsiStyle.BRIGHT_GREEN,
     "cp": AnsiStyle.BRIGHT_GREEN,
+    "tmp": AnsiStyle.BRIGHT_CYAN,
     "cached": AnsiStyle.MAGENTA,
     "stale": AnsiStyle.YELLOW,
     # automation
