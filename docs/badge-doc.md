@@ -90,6 +90,7 @@ Data:
 | `del` | red | *deletes* something |
 | `mv` | bright green | *moves* or renames file or record |
 | `cp` | bright green | *duplicates* file or record |
+| `tmp` | bright cyan | writes *scratch* data, discarded when the run or block ends |
 | `cached` | magenta | result from cache, not recomputed |
 | `stale` | yellow | uses data or state older than expected |
 
